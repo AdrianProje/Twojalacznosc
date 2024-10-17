@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.TwojaŁączność" parent="Theme.Material3.DynamicColors.DayNight">
+        <item name="android:windowLayoutInDisplayCutoutMode">
+            shortEdges
+        </item>
+    </style>
+</resources>

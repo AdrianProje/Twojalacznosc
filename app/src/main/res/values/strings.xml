@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name" translatable="false">Twoja Łączność</string>
+    <string name="OBBE_text">Opis wstępny po otworzeniu aplikacji.</string>
+    <string name="OBBE_Button_Next">Przycisk do przejścia dalej</string>
+    <string name="OBBE_WarunkiAplikacji">Warunki</string>
+    <string name="OBEE_WarunkiZgoda">Zgadzam się</string>
+    <string name="OBBE_ShowTerms">Pokarz</string>
+    <string name="OBBE_Back">Powrót</string>
+    <string name="OBBE_WarunkiNieZgoda">Nie zgadzam się</string>
+    <string name="OBBE_BrakZgody">Nie ma zgody</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="MAIN_Dom">Dom</string>
+    <string name="MAIN_Pomoc">Pomoc</string>
+    <string name="MAIN_Plan">Plan</string>
+    <string name="OBBE_Zdjecie_text">Zdjecie lacznosc</string>
+    <string name="MAIN_Pomoc_Kontakt1">TechŁacznosci</string>
+    <string name="MAIN_Pomoc_Kontakt2">Numer Telefonu</string>
+    <string name="MAIN_Pomoc_Kontakt3">Numer Telefonu 2</string>
+    <string name="MAIN_Pomoc_Dyrektor">Dyrektor Szkoly -</string>
+    <string name="SETTINGS_Wersja">Wersja aplikacji pokazywana w sekcji ustawień</string>
+    <string name="MAIN_Pomoc_Linki">Przydatne linki</string>
+
+    <!-- Preference Titles -->
+
+    <!-- Messages Preferences -->
+
+    <!-- Sync Preferences -->
+    <string name="SETTINGS_BAR_TEXT">Tekst na górze</string>
+    <string name="SETTINGS_Podziekowanie">Podziekowania</string>
+    <string name="PLAN_Chip_Klasa">Klasa</string>
+    <string name="PLAN_Chip_Sala">Sala</string>
+    <string name="PLAN_Chip_Nauczyciel">Nauczyciel</string>
+    <string name="PLAN_Button_Zmień">Zmień</string>
+    <string name="SETTINGS_Button_DomysnyChip">Domyslny chip</string>
+    <string name="SETTINGS_Button_DomysnyChip_Opis">Wybierz domyślny widok po wybraniu planu lekcji</string>
+    <string name="SETTINGS_Zmiana_Plan_Toast">Zmieniono widok planu</string>
+    <string name="MAIN_Loading">Tworzymy plan lekcji dla ciebie</string>
+    <string name="NOTIFICATION_Schedule">Powiadomienie o następnej lekcji</string>
+    <string name="NOTIFICATION_Schedule_ExtraText">Dodatkowy tekst w ustawieniach powiadomień</string>
+    <string name="PLAN_Button_Dropdownlist_Poniedziałek">Poniedziałek</string>
+    <string name="PLAN_Button_Dropdownlist_Wtorek">Wtorek</string>
+    <string name="PLAN_Button_Dropdownlist_Sroda">Środa</string>
+    <string name="PLAN_Button_Dropdownlist_Czwartek">Czwartek</string>
+    <string name="PLAN_Button_Dropdownlist_Piatek">Piątek</string>
+    <string name="SETTING_Button_DomyslnyPlan">Domyslny plan</string>
+    <string name="SETTINGS_Button_DomysnyPlan_Opis">Domyslnie wybrany plan po otworzeniu sekcji planu lekcji</string>
+</resources>
