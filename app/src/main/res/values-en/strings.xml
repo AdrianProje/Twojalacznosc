@@ -27,7 +27,7 @@
     <string name="SETTINGS_Button_DomysnyChip">The default chip</string>
     <string name="SETTINGS_Button_DomysnyChip_Opis">The default chip selected when you open the plan selection</string>
     <string name="SETTINGS_Zmiana_Plan_Toast">Default timetable view has been changed</string>
-    <string name="MAIN_Loading">We are creating Sceagule for you</string>
+    <string name="MAIN_Loading">We are creating Sceagule for you\n- Keep the internet connection on -</string>
     <string name="NOTIFICATION_Schedule">Notification about next lesson</string>
     <string name="NOTIFICATION_Schedule_ExtraText">"Notification shown before next lesson "</string>
     <string name="PLAN_Button_Dropdownlist_Poniedziałek">Monday</string>
@@ -37,4 +37,8 @@
     <string name="PLAN_Button_Dropdownlist_Piatek">Friday</string>
     <string name="SETTING_Button_DomyslnyPlan">Default schedule</string>
     <string name="SETTINGS_Button_DomysnyPlan_Opis">The default selected timetable when you create a timetable section\n\nNotifications will be sent for the selected timetable, you can manage them below.</string>
+    <string name="SETTINGS_Paranoja_Tytul">Paranoic mode</string>
+    <string name="SETTINGS_Paranoja_Opis">Turn on refreshing sceagule everytime you open an app</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">Refreshing mode</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Turn on refreshing only substitutions on the sceagule card of the app</string>
 </resources>

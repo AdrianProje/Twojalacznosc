@@ -1,20 +1,15 @@
 package com.ak.twojetlimc.PlanLekcji
 
-import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 data class ScheduleData(val imieinazwisko: String, val filePath: String, val htmlvalue: String)
 
-@SuppressLint("SuspiciousIndentation")
-@Composable
-fun GetList(typ: Int): List<ScheduleData?> {
-    val contextu = LocalContext.current
-    val datastore = Datastoremanager(contextu)
+fun GetList(typ: Int, context: Context): List<ScheduleData?> {
+    val datastore = Datastoremanager(context)
     val list = mutableListOf<ScheduleData?>()
     val list2 = mutableListOf("o", "s", "n")
     var litera = ""
@@ -50,7 +45,7 @@ fun GetList(typ: Int): List<ScheduleData?> {
                     "$exampleData/$litera$i"
                 )
                 try {
-                    val data1 = datastore.getSchedule(contextu, "$exampleData/$litera$i", 1)
+                    val data1 = datastore.getSchedule(context, "$exampleData/$litera$i", 1)
                     if (data1 != null) {
                         list.add(
                             ScheduleData(
@@ -63,7 +58,6 @@ fun GetList(typ: Int): List<ScheduleData?> {
                 } catch (e: Exception) {
                     Log.d("PlanList -Datastore nie posiada takiego planu", e.message.toString())
                 }
-
             }
         } else {
             for (litery in list2) {
@@ -73,7 +67,7 @@ fun GetList(typ: Int): List<ScheduleData?> {
                         "$exampleData/$litery$i"
                     )
                     try {
-                        val data2 = datastore.getSchedule(contextu, "$exampleData/$litery$i", 1)
+                        val data2 = datastore.getSchedule(context, "$exampleData/$litery$i", 1)
                         if (data2 != null) {
                             list.add(
                                 ScheduleData(

@@ -25,16 +25,17 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
 
 
     override suspend fun doWork(): Result {
+        val calendarminutes = Calendar.getInstance().get(Calendar.MINUTE)
         val itemId = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             7 -> 1
 
-            8 -> 2
-
-            9 -> if (Calendar.getInstance().get(Calendar.MINUTE) < 30) {
-                3
+            8 -> if (calendarminutes < 30) {
+                2
             } else {
-                4
+                3
             }
+
+            9 -> 4
 
             10 -> 5
 

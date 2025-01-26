@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-suspend fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
+fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
     try {
         skrape(BrowserFetcher) {
             request {
@@ -27,8 +27,6 @@ suspend fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
                 htmlDocument {
                     table {
                         val zastDetailsTrs = (findAll("tbody")[6].tr { findAll { this } }).drop(3)
-
-                        Log.d("UnpackZas", "Lista: $zastDetailsTrs")
 
                         zastDetailsTrs.forEach {
                             if ((it.td { findAll { this } }).size == 4) {

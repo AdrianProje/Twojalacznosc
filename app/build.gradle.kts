@@ -24,13 +24,13 @@ android {
             useSupportLibrary = true
         }
         targetSdk = 35
-        versionName = "Ciuty - 0.50.6"
+        versionName = "Ciuty - 0.50.7.2"
     }
 
     buildTypes {
         release {
-//            isShrinkResources = true
-//            minifyEnabled = true
+            isShrinkResources = false
+            isMinifyEnabled = false
             // Opcje wyłączone ze względu na błędy z biblioteką skrapeit,
             // rozwiązać później TODO("Naprawić błąd minifyEnabled")
             //Funckja zmniejsza rozmiar apk lub bundle
@@ -54,10 +54,10 @@ android {
         jvmTarget = "17"
     }
     dependenciesInfo {
-        includeInBundle = false
-        includeInApk = false
+        includeInBundle = true
+        includeInApk = true
     }
-    buildToolsVersion = "35.0.0"
+    buildToolsVersion = "35.0.1"
     ndkVersion = "27.2.12479018"
     flavorDimensions += listOf("BaseApp")
     productFlavors {
@@ -95,13 +95,13 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui:1.7.4")
+    implementation("androidx.compose.ui:ui:1.7.6")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-graphics:1.7.4")
+    implementation("androidx.compose.ui:ui-graphics:1.7.6")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.4")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.7.6")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.compose.material3:material3:1.3.1")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference)
     implementation(libs.skrapeit) {
@@ -117,13 +117,16 @@ dependencies {
     implementation(libs.androidx.espresso.core)
     implementation(libs.skrapeit.browser.fetcher)
     implementation(libs.ui.test.manifest)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.glance.material)
+    implementation(libs.androidx.glance.appwidget)
     androidTestImplementation(platform(libs.androidx.compose.bom.v20230300))
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-test-junit4:1.7.4")
+    implementation("androidx.compose.ui:ui-test-junit4:1.7.6")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling:1.7.4")
+    implementation("androidx.compose.ui:ui-tooling:1.7.6")
     //noinspection UseTomlInstead
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)

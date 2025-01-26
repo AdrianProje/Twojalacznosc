@@ -10,10 +10,9 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.ak.twojetlimc.PlanLekcji.webscrapeT
 import com.ak.twojetlimc.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDate
+import kotlin.concurrent.thread
 
 class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
@@ -40,45 +39,53 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             Log.d("PlanCheck", "Sprawdzanie dostępności nowszej wersji planu lekcji")
 
             //Wykonywanie działania
-            val accessdata = Datastoremanager(applicationContext)
-            val serviceScope = CoroutineScope(Dispatchers.IO)
+            val datastoremanager = Datastoremanager(applicationContext)
+
+            val timestamp = LocalDate.now().toString()
+
+            val jobs = listOf(
+                thread(start = true) {
+                    for (i in 1..30) {
+                        webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
+                            "o$i",
+                            timestamp
+                        )
+                    }
+                },
+
+
+                thread(start = true) {
+                    for (i in 1..70) {
+                        webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
+                            "n$i",
+                            timestamp
+                        )
+                    }
+                },
+
+                thread(start = true) {
+                    for (i in 1..50) {
+                        webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
+                            "s$i",
+                            timestamp
+                        )
+                    }
+                }
+            )
+
+            jobs.forEach { it.join() }
+
 
             runBlocking {
-                val jobs = listOf(
-                    launch(Dispatchers.IO) {
-                        for (i in 1..30) {
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
-                                "o$i"
-                            )
-                        }
-                    },
-
-
-                    launch(Dispatchers.IO) {
-                        for (i in 1..70) {
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
-                                "n$i"
-                            )
-                        }
-                    },
-
-                    launch(Dispatchers.IO) {
-                        for (i in 1..50) {
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
-                                "s$i"
-                            )
-                        }
-                    }
-                )
-                jobs.forEach { it.join() }
-                return@runBlocking Result.success()
+                datastoremanager.savePlanTimestamp(timestamp)
             }
+            return Result.success()
         } catch (e: Exception) {
             Log.d("PlanCheck", e.toString())
             return Result.failure()

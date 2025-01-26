@@ -26,16 +26,35 @@ class Datastoremanager(private val context: Context) {
         val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
         val USER_FAV_SCHEDULE_ONOFF = booleanPreferencesKey("user_fav_schedule_onoff")
         val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
+        val PARANOIA = booleanPreferencesKey("paranoia")
+        val USER_REFRESH = booleanPreferencesKey("user_refresh")
 
         const val SCHEDULE_PREFIX = "schedule_"
         const val ZASTEPSTWO_PREFIX = "zastepstwo_"
     }
+
+
 
     val getUPObbe: Flow<Boolean?> =
         context.dataStore.data.map { preferences -> preferences[USER_PASS_OBBE] ?: false }
 
     suspend fun saveUPObbe(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[USER_PASS_OBBE] = value }
+    }
+
+    val getParanoia: Flow<Boolean?> =
+        context.dataStore.data.map { preferences -> preferences[PARANOIA] ?: false }
+
+    suspend fun saveParanoia(value: Boolean) {
+        context.dataStore.edit { preferences -> preferences[PARANOIA] = value }
+    }
+
+    //TODO(Zainplementuj refresh czy tylko zastępstwo)
+    val getUserRefresh: Flow<Boolean?> =
+        context.dataStore.data.map { preferences -> preferences[USER_REFRESH] ?: false }
+
+    suspend fun saveUserRefresh(value: Boolean) {
+        context.dataStore.edit { preferences -> preferences[USER_REFRESH] = value }
     }
 
     val getDefaultPlan: Flow<Int?> =
@@ -47,6 +66,7 @@ class Datastoremanager(private val context: Context) {
 
     val getFavSchedule: Flow<String?> =
         context.dataStore.data.map { preferences -> preferences[USER_FAV_SCHEDULE] ?: "" }
+
     val saveFavSchedule: suspend (String) -> Unit = { value ->
         context.dataStore.edit { preferences ->
             preferences[USER_FAV_SCHEDULE] = value

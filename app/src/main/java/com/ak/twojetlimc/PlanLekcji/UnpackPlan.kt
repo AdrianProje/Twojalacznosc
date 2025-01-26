@@ -18,16 +18,15 @@ import it.skrape.selects.text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
-suspend fun webscrapeT(context: Context, htmllink: String, filename: String) {
+fun webscrapeT(context: Context, htmllink: String, filename: String, timestamp: String) {
     val datastoremanager = Datastoremanager(context)
     val items = mutableListOf<ScheduleItem>()
     var tytul = filename
 
     var i = 0
 
-    Log.d("UnpackPlan", "Wczytywanie strony $filename")
+    Log.d("UnpackPlan", "Wczytywanie strony $htmllink")
 
     try {
         skrape(BrowserFetcher) {
@@ -148,10 +147,6 @@ suspend fun webscrapeT(context: Context, htmllink: String, filename: String) {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-
-            val timestamp = LocalDate.now().toString()
-            datastoremanager.savePlanTimestamp(timestamp)
-
             datastoremanager.storeSchedule(
                 context,
                 "$timestamp/$filename",
@@ -163,6 +158,6 @@ suspend fun webscrapeT(context: Context, htmllink: String, filename: String) {
         Log.d("UnpackPlan", "Przetworzono dane $htmllink")
 
     } catch (e: Exception) {
-        Log.d("UnpackPlan - Błąd", "Błąd $filename")
+        Log.d("UnpackPlan - Błąd", "Błąd $e")
     }
 }

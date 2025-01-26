@@ -5,8 +5,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -27,29 +29,29 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import java.util.Calendar
 
 
+@RequiresApi(Build.VERSION_CODES.S)
 fun createalarm(context: Context) {
     val times = listOf(
         Pair(7, 10), //alarm 7:10 i tak dalej w dół
-        Pair(8, 5),
-        Pair(9, 0),
-        Pair(9, 55),
-        Pair(10, 50),
-        Pair(11, 50),
-        Pair(12, 45),
-        Pair(13, 40),
-        Pair(14, 35),
-        Pair(15, 30),
-        Pair(16, 25),
-        Pair(17, 20),
-        Pair(18, 15),
-        Pair(19, 10)
+        Pair(8, 0),
+        Pair(8, 55),
+        Pair(9, 50),
+        Pair(10, 45),
+        Pair(11, 45),
+        Pair(12, 40),
+        Pair(13, 35),
+        Pair(14, 30),
+        Pair(15, 25),
+        Pair(16, 20),
+        Pair(17, 15),
+        Pair(18, 10),
+        Pair(19, 5)
     )
 
     val alarmManager =
@@ -81,6 +83,7 @@ fun createalarm(context: Context) {
         }
     }
 
+
     if (alarmManager.canScheduleExactAlarms()) {
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -99,6 +102,17 @@ fun createalarm(context: Context) {
         Log.d("createalarm()", "Nie można utworzyć planu brak uprawnień")
         Toast.makeText(context, "Brak uprawnień", Toast.LENGTH_SHORT).show()
     }
+}
+
+fun downlodonlyzas(context: Context): WorkRequest {
+    val workRequest2 =
+        OneTimeWorkRequestBuilder<ZasCheck>().build()
+
+    WorkManager.getInstance(context)
+        .beginWith(workRequest2)
+        .enqueue()
+
+    return workRequest2
 }
 
 fun downloadplanandzas(context: Context): WorkRequest {
@@ -124,8 +138,7 @@ fun WebsiteLink(contextText: String, url: String) {
     Text(
         text = contextText,
         modifier = Modifier.clickable {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            context.startActivity(intent)
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         },
         style = TextStyle(
             textDecoration = TextDecoration.Underline,
@@ -183,13 +196,9 @@ fun ClickableEmail(email: String) {
         modifier = Modifier
             .padding(horizontal = 10.dp)
             .clickable {
-                ContextCompat.startActivity(
-                    context,
-                    Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:$email")
-                    },
-                    null
-                )
+                context.startActivity(Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:$email")
+                })
             },
         style = MaterialTheme.typography.bodyMedium
     )
@@ -220,13 +229,9 @@ fun ClickablePhoneNumber(contextText: String, phoneNumber: String) {
         modifier = Modifier
             .padding(horizontal = 10.dp)
             .clickable {
-                ContextCompat.startActivity(
-                    context,
-                    Intent(Intent.ACTION_DIAL).apply {
-                        data = Uri.parse("tel:$phoneNumber")
-                    },
-                    null
-                )
+                context.startActivity(Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$phoneNumber")
+                })
             },
         style = MaterialTheme.typography.bodyMedium
     )

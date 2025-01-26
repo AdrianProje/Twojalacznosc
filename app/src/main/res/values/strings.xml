@@ -44,4 +44,8 @@
     <string name="PLAN_Button_Dropdownlist_Piatek">Piątek</string>
     <string name="SETTING_Button_DomyslnyPlan">Domyslny plan</string>
     <string name="SETTINGS_Button_DomysnyPlan_Opis">Domyslnie wybrany plan po otworzeniu sekcji planu lekcji</string>
+    <string name="SETTINGS_Paranoja_Tytul">Tytul</string>
+    <string name="SETTINGS_Paranoja_Opis">Opis trybu pranoi</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">tytul zastepstw</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Opis zmieniania trybow</string>
 </resources>

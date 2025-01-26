@@ -1,8 +1,8 @@
 package com.ak.twojetlimc
 
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.Manifest.permission.SCHEDULE_EXACT_ALARM
 import android.app.AlarmManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -13,7 +13,7 @@ import android.os.Vibrator
 import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.addCallback
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
 
 
 class OBBE : AppCompatActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         val serviceScope = CoroutineScope(Dispatchers.IO)
         val obbetomaintent = Intent(applicationContext, MainScreen::class.java)
@@ -133,34 +134,29 @@ class OBBE : AppCompatActivity() {
                         }
 
                         item {
-                            Box(
-                                modifier = Modifier
-                                    .safeDrawingPadding(),
-                                contentAlignment = Alignment.CenterEnd,
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(1f),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                Button(
+                                    onClick = { navController.navigate("OBBE_terms") },
+                                    modifier = Modifier.fillMaxWidth(0.5f),
+                                    shape = MaterialTheme.shapes.medium
                                 ) {
-                                    Button(
-                                        onClick = { navController.navigate("OBBE_terms") },
-                                        modifier = Modifier.fillMaxWidth(0.5f),
-                                        shape = MaterialTheme.shapes.medium
-                                    ) {
-                                        Text(stringResource(id = R.string.OBBE_ShowTerms))
-                                    }
-                                    Button(
-                                        onClick = {
-                                            if (checked) {
-                                                if (connectivityManager.activeNetwork != null) {
-                                                    val workrequest = downloadplanandzas(contextu)
+                                    Text(stringResource(id = R.string.OBBE_ShowTerms))
+                                }
+                                Button(
+                                    onClick = {
+                                        if (checked) {
+                                            if (connectivityManager.activeNetwork != null) {
+                                                val workrequest = downloadplanandzas(contextu)
 
-                                                    Log.d("OBBE", "Praca rozpoczęta")
-                                                    WorkManager.getInstance(contextu)
-                                                        .getWorkInfoByIdLiveData(workrequest.id)
-                                                        .observe(this@OBBE) { workInfo ->
-                                                            when (workInfo?.state) {
-                                                                WorkInfo.State.SUCCEEDED -> {
+                                                Log.d("OBBE", "Praca rozpoczęta")
+                                                WorkManager.getInstance(contextu)
+                                                    .getWorkInfoByIdLiveData(workrequest.id)
+                                                    .observe(this@OBBE) { workInfo ->
+                                                        when (workInfo?.state) {
+                                                            WorkInfo.State.SUCCEEDED -> {
+                                                                if (connectivityManager.activeNetwork != null) {
                                                                     serviceScope.launch {
                                                                         accessdatastoremanager.saveUPObbe(
                                                                             true
@@ -171,51 +167,54 @@ class OBBE : AppCompatActivity() {
                                                                         "Zakończono pracę pomyślnie, przechodznie do przyznania powiadomień"
                                                                     )
                                                                     navController.navigate("OBBE_Permissions")
-                                                                }
-
-                                                                WorkInfo.State.ENQUEUED -> {
-                                                                    Log.d("OBBE", "ENQUEUED")
-                                                                }
-
-                                                                WorkInfo.State.RUNNING -> {
-                                                                    Log.d("OBBE", "Trwa Praca")
-                                                                    navController.navigate("OBBE_pobieranie")
-                                                                }
-
-                                                                WorkInfo.State.FAILED -> {
+                                                                } else {
                                                                     Log.d("OBBE", "Błąd")
                                                                     navController.navigate("OBBE_pob_error")
                                                                 }
+                                                            }
 
-                                                                WorkInfo.State.BLOCKED -> {
-                                                                    Log.d("OBBE", "Zablokowano")
-                                                                }
+                                                            WorkInfo.State.ENQUEUED -> {
+                                                                Log.d("OBBE", "ENQUEUED")
+                                                            }
 
-                                                                WorkInfo.State.CANCELLED -> {
-                                                                    Log.d("OBBE", "Cancelled")
-                                                                }
+                                                            WorkInfo.State.RUNNING -> {
+                                                                Log.d("OBBE", "Trwa Praca")
+                                                                navController.navigate("OBBE_pobieranie")
+                                                            }
 
-                                                                null -> {
-                                                                    Log.d("OBBE", "Nieznany satus")
-                                                                }
+                                                            WorkInfo.State.FAILED -> {
+                                                                Log.d("OBBE", "Błąd")
+                                                                navController.navigate("OBBE_pob_error")
+                                                            }
+
+                                                            WorkInfo.State.BLOCKED -> {
+                                                                Log.d("OBBE", "Zablokowano")
+                                                            }
+
+                                                            WorkInfo.State.CANCELLED -> {
+                                                                Log.d("OBBE", "Cancelled")
+                                                            }
+
+                                                            null -> {
+                                                                Log.d("OBBE", "Nieznany satus")
                                                             }
                                                         }
-                                                } else {
-                                                    navController.navigate("OBBE_pob_error")
-                                                }
+                                                    }
                                             } else {
-                                                Toast.makeText(
-                                                    baseContext,
-                                                    R.string.OBBE_BrakZgody,
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                navController.navigate("OBBE_pob_error")
                                             }
-                                        },
-                                        modifier = Modifier.fillMaxWidth(1f),
-                                        shape = MaterialTheme.shapes.medium
-                                    ) {
-                                        Text(stringResource(id = R.string.OBBE_Button_Next))
-                                    }
+                                        } else {
+                                            Toast.makeText(
+                                                baseContext,
+                                                R.string.OBBE_BrakZgody,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(1f),
+                                    shape = MaterialTheme.shapes.medium
+                                ) {
+                                    Text(stringResource(id = R.string.OBBE_Button_Next))
                                 }
                             }
                         }
@@ -238,7 +237,7 @@ class OBBE : AppCompatActivity() {
                         }
                         item {
                             Button(
-                                onClick = { navController.popBackStack() },
+                                onClick = { navController.navigate("OBBE_start") },
                                 Modifier.fillMaxWidth(1f), shape = MaterialTheme.shapes.medium,
                             ) {
                                 Text(text = stringResource(id = R.string.OBBE_Back))
@@ -272,7 +271,8 @@ class OBBE : AppCompatActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding(),
+                            .statusBarsPadding()
+                            .padding(horizontal = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -291,8 +291,8 @@ class OBBE : AppCompatActivity() {
 
                 composable(route = "OBBE_Permissions") {
                     val alarmManager =
-                        applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                    requestPermissions(arrayOf(POST_NOTIFICATIONS), 1)
+                        applicationContext.getSystemService(ALARM_SERVICE) as AlarmManager
+                    requestPermissions(arrayOf(POST_NOTIFICATIONS, SCHEDULE_EXACT_ALARM), 1)
                     when {
                         ContextCompat.checkSelfPermission(
                             this@OBBE,
@@ -367,17 +367,19 @@ class OBBE : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
+            false
         enableEdgeToEdge()
         setContent {
-            if (Build.VERSION.SDK_INT >= 29) {
-                window.isNavigationBarContrastEnforced = false
-            }
+
             AppTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
                     NavGraph(navController)
-                    onBackPressedDispatcher.addCallback(this) {
-                        finishAffinity()
+                    BackHandler(true) {
+                        if (navController.currentBackStackEntry?.destination?.route == "OBBE_start") {
+                            navController.popBackStack()
+                        }
                     }
                 }
             }

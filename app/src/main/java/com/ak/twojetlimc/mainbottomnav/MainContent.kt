@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +36,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
@@ -58,6 +60,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,21 +70,32 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavHostController
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.ak.twojetlimc.PlanLekcji.GetList
+import com.ak.twojetlimc.PlanLekcji.Schedule
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.SettingsActivity
 import com.ak.twojetlimc.Zastepstwa.Zastepstwo
@@ -89,8 +104,11 @@ import com.ak.twojetlimc.komponenty.ClickablePhoneNumber
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.ImageLinkButton
 import com.ak.twojetlimc.komponenty.RefreshWorker
+import com.ak.twojetlimc.komponenty.downloadplanandzas
+import com.ak.twojetlimc.komponenty.downlodonlyzas
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -119,7 +137,7 @@ fun HelpScreen() {
                             contentDescription = "Localized description"
                         )
                     }
-                },
+                }
             )
         },
         content = { padding ->
@@ -180,32 +198,32 @@ fun HelpScreen() {
                         }
                     }
 
-                    item {
-                        OutlinedCard(
-                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                            border = BorderStroke(1.dp, Color.Black),
-                            modifier = Modifier.size(390.dp, 200.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(vertical = 50.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                                    contentDescription = "hello"
-                                )
-
-                                Text(
-                                    text = stringResource(id = R.string.MAIN_Pomoc_Dyrektor),
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.align(Alignment.CenterVertically),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        }
-                    }
+//                    item {
+//                        OutlinedCard(
+//                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+//                            border = BorderStroke(1.dp, Color.Black),
+//                            modifier = Modifier.size(390.dp, 200.dp)
+//                        ) {
+//                            Row(
+//                                modifier = Modifier
+//                                    .align(Alignment.CenterHorizontally)
+//                                    .padding(vertical = 50.dp),
+//                                verticalAlignment = Alignment.CenterVertically
+//                            ) {
+//                                Image(
+//                                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+//                                    contentDescription = "hello"
+//                                )
+//
+//                                Text(
+//                                    text = stringResource(id = R.string.MAIN_Pomoc_Dyrektor),
+//                                    textAlign = TextAlign.Center,
+//                                    modifier = Modifier.align(Alignment.CenterVertically),
+//                                    style = MaterialTheme.typography.bodyLarge
+//                                )
+//                            }
+//                        }
+//                    }
 
                     item {
                         OutlinedCard(
@@ -259,9 +277,9 @@ fun HelpScreen() {
 
 //------------------------------------Główna-----------------------------------------
 
-@Preview
+
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
     var selectedKey by remember { mutableIntStateOf(0) }
     val listState = rememberLazyListState()
 
@@ -272,6 +290,7 @@ fun HomeScreen() {
             listState.animateScrollToItem(index = selectedKey)
         }
     }
+
 //TODO("Dodać tło do HomeScreen")
 //    Image(
 //        painter = painterResource(id = R.drawable.lacznosc_logo_full_ia),
@@ -280,7 +299,6 @@ fun HomeScreen() {
 //            .fillMaxSize()
 //            .background(Color.LightGray) // Optional: Fallback color
 //    )
-
     LazyColumn(
         Modifier
             .fillMaxHeight()
@@ -325,8 +343,9 @@ fun HomeScreen() {
                 val tips = BufferedReader(InputStreamReader(inputStream)).readLines()
                 inputStream.close()
 
+
                 items(5, key = { it }) {
-                    val tip = tips.random()
+                    val tip by remember { mutableStateOf(tips.random()) }
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         border = BorderStroke(1.dp, Color.DarkGray),
@@ -352,6 +371,23 @@ fun HomeScreen() {
 
         item {
             Text(text = "Więcej funkcji już wkrótce")
+        }
+
+        item {
+            OutlinedCard(
+                onClick = { navController.navigate("whatsnew") },
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier.fillParentMaxWidth(0.95f)
+            ) {
+                Text(
+                    text = "Co nowego? \n Zobacz co się zmieniło w aplikacji",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxSize()
+                )
+            }
         }
 
 //        item {
@@ -391,44 +427,175 @@ fun HomeScreen() {
     }
 }
 
-//-----------------------------PLAN-----------------------------------------
+
+//-----------------------------CO NOWEGO-----------------------------------------
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WhatsNew(navController: NavHostController) {
+    val context = LocalContext.current
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text("Co nowego?")
+                },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = "Powrót",
+                        modifier = Modifier
+                            .clickable {
+                                navController.popBackStack()
+                            }
+                            .size(30.dp)
+                    )
+                }
+            )
+        }
+    ) { padding ->
+        HorizontalDivider(
+            color = Color.Black,
+            modifier = Modifier
+                .height(1.dp)
+                .fillMaxWidth()
+                .padding(padding)
+        )
+        val assetManager = context.assets
+        val inputStream = assetManager.open("Whatsnew")
+        val textofwhatsnew = inputStream.bufferedReader().use { it.readText() }
+        LazyColumn(
+            contentPadding = padding,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(horizontal = 10.dp)
+        ) {
+            item {
+                Text(textofwhatsnew)
+            }
+        }
+        inputStream.close()
+    }
+}
+
+//-----------------------------PLAN-----------------------------------------
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
+@OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalComposeUiApi
 @Composable
-fun PlanScreen(context: Context) {
+fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var showDropdownMenu by remember { mutableStateOf(false) }
     var planstamptext by remember { mutableStateOf("") }
+    var onlysubstitute by remember { mutableStateOf(false) }
 
-    var schedulecurrenttype by remember { mutableStateOf(false) }
-    var selectedData by remember { mutableStateOf<String?>("") }
-    var selectedData2 by remember { mutableStateOf<String?>("") }
-
-    var selectedChipOption = remember { mutableIntStateOf(1) }
+    var selectedData by rememberSaveable { mutableStateOf<String?>("") }
+    var selectedData2 by rememberSaveable { mutableStateOf<String?>("") }
+    var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
 
     var day by remember {
         mutableStateOf(
             when (LocalDate.now().dayOfWeek.value) {
-                6 -> DayOfWeek.FRIDAY
+                6 -> DayOfWeek.MONDAY
                 7 -> DayOfWeek.MONDAY
                 else -> LocalDate.now().dayOfWeek
             }
         )
     }
 
+
+    fun loadscheduledata(selectedDataa2: String): Schedule? {
+        val datatoreturn = runBlocking {
+            val datastore = Datastoremanager(context)
+            val scheduletimestamp = datastore.getPlanTimestamp.first()
+            val favschedule = datastore.getFavSchedule.first()
+            onlysubstitute = datastore.getUserRefresh.first() == true
+
+            if (selectedData2 != "") {
+                datastore.getSchedule(
+                    context,
+                    "$scheduletimestamp/$selectedDataa2",
+                    1
+                )
+            } else {
+                if (favschedule != "") {
+                    selectedData = favschedule!!.split(",")[0]
+                    selectedData2 = favschedule.split(",")[1]
+                    datastore.getSchedule(context, "$scheduletimestamp/$selectedData2", 1)
+                } else {
+                    null
+                }
+            }
+        }
+        return datatoreturn
+    }
+
+    fun loadsubstitue(day: DayOfWeek, klasa2: String): List<Zastepstwo>? {
+        val substitutelist = mutableListOf<Zastepstwo>()
+        for (i in 1..13) {
+            runBlocking {
+                val thedate =
+                    LocalDate.now().with(TemporalAdjusters.nextOrSame(day)).toString()
+                try {
+                    val datastore = Datastoremanager(context)
+                    val data1 = datastore.getZastepstwo(
+                        context, i, klasa2,
+                        thedate, 1
+                    )
+                    val data2 = datastore.getZastepstwo(
+                        context, i, "$klasa2(1)",
+                        thedate, 1
+                    )
+                    val data3 = datastore.getZastepstwo(
+                        context, i, "$klasa2(2)",
+                        thedate, 1
+                    )
+                    if (data1 != null) {
+                        substitutelist.add(data1)
+                    }
+                    if (data2 != null) {
+                        substitutelist.add(data2)
+                    }
+                    if (data3 != null) {
+                        substitutelist.add(data3)
+                    }
+                } catch (_: Exception) {
+                    Log.d(
+                        "PLANLOADING",
+                        "Nie znaleziono zastępstwa dla danej lekcji"
+                    )
+                    null
+                }
+            }
+        }
+        return substitutelist
+    }
+
+    var selectedChipOption = remember { mutableIntStateOf(1) }
+    val pattern = longArrayOf(0, 50)
+
+
+    var refreshTrigger by remember { mutableIntStateOf(0) }
     var daytext by remember { mutableStateOf("") }
 
     val options = listOf(
         stringResource(id = R.string.PLAN_Chip_Klasa),
         stringResource(id = R.string.PLAN_Chip_Sala),
         stringResource(id = R.string.PLAN_Chip_Nauczyciel)
+    )
+
+    val daynames = listOf(
+        stringResource(id = R.string.PLAN_Button_Dropdownlist_Poniedziałek),
+        stringResource(id = R.string.PLAN_Button_Dropdownlist_Wtorek),
+        stringResource(id = R.string.PLAN_Button_Dropdownlist_Sroda),
+        stringResource(id = R.string.PLAN_Button_Dropdownlist_Czwartek),
+        stringResource(id = R.string.PLAN_Button_Dropdownlist_Piatek)
     )
     val accessdatastoremanager = Datastoremanager(context)
     LaunchedEffect(true) {
@@ -437,8 +604,6 @@ fun PlanScreen(context: Context) {
         }
     }
 
-    val scheduleData = GetList(selectedChipOption.intValue)
-
 
     val result = RefreshWorker.DataHolder.workerResult.value
     LaunchedEffect(key1 = result) {
@@ -446,7 +611,7 @@ fun PlanScreen(context: Context) {
             try {
                 Log.d("itemid - scrolowanie", result.toString())
                 listState.animateScrollToItem(index = result, scrollOffset = -600)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Toast.makeText(context, "Nie przeskrolowano, brak godziny", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -454,18 +619,34 @@ fun PlanScreen(context: Context) {
     }
 
     when (day.value) {
-        1 -> daytext = stringResource(id = R.string.PLAN_Button_Dropdownlist_Poniedziałek)
-        2 -> daytext = stringResource(id = R.string.PLAN_Button_Dropdownlist_Wtorek)
-        3 -> daytext = stringResource(id = R.string.PLAN_Button_Dropdownlist_Sroda)
-        4 -> daytext = stringResource(id = R.string.PLAN_Button_Dropdownlist_Czwartek)
-        5 -> daytext = stringResource(id = R.string.PLAN_Button_Dropdownlist_Piatek)
+        1 -> daytext = daynames[0]
+        2 -> daytext = daynames[1]
+        3 -> daytext = daynames[2]
+        4 -> daytext = daynames[3]
+        5 -> daytext = daynames[4]
     }
 
+    val scheduleData =
+        remember(selectedData2, refreshTrigger) { loadscheduledata(selectedData2 ?: "") }
+
+    val listitems =
+        remember(selectedData2, refreshTrigger, day, klasa2) {
+            loadsubstitue(day, klasa2.toString())
+        }
+
+
+    var isrefresing by remember { mutableStateOf(false) }
+    var buttonPosition by remember { mutableStateOf<Offset?>(null) }
+
+    val density = LocalDensity.current
+    val offsetX = with(density) { buttonPosition?.x?.toDp() ?: 0.dp }
+    val offsetY = with(density) { buttonPosition?.y?.toDp() ?: 0.dp }
+    val pullrefreshstate = rememberPullToRefreshState()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     //lista opcji do wybrania po otworzeniu BottomAppBar
 
     Scaffold(
-//        modifier = Modifier.statusBarsPadding(),
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -482,11 +663,13 @@ fun PlanScreen(context: Context) {
                 Spacer(Modifier.weight(1f))
 
                 Button(
-                    onClick = { showDropdownMenu = true }
+                    onClick = { showDropdownMenu = true },
+                    modifier = Modifier
+                        .onGloballyPositioned {
+                            buttonPosition = it.positionInRoot()
+                        }
+                        .padding(horizontal = 10.dp)
                 ) { Text(daytext) }
-
-
-                Spacer(Modifier.weight(0.1f))
 
                 Button(onClick = {
                     showBottomSheet = true
@@ -496,45 +679,25 @@ fun PlanScreen(context: Context) {
                     expanded = showDropdownMenu,
                     onDismissRequest = {
                         showDropdownMenu = false
-                    }
+                    },
+                    offset = DpOffset(x = offsetX, y = offsetY)
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.PLAN_Button_Dropdownlist_Poniedziałek)) },
-                        onClick = {
-                            day = DayOfWeek.MONDAY
-                            showDropdownMenu = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.PLAN_Button_Dropdownlist_Wtorek)) },
-                        onClick = {
-                            day = DayOfWeek.TUESDAY
-                            showDropdownMenu = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.PLAN_Button_Dropdownlist_Sroda)) },
-                        onClick = {
-                            day = DayOfWeek.WEDNESDAY
-                            showDropdownMenu = false
-                        }
-                    )
-
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.PLAN_Button_Dropdownlist_Czwartek)) },
-                        onClick = {
-                            day = DayOfWeek.THURSDAY
-                            showDropdownMenu = false
-                        }
-                    )
-
-                    DropdownMenuItem(
-                        text = { Text(text = stringResource(id = R.string.PLAN_Button_Dropdownlist_Piatek)) },
-                        onClick = {
-                            day = DayOfWeek.FRIDAY
-                            showDropdownMenu = false
-                        }
-                    )
+                    daynames.forEach {
+                        DropdownMenuItem(
+                            text = { Text(text = it) },
+                            onClick = {
+                                showDropdownMenu = false
+                                when (it) {
+                                    daynames[0] -> day = DayOfWeek.MONDAY
+                                    daynames[1] -> day = DayOfWeek.TUESDAY
+                                    daynames[2] -> day = DayOfWeek.WEDNESDAY
+                                    daynames[3] -> day = DayOfWeek.THURSDAY
+                                    daynames[4] -> day = DayOfWeek.FRIDAY
+                                }
+                                daytext = it
+                            }
+                        )
+                    }
                 }
             }
 
@@ -547,44 +710,68 @@ fun PlanScreen(context: Context) {
         }
     ) {
 
-        @Composable
-        fun showplan(ismanulyselected: Boolean, selectedDataa: String, selectedDataa2: String) {
-            val data = runBlocking {
-                val datastore = Datastoremanager(context)
-                val scheduletimestamp = datastore.getPlanTimestamp.first()
-                val favschedule = datastore.getFavSchedule.first()
 
-                if (!ismanulyselected) {
-                    if (favschedule != "") {
-                        selectedData = favschedule!!.split(",")[0]
-                        selectedData2 = favschedule.split(",")[1]
-                        datastore.getSchedule(context, "$scheduletimestamp/$selectedData2", 1)
-                    } else {
-                        null
-                    }
-                } else {
-                    if (selectedDataa2 != "") {
-                        Log.d(
-                            "PLANLOADING",
-                            "$scheduletimestamp/$selectedDataa2"
-                        )
-                        datastore.getSchedule(
-                            context,
-                            "$scheduletimestamp/$selectedDataa2",
-                            1
-                        )
-                    } else {
-                        null
+        //Wyświetlane ekrany w zależności od opcji
+
+        LaunchedEffect(key1 = selectedData) {
+            if (selectedData != "") {
+                klasa2 = selectedData!!.substring(
+                    0,
+                    3
+                )
+            }
+            sheetState.hide()
+            showBottomSheet = false
+        }
+
+        PullToRefreshBox(
+            state = pullrefreshstate,
+            isRefreshing = isrefresing,
+            onRefresh = {
+                isrefresing = true
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                coroutineScope.launch {
+                    try {
+                        if (onlysubstitute) {
+                            val workrequest = downlodonlyzas(context)
+                            WorkManager.getInstance(context).getWorkInfoByIdLiveData(workrequest.id)
+                                .observe(
+                                    lifecycleOwner, Observer { status ->
+                                        if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                            isrefresing = false
+                                            refreshTrigger++
+                                            Toast.makeText(
+                                                context,
+                                                "Odświeżono",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            Log.d("PLANLOADING", "$refreshTrigger")
+                                        }
+                                    })
+                        } else {
+                            val workrequest = downloadplanandzas(context)
+                            WorkManager.getInstance(context).getWorkInfoByIdLiveData(workrequest.id)
+                                .observe(
+                                    lifecycleOwner, Observer { status ->
+                                        if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                            isrefresing = false
+                                            refreshTrigger++
+                                            Toast.makeText(
+                                                context,
+                                                "Odświeżono",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            Log.d("PLANLOADING", "$refreshTrigger")
+                                        }
+                                    })
+                        }
+                    } catch (e: Exception) {
+                        Log.d("PLANLOADING", "$e")
                     }
                 }
             }
-
-            //Wyświetlane ekrany w zależności od opcji
-            if (data != null) {
-                LaunchedEffect(key1 = selectedData) {
-                    sheetState.hide()
-                    showBottomSheet = false
-                }
+        ) {
+            if (scheduleData != null) {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -593,8 +780,7 @@ fun PlanScreen(context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = WindowInsets.systemBars.asPaddingValues()
                 ) {
-                    data.plan.forEach {
-                        var listitems = mutableListOf<Zastepstwo>()
+                    scheduleData.plan.forEach {
                         val numerlekcji = it.numerLekcji
                         val czas = it.czas
                         val dzien = it.dzien
@@ -603,108 +789,47 @@ fun PlanScreen(context: Context) {
                         val przedmiot = it.przedmiot
                         val sala = it.sala
 
-                        runBlocking {
-                            val thedate =
-                                LocalDate.now().with(TemporalAdjusters.nextOrSame(day)).toString()
-                            try {
-                                val datastore = Datastoremanager(context)
-                                if (klasa != "") {
-                                    val data1 = datastore.getZastepstwo(
-                                        context, numerlekcji, klasa,
-                                        thedate, 1
-                                    )
-                                    val data2 = datastore.getZastepstwo(
-                                        context, numerlekcji, klasa + "(1)",
-                                        thedate, 1
-                                    )
-                                    val data3 = datastore.getZastepstwo(
-                                        context, numerlekcji, klasa + "(2)",
-                                        thedate, 1
-                                    )
-                                    if (data1 != null) {
-                                        listitems.add(data1)
-                                    }
-                                    if (data2 != null) {
-                                        listitems.add(data2)
-                                    }
-                                    if (data3 != null) {
-                                        listitems.add(data3)
-                                    } else {
-                                    }
-
-                                } else {
-                                    val data1 = datastore.getZastepstwo(
-                                        context, numerlekcji, selectedData!!.substring(
-                                            0,
-                                            3
-                                        ),
-                                        thedate, 1
-                                    )
-                                    val data2 = datastore.getZastepstwo(
-                                        context, numerlekcji, selectedData!!.substring(
-                                            0,
-                                            3
-                                        ) + "(1)",
-                                        thedate, 1
-                                    )
-                                    val data3 = datastore.getZastepstwo(
-                                        context, numerlekcji, selectedData!!.substring(
-                                            0,
-                                            3
-                                        ) + "(2)",
-                                        thedate, 1
-                                    )
-                                    if (data1 != null) {
-                                        listitems.add(data1)
-                                    }
-                                    if (data2 != null) {
-                                        listitems.add(data2)
-                                    }
-                                    if (data3 != null) {
-                                        listitems.add(data3)
-                                    } else {
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                Log.d(
-                                    "PLANLOADING",
-                                    "Nie znaleziono zastępstwa dla danej lekcji"
-                                )
-                                null
-                            }
-                        }
-
                         Log.d("PLANLOADING", "Zastępstwo: $listitems")
 
                         if (dzien == day.ordinal) {
                             item {
                                 OutlinedCard(
                                     modifier = Modifier
-                                        .height(150.dp)
+                                        .height(130.dp)
                                         .padding(vertical = 5.dp)
                                         .fillParentMaxWidth(0.95f)
                                         .layoutId(numerlekcji),
                                     shape = MaterialTheme.shapes.medium,
                                     colors = if (numerlekcji == result && day == LocalDate.now().dayOfWeek) {
-                                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inversePrimary)
+                                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
                                     } else {
                                         CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                                     }
                                 ) {
                                     Row(
-                                        modifier = Modifier
-                                            .fillParentMaxWidth()
-                                            .background(MaterialTheme.colorScheme.inversePrimary),
-                                        horizontalArrangement = Arrangement.Center
+                                        modifier = Modifier.fillParentMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center,
                                     ) {
                                         Text(text = sala)
                                     }
-                                    Row(modifier = Modifier.fillMaxSize()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                                    ) {
                                         Column(
                                             Modifier
                                                 .fillMaxHeight()
-                                                .width(100.dp),
-                                            verticalArrangement = Arrangement.SpaceEvenly
+                                                .fillMaxWidth(0.3f)
+                                                .background(
+                                                    if (numerlekcji == result && day == LocalDate.now().dayOfWeek) {
+                                                        MaterialTheme.colorScheme.surfaceContainerHighest
+                                                    } else {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    }
+                                                ),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             Text(
                                                 text = "$numerlekcji \n-\n $czas",
@@ -721,24 +846,35 @@ fun PlanScreen(context: Context) {
                                     }
                                 }
 
-                                if (listitems.isNotEmpty() && przedmiot != "") {
+                                if (listitems != null && przedmiot != "" && dzien == day.ordinal) {
                                     listitems.forEach { zastdata2 ->
-                                        OutlinedCard(
-                                            modifier = Modifier
-                                                .padding(vertical = 5.dp)
-                                                .fillParentMaxWidth(0.95f)
-                                                .layoutId(numerlekcji),
-                                            shape = MaterialTheme.shapes.medium,
-                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                                        ) {
-                                            Column(
-                                                verticalArrangement = Arrangement.SpaceEvenly,
-                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                        if (numerlekcji == zastdata2.numerLekcji) {
+                                            OutlinedCard(
+                                                modifier = Modifier
+                                                    .padding(vertical = 5.dp)
+                                                    .fillParentMaxWidth(0.95f)
+                                                    .layoutId(numerlekcji),
+                                                shape = MaterialTheme.shapes.medium,
+                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                                             ) {
-                                                Text(text = "⬆️")
-                                                Text(text = zastdata2.klasa)
-                                                Text(text = zastdata2.zastepca)
-                                                Text(text = zastdata2.uwagi)
+                                                Column(
+                                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                ) {
+                                                    Text(text = "⬆️", textAlign = TextAlign.Center)
+                                                    Text(
+                                                        text = zastdata2.klasa,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                    Text(
+                                                        text = zastdata2.zastepca,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                    Text(
+                                                        text = zastdata2.uwagi,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -758,20 +894,8 @@ fun PlanScreen(context: Context) {
             }
         }
 
-
-        //Wyświetlanie Planu lekcji
-        selectedData?.let { it1 ->
-            selectedData2?.let { it2 ->
-                showplan(
-                    schedulecurrenttype,
-                    it1,
-                    it2
-                )
-            }
-        }
-
-
         if (showBottomSheet) {
+            val listdata = GetList(selectedChipOption.intValue, context)
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
@@ -801,9 +925,9 @@ fun PlanScreen(context: Context) {
                     items(options) { option ->
                         FilterChip(
                             selected = when (selectedChipOption.intValue) {
-                                1 -> option == stringResource(id = R.string.PLAN_Chip_Klasa)
-                                2 -> option == stringResource(id = R.string.PLAN_Chip_Sala)
-                                3 -> option == stringResource(id = R.string.PLAN_Chip_Nauczyciel)
+                                1 -> option == options[0]
+                                2 -> option == options[1]
+                                3 -> option == options[2]
                                 else -> {
                                     false
                                 }
@@ -836,7 +960,7 @@ fun PlanScreen(context: Context) {
 
 
                 var searchQuery by remember { mutableStateOf("") }
-                val filteredData = scheduleData.filter {
+                val filteredData = listdata.filter {
                     it?.imieinazwisko?.contains(
                         searchQuery,
                         ignoreCase = true
@@ -853,7 +977,6 @@ fun PlanScreen(context: Context) {
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 10.dp),
                     label = { Text(text = "Wyszukaj") },
-                    placeholder = { Text(text = "Wyszukaj") },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Search
                     ),
@@ -876,8 +999,6 @@ fun PlanScreen(context: Context) {
                     enabled = true
                 )
 
-
-
                 LazyColumn(
                     Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -885,11 +1006,11 @@ fun PlanScreen(context: Context) {
                     items(filteredData) { data ->
                         Button(
                             shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillParentMaxWidth(0.9f),
+                            modifier = Modifier
+                                .fillParentMaxWidth(0.9f),
                             onClick = {
                                 selectedData = data?.imieinazwisko
                                 selectedData2 = data?.htmlvalue
-                                schedulecurrenttype = true
                             }
                         ) {
                             data?.imieinazwisko?.let { it1 -> Text(it1) }

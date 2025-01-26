@@ -12,7 +12,7 @@
     <string name="MAIN_Pomoc">Pomoc</string>
     <string name="MAIN_Plan">Plan</string>
     <string name="OBBE_Zdjecie_text">Zdjęcie - Logo Łączności</string>
-    <string name="MAIN_Pomoc_Kontakt1">"Kontakt z szkołą \n- "</string>
+    <string name="MAIN_Pomoc_Kontakt1">"Kontakt ze szkołą \n- "</string>
     <string name="MAIN_Pomoc_Kontakt2">Numer telefonu 📞:</string>
     <string name="MAIN_Pomoc_Kontakt3">Drugi numer telefonu 📞:</string>
     <string name="MAIN_Pomoc_Dyrektor">Dyrektor Szkoły\n-\nBartosz Stolarczuk</string>
@@ -27,7 +27,7 @@
     <string name="SETTINGS_Button_DomysnyChip">Domyślny chip</string>
     <string name="SETTINGS_Button_DomysnyChip_Opis">Domyślnie wybrany chip po otworzeniu wyboru planów</string>
     <string name="SETTINGS_Zmiana_Plan_Toast">Zmieniono widok planu</string>
-    <string name="MAIN_Loading">Tworzymy plan lekcji dla ciebie</string>
+    <string name="MAIN_Loading">"Tworzymy plan lekcji dla ciebie\n- Nie wyłączaj internetu - "</string>
     <string name="NOTIFICATION_Schedule">Powiadomienie o następnej lekcji</string>
     <string name="NOTIFICATION_Schedule_ExtraText">Powiadomienie pokazywane przed następną lekcją</string>
     <string name="PLAN_Button_Dropdownlist_Poniedziałek">Poniedziałek</string>
@@ -37,4 +37,8 @@
     <string name="PLAN_Button_Dropdownlist_Piatek">Piątek</string>
     <string name="SETTING_Button_DomyslnyPlan">Domyślny plan</string>
     <string name="SETTINGS_Button_DomysnyPlan_Opis">Domyślnie wybrany plan po utworzeniu sekcji planu lekcji\n\nDla tego planu będą wysyłane powiadomienia, możesz nimi zarządzać poniżej.</string>
+    <string name="SETTINGS_Paranoja_Tytul">Tryb paranoi</string>
+    <string name="SETTINGS_Paranoja_Opis">Włącz odświeżanie planu i zastępstw za każdym razem gdy włączysz aplikacje</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">Tryb odświeżania</string>
+    <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Włącz odświeżanie tylko zastępstw na karcie planu lekcji</string>
 </resources>

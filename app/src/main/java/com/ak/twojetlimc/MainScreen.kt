@@ -1,16 +1,20 @@
 package com.ak.twojetlimc
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Vibrator
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,14 +41,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ak.twojetlimc.komponenty.Datastoremanager
+import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.mainbottomnav.HelpScreen
 import com.ak.twojetlimc.mainbottomnav.HomeScreen
 import com.ak.twojetlimc.mainbottomnav.MainNavItems
 import com.ak.twojetlimc.mainbottomnav.PlanScreen
+import com.ak.twojetlimc.mainbottomnav.WhatsNew
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.flow.first
 
 class MainScreen : AppCompatActivity() {
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         val accessdata = Datastoremanager(this)
 
@@ -52,6 +61,7 @@ class MainScreen : AppCompatActivity() {
         val descriptionText = getString(R.string.NOTIFICATION_Schedule_ExtraText)
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         val mChannel = NotificationChannel("PLAN", name, importance)
+        val vibrator = applicationContext.getSystemService(Vibrator::class.java)
         mChannel.description = descriptionText
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -66,12 +76,10 @@ class MainScreen : AppCompatActivity() {
         notificationManager2.createNotificationChannel(mChannel2)
 
         super.onCreate(savedInstanceState)
-        supportActionBar?.hide()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
+            false
         enableEdgeToEdge()
         setContent {
-            if (Build.VERSION.SDK_INT >= 29) {
-                window.isNavigationBarContrastEnforced = false
-            }
             AppTheme {
                 val navController = rememberNavController()
                 //Sprawdzanie czy aplikacja włączona jest pierwszy raz
@@ -79,15 +87,19 @@ class MainScreen : AppCompatActivity() {
 
                 LaunchedEffect(key1 = accessdata) {
                     val value = accessdata.getUPObbe.first()
+                    val paranoia = accessdata.getParanoia.first()
                     if (value == false) {
-                        val przejscie = Intent(applicationContext, OBBE::class.java)
                         Log.d(
                             "Main_Screen",
                             "Datastore odczytany - START AKTYWNOŚCI / Pobieranie danych"
                         )
-                        startActivity(przejscie)
+                        startActivity(Intent(applicationContext, OBBE::class.java))
                     } else {
                         Log.d("Main_Screen", "Datastore odczytany - PRZEJŚCIE DALEJ")
+                        if (paranoia == true) {
+                            downloadplanandzas(contextu)
+                            Log.d("Main_Screen", "Uruchomiono paranoje")
+                        }
                     }
                 }
 
@@ -99,16 +111,19 @@ class MainScreen : AppCompatActivity() {
                 }
                 // remember navController so it does not
                 // get recreated on recomposition
-
                 Scaffold(
                     // Bottom navigation
                     bottomBar = {
                         BottomNavigationBar(navController = navController)
-                    }
+                    },
+                    contentWindowInsets = WindowInsets.displayCutout
                 ) { innerPadding ->
-                    NavHostContainer(navController = navController, innerPadding, destination)
+                    NavHostContainer(
+                        navController = navController,
+                        destination,
+                        vibrator
+                    )
                 }
-
             }
         }
     }
@@ -154,8 +169,10 @@ fun BottomNavigationBar(navController: NavHostController) {
 
                 // label
                 label = { Text(text = navItem.label) },
-
-                alwaysShowLabel = false
+                alwaysShowLabel = false,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent
+                )
             )
         }
     }
@@ -173,19 +190,17 @@ fun BottomNavigationBar(navController: NavHostController) {
 @Composable
 fun NavHostContainer(
     navController: NavHostController,
-    padding: PaddingValues,
-    destination: String
+    destination: String,
+    vibrator: Vibrator
 ) {
     val context = LocalContext.current
-
     NavHost(
         modifier = Modifier
-            .fillMaxSize()
             .padding(bottom = 80.dp),
         navController = navController,
-
-        // główna ścierzka aplikacji do "home"
         startDestination = destination,
+        enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
+        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
         builder = {
 
             // ścierzka pomoc
@@ -195,12 +210,17 @@ fun NavHostContainer(
 
             // ścierzka główna
             composable("home") {
-                HomeScreen()
+                HomeScreen(navController)
+            }
+
+            composable("whatsnew") {
+                WhatsNew(navController)
             }
 
             // ścierzka plan
             composable("plan") {
-                PlanScreen(context)
+                PlanScreen(context, vibrator)
             }
-        })
+        }
+    )
 }

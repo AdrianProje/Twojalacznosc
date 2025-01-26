@@ -32,6 +32,7 @@ class ZasCheck(appContext: Context, workerParams: WorkerParameters) :
             val serviceScope = CoroutineScope(Dispatchers.IO)
 
             serviceScope.launch {
+
                 try {
                     Log.d("ZasCheck", (LocalDate.now()).toString())
                     val currentday = LocalDate.now().toString()
@@ -56,6 +57,7 @@ class ZasCheck(appContext: Context, workerParams: WorkerParameters) :
             }
 
             notificationManager.cancel(2)
+            Log.d("ZasCheck", "Zakończono")
             return Result.success()
         } catch (e: Exception) {
             Log.d("ZasCheck", "Wystąpił błąd")

@@ -1,15 +1,20 @@
 package com.ak.twojetlimc
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,13 +22,15 @@ import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -35,6 +42,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +52,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -54,25 +63,29 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.ak.twojetlimc.PlanLekcji.GetList
+import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
-import com.ak.twojetlimc.komponenty.RefreshWorker
-import com.ak.twojetlimc.komponenty.ZasCheck
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
-fun NavGraph(navController: NavHostController, context: Context) {
-    val datastoremanager = Datastoremanager(context)
-    val scheduleData = GetList(0)
+fun NavGraph(
+    navController: NavHostController,
+    context: Context,
+    vibrator: Vibrator,
+    datastoremanager: Datastoremanager
+) {
+    val scheduleData = GetList(0, context)
     var expanded by remember { mutableStateOf(false) }
     var expanded2 by remember { mutableStateOf(false) }
     var cheched by remember { mutableStateOf(false) }
+    var cheched2 by remember { mutableStateOf(false) }
+    var cheched3 by remember { mutableStateOf(false) }
     var favschedulevalue by remember { mutableStateOf("") }
+    val pattern = longArrayOf(0, 50)
 
     val options = listOf(
         stringResource(id = R.string.PLAN_Chip_Klasa),
@@ -84,12 +97,17 @@ fun NavGraph(navController: NavHostController, context: Context) {
     val scope = rememberCoroutineScope()
 
     NavHost(
-        navController = navController, startDestination = "mainsettings"
+        navController = navController,
+        startDestination = "mainsettings",
+        enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
+        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
     ) {
 
         composable(route = "mainsettings") {
             LaunchedEffect(key1 = Unit) {
                 cheched = datastoremanager.getFavScheduleOnOff.first() == true
+                cheched2 = datastoremanager.getParanoia.first() == true
+                cheched3 = datastoremanager.getUserRefresh.first() == true
                 favschedulevalue = (datastoremanager.getFavSchedule.first() ?: "").split(",")[0]
                 datastoremanager.getDefaultPlan.collect { defultplan ->
                     when (defultplan) {
@@ -217,12 +235,14 @@ fun NavGraph(navController: NavHostController, context: Context) {
                             checked = cheched,
                             onCheckedChange = {
                                 if (it) {
+                                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                     cheched = true
                                     scope.launch { datastoremanager.saveFavScheduleOnOff(true) }
                                     scope.launch { datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue) }
                                     favschedulevalue = scheduleData.first()!!.imieinazwisko
 
                                 } else {
+                                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                     cheched = false
                                     scope.launch { datastoremanager.saveFavSchedule("") }
                                     favschedulevalue = ""
@@ -231,7 +251,86 @@ fun NavGraph(navController: NavHostController, context: Context) {
                             }
                         )
                     }
+                }
 
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Card(
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.medium)
+                                .weight(1f)
+                                .wrapContentHeight(),
+                            colors = if (cheched2) {
+                                CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary)
+                            } else {
+                                CardDefaults.outlinedCardColors(containerColor = Color.Gray)
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_Paranoja_Tytul),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 10.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_Paranoja_Opis),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                        Switch(checked = cheched2, onCheckedChange = {
+                            if (it) {
+                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                                cheched2 = true
+                                scope.launch { datastoremanager.saveParanoia(true) }
+                            } else {
+                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                                cheched2 = false
+                                scope.launch { datastoremanager.saveParanoia(false) }
+                            }
+                        })
+                    }
+                }
+
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Card(
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.medium)
+                                .weight(1f)
+                                .wrapContentHeight(),
+                            colors = if (cheched3) {
+                                CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary)
+                            } else {
+                                CardDefaults.outlinedCardColors(containerColor = Color.Gray)
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_ZASTEPSTWA_REFRESH_TYTUL),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 10.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_ZASTEPSTWA_REFRESH_OPIS),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                        Switch(checked = cheched3, onCheckedChange = {
+                            if (it) {
+                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                                cheched3 = true
+                                scope.launch { datastoremanager.saveUserRefresh(true) }
+                            } else {
+                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                                cheched3 = false
+                                scope.launch { datastoremanager.saveUserRefresh(false) }
+                            }
+                        })
+                    }
                 }
 
                 item {
@@ -265,7 +364,8 @@ fun NavGraph(navController: NavHostController, context: Context) {
                 item {
                     val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                     val version = pInfo.versionName
-                    Text(text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Developer Beta)")
+                    Text(text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)")
+                    ClickableEmail("developer.adriank@gmail.com")
                 }
             }
         }
@@ -289,49 +389,54 @@ fun NavGraph(navController: NavHostController, context: Context) {
                             .fillMaxWidth()
                     )
                 }
-                item {
-                    Button(
-                        onClick = {
-                            createalarm(context)
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.fillParentMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth(1f)) {
-                            Text(
-                                text = "Napraw wyświetlanie powiadomień",
-                                style = MaterialTheme.typography.titleLarge,
-                            )
-                            Text(
-                                text =
-                                "(Potrzebna zgoda na ustawianie alarmów oraz zgoda na powiadomienia)",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    item {
+                        Button(
+                            onClick = {
+                                createalarm(context)
+
+                            },
+                            shape = MaterialTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillParentMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.fillMaxWidth(1f)) {
+                                Text(
+                                    text = "Napraw wyświetlanie powiadomień",
+                                    style = MaterialTheme.typography.titleLarge,
+                                )
+                                Text(
+                                    text =
+                                    "(Potrzebna zgoda na ustawianie alarmów oraz zgoda na powiadomienia)",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }
 
-                item {
-                    Button(
-                        onClick = {
-                            val workRequest =
-                                OneTimeWorkRequestBuilder<RefreshWorker>().build()
-                            val workRequest2 =
-                                OneTimeWorkRequestBuilder<ZasCheck>().build()
 
-                            WorkManager.getInstance(context)
-                                .beginWith(workRequest)
-                                .then(workRequest2)
-                                .enqueue()
-                        },
-                        modifier = Modifier.fillParentMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(text = "DEBUG | Przetestuj powiadomienia | Pobierz nowy plan oraz zastępstwa\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie)")
-                    }
-                }
+//                item {
+//                    Button(
+//                        onClick = {
+//                            val workRequest =
+//                                OneTimeWorkRequestBuilder<RefreshWorker>().build()
+//                            val workRequest2 =
+//                                OneTimeWorkRequestBuilder<ZasCheck>().build()
+//
+//                            WorkManager.getInstance(context)
+//                                .beginWith(workRequest)
+//                                .then(workRequest2)
+//                                .enqueue()
+//                        },
+//                        modifier = Modifier.fillParentMaxWidth(),
+//                        shape = MaterialTheme.shapes.medium,
+//                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+//                    ) {
+//                        Text(text = "DEBUG | Przetestuj powiadomienia | Pobierz nowy plan oraz zastępstwa\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie)")
+//                    }
+//                }
 
                 item {
                     val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
@@ -353,7 +458,6 @@ fun NavGraph(navController: NavHostController, context: Context) {
             }
         }
 
-
         composable(route = "podziekowania") {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -371,7 +475,7 @@ fun NavGraph(navController: NavHostController, context: Context) {
                     Text(text = "- Adam Jankowski 4tB\n Betatester aplikacji")
                 }
                 item {
-                    Text(text = "- Julka __ __\n Ikony do aplikacji")
+                    Text(text = "- Julka Januszek 5tF\n Ikony do aplikacji")
                 }
             }
         }
@@ -379,39 +483,47 @@ fun NavGraph(navController: NavHostController, context: Context) {
 }
 
 class SettingsActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
+            false
         enableEdgeToEdge()
         setContent {
-            if (Build.VERSION.SDK_INT >= 29) {
-                window.isNavigationBarContrastEnforced = false
-            }
             AppTheme {
                 val context = LocalContext.current
                 val navController = rememberNavController()
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
-                (LocalContext.current as? Activity)
+                val vibrator = applicationContext.getSystemService(Vibrator::class.java)
+                val datastoremanager = Datastoremanager(context)
+                LaunchedEffect(key1 = datastoremanager) {
+                    if (datastoremanager.getUPObbe.first() == false) {
+                        startActivity(Intent(applicationContext, OBBE::class.java))
+                    }
+                }
                 Scaffold(
                     modifier = Modifier
-                        .systemBarsPadding()
                         .displayCutoutPadding(),
                     topBar = {
                         CenterAlignedTopAppBar(
                             title = {
-                                Row {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                        contentDescription = "Powrót"
-                                    )
-                                    if (currentBackStackEntry?.destination?.route != "mainsettings") {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                            contentDescription = "Powrót"
-                                        )
-                                    }
-                                    Text(stringResource(id = R.string.SETTINGS_BAR_TEXT))
-                                }
+                                Text(stringResource(id = R.string.SETTINGS_BAR_TEXT))
+                            },
+                            navigationIcon = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                    contentDescription = "Powrót",
+                                    modifier = Modifier
+                                        .clickable {
+                                            if (currentBackStackEntry?.destination?.route == "mainsettings") {
+                                                finish()
+                                            } else {
+                                                navController.popBackStack()
+                                            }
+                                        }
+                                        .size(30.dp)
+                                )
                             }
                         )
                     }
@@ -423,7 +535,7 @@ class SettingsActivity : ComponentActivity() {
                                 .height(1.dp)
                                 .fillMaxWidth()
                         )
-                        NavGraph(navController, context)
+                        NavGraph(navController, context, vibrator, datastoremanager)
                     }
                 }
             }
