@@ -26,7 +26,8 @@ class ClassPullRefresh(appContext: Context, workerParams: WorkerParameters) :
                             applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
                             "o$i",
-                            timestamp
+                            timestamp,
+                            false
                         )
                     }
                 }

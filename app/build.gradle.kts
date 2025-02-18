@@ -24,7 +24,7 @@ android {
             useSupportLibrary = true
         }
         targetSdk = 35
-        versionName = "Ciuty - 0.50.7.2"
+        versionName = "Ciuty - 0.50.9.1"
     }
 
     buildTypes {
@@ -58,7 +58,7 @@ android {
         includeInApk = true
     }
     buildToolsVersion = "35.0.1"
-    ndkVersion = "27.2.12479018"
+    ndkVersion = "28.0.13004108"
     flavorDimensions += listOf("BaseApp")
     productFlavors {
         create("Galaxy") {
@@ -95,11 +95,11 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui:1.7.6")
+    implementation("androidx.compose.ui:ui:1.7.8")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-graphics:1.7.6")
+    implementation("androidx.compose.ui:ui-graphics:1.7.8")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.6")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
     //noinspection UseTomlInstead
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation(libs.androidx.navigation.compose)
@@ -122,11 +122,11 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     androidTestImplementation(platform(libs.androidx.compose.bom.v20230300))
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-test-junit4:1.7.6")
+    implementation("androidx.compose.ui:ui-test-junit4:1.7.8")
     //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling:1.7.6")
+    implementation("androidx.compose.ui:ui-tooling:1.7.8")
     //noinspection UseTomlInstead
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.6")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.8")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)

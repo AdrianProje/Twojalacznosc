@@ -39,19 +39,19 @@ import java.util.Calendar
 fun createalarm(context: Context) {
     val times = listOf(
         Pair(7, 10), //alarm 7:10 i tak dalej w dół
-        Pair(8, 0),
-        Pair(8, 55),
-        Pair(9, 50),
-        Pair(10, 45),
-        Pair(11, 45),
-        Pair(12, 40),
-        Pair(13, 35),
-        Pair(14, 30),
-        Pair(15, 25),
-        Pair(16, 20),
-        Pair(17, 15),
-        Pair(18, 10),
-        Pair(19, 5)
+        Pair(8, 5),
+        Pair(9, 0),
+        Pair(9, 55),
+        Pair(10, 50),
+        Pair(11, 50),
+        Pair(12, 45),
+        Pair(13, 40),
+        Pair(14, 35),
+        Pair(15, 30),
+        Pair(16, 25),
+        Pair(17, 20),
+        Pair(18, 15),
+        Pair(19, 10)
     )
 
     val alarmManager =
@@ -152,11 +152,7 @@ fun WebsiteLink(contextText: String, url: String) {
 // Przycisk obraz z linkiem
 
 @Composable
-fun ImageLinkButton(
-    modifier: Modifier = Modifier,
-    iconId: Int,
-    link: String
-) {
+fun ImageLinkButton(modifier: Modifier = Modifier, iconId: Int, link: String) {
     val context = LocalContext.current
     IconButton(
         onClick = {

@@ -29,13 +29,9 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
         val itemId = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
             7 -> 1
 
-            8 -> if (calendarminutes < 30) {
-                2
-            } else {
-                3
-            }
+            8 -> 2
 
-            9 -> 4
+            9 -> if (calendarminutes < 30) 3 else 4
 
             10 -> 5
 
@@ -167,10 +163,8 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
         val notificationBuilder = NotificationCompat.Builder(applicationContext, "PLAN")
             .setContentTitle(title)
             .setContentText(description)
-            .setSmallIcon(R.drawable.lacznosc_logo_full)
-            .apply {
-                setContentIntent(notifyPendingIntent)
-            }
+            .setSmallIcon(R.drawable.lacznosc_logo_transparent)
+            .setContentIntent(notifyPendingIntent)
 
         notificationManager.notify(1, notificationBuilder.build())
     }

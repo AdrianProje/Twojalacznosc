@@ -26,17 +26,16 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val notification = NotificationCompat.Builder(applicationContext, "POBIERANIEPLANU")
-            .setSmallIcon(R.drawable.lacznosc_logo_full)
+            .setSmallIcon(R.drawable.lacznosc_logo_transparent)
             .setContentTitle("Pobieranie i przetwarzanie planu lekcji")
             .setContentText("Może to zająć chwilkę...")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
 
 
         notificationManager.notify(2, notification.build())
 
         return try {
-            Log.d("PlanCheck", "Sprawdzanie dostępności nowszej wersji planu lekcji")
+            Log.d("PlanCheck", "Pobieranie danych planu lekcji")
 
             //Wykonywanie działania
             val datastoremanager = Datastoremanager(applicationContext)
@@ -50,7 +49,8 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                             applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
                             "o$i",
-                            timestamp
+                            timestamp,
+                            false
                         )
                     }
                 },
@@ -62,7 +62,8 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                             applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
                             "n$i",
-                            timestamp
+                            timestamp,
+                            false
                         )
                     }
                 },
@@ -73,7 +74,8 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                             applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
                             "s$i",
-                            timestamp
+                            timestamp,
+                            false
                         )
                     }
                 }
@@ -85,9 +87,13 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             runBlocking {
                 datastoremanager.savePlanTimestamp(timestamp)
             }
+
+            Log.d("PlanCheck", "Zakończono")
+            notificationManager.cancel(2)
             return Result.success()
         } catch (e: Exception) {
             Log.d("PlanCheck", e.toString())
+            notificationManager.cancel(2)
             return Result.failure()
         }
     }

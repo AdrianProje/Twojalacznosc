@@ -1,5 +1,6 @@
 package com.ak.twojetlimc
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -14,7 +15,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -37,6 +37,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -63,14 +64,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.ak.twojetlimc.PlanLekcji.GetList
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
+import com.ak.twojetlimc.komponenty.PlanCheck
+import com.ak.twojetlimc.komponenty.RefreshWorker
+import com.ak.twojetlimc.komponenty.ZasCheck
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("NewApi")
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -84,6 +92,8 @@ fun NavGraph(
     var cheched by remember { mutableStateOf(false) }
     var cheched2 by remember { mutableStateOf(false) }
     var cheched3 by remember { mutableStateOf(false) }
+    var cheched4 by remember { mutableStateOf(false) }
+//    var clickeddebug by remember { mutableIntStateOf(0) }
     var favschedulevalue by remember { mutableStateOf("") }
     val pattern = longArrayOf(0, 50)
 
@@ -108,6 +118,7 @@ fun NavGraph(
                 cheched = datastoremanager.getFavScheduleOnOff.first() == true
                 cheched2 = datastoremanager.getParanoia.first() == true
                 cheched3 = datastoremanager.getUserRefresh.first() == true
+                cheched4 = datastoremanager.getOnlineMode.first() == true
                 favschedulevalue = (datastoremanager.getFavSchedule.first() ?: "").split(",")[0]
                 datastoremanager.getDefaultPlan.collect { defultplan ->
                     when (defultplan) {
@@ -218,7 +229,8 @@ fun NavGraph(
                                 expanded = expanded2,
                                 onDismissRequest = {
                                     expanded2 = false
-                                }) {
+                                }, modifier = Modifier.safeContentPadding()
+                            ) {
                                 scheduleData.forEach { data ->
                                     DropdownMenuItem(
                                         text = { Text(text = data!!.imieinazwisko) },
@@ -234,15 +246,14 @@ fun NavGraph(
                         Switch(
                             checked = cheched,
                             onCheckedChange = {
+                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 if (it) {
-                                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                     cheched = true
                                     scope.launch { datastoremanager.saveFavScheduleOnOff(true) }
                                     scope.launch { datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue) }
                                     favschedulevalue = scheduleData.first()!!.imieinazwisko
 
                                 } else {
-                                    vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                     cheched = false
                                     scope.launch { datastoremanager.saveFavSchedule("") }
                                     favschedulevalue = ""
@@ -269,23 +280,26 @@ fun NavGraph(
                             Text(
                                 text = stringResource(id = R.string.SETTINGS_Paranoja_Tytul),
                                 style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 10.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(top = 5.dp),
                                 color = contentColorFor(MaterialTheme.colorScheme.primary)
                             )
                             Text(
                                 text = stringResource(id = R.string.SETTINGS_Paranoja_Opis),
                                 style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(bottom = 5.dp),
                                 color = contentColorFor(MaterialTheme.colorScheme.primary)
                             )
                         }
                         Switch(checked = cheched2, onCheckedChange = {
+                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                             if (it) {
-                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 cheched2 = true
                                 scope.launch { datastoremanager.saveParanoia(true) }
                             } else {
-                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 cheched2 = false
                                 scope.launch { datastoremanager.saveParanoia(false) }
                             }
@@ -309,25 +323,71 @@ fun NavGraph(
                             Text(
                                 text = stringResource(id = R.string.SETTINGS_ZASTEPSTWA_REFRESH_TYTUL),
                                 style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 10.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(top = 5.dp),
                                 color = contentColorFor(MaterialTheme.colorScheme.primary)
                             )
                             Text(
                                 text = stringResource(id = R.string.SETTINGS_ZASTEPSTWA_REFRESH_OPIS),
                                 style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(horizontal = 25.dp, vertical = 5.dp),
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(bottom = 5.dp),
                                 color = contentColorFor(MaterialTheme.colorScheme.primary)
                             )
                         }
                         Switch(checked = cheched3, onCheckedChange = {
+                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                             if (it) {
-                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 cheched3 = true
                                 scope.launch { datastoremanager.saveUserRefresh(true) }
                             } else {
-                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 cheched3 = false
                                 scope.launch { datastoremanager.saveUserRefresh(false) }
+                            }
+                        })
+                    }
+                }
+
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Card(
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.medium)
+                                .weight(1f)
+                                .wrapContentHeight(),
+                            colors = if (cheched4) {
+                                CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary)
+                            } else {
+                                CardDefaults.outlinedCardColors(containerColor = Color.Gray)
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_Online_Tytul),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(top = 5.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.SETTINGS_Online_Opis),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .padding(horizontal = 25.dp)
+                                    .padding(bottom = 5.dp),
+                                color = contentColorFor(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                        Switch(checked = cheched4, onCheckedChange = {
+                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+                            if (it) {
+                                cheched4 = true
+                                scope.launch { datastoremanager.saveOnlineMode(true) }
+                            } else {
+                                cheched4 = false
+                                scope.launch { datastoremanager.saveOnlineMode(false) }
                             }
                         })
                     }
@@ -364,9 +424,39 @@ fun NavGraph(
                 item {
                     val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                     val version = pInfo.versionName
-                    Text(text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)")
+                    Text(
+                        text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)"
+                    )
                     ClickableEmail("developer.adriank@gmail.com")
                 }
+
+//                item {
+//                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+//                    val version = pInfo.versionName
+//                    Text(
+//                        text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)",
+//                        modifier = Modifier.clickable(onClick = {
+//                            if (clickeddebug != 5) {
+//                                ++clickeddebug
+//                            } else {
+//                                clickeddebug = 0
+//                                AlertDialog(
+//                                    title = "Wprowadź hasło",
+//                                    onDismissRequest = { clickeddebug = 0 },
+//                                    confirmButton = {
+//
+//                                    },
+//                                    dismissButton = {
+//
+//                                    }
+//                                )
+//                            }
+//                            navController.navigate("debug")
+//
+//                        })
+//                    )
+//                    ClickableEmail("developer.adriank@gmail.com")
+//                }
             }
         }
 
@@ -416,28 +506,6 @@ fun NavGraph(
                     }
                 }
 
-
-//                item {
-//                    Button(
-//                        onClick = {
-//                            val workRequest =
-//                                OneTimeWorkRequestBuilder<RefreshWorker>().build()
-//                            val workRequest2 =
-//                                OneTimeWorkRequestBuilder<ZasCheck>().build()
-//
-//                            WorkManager.getInstance(context)
-//                                .beginWith(workRequest)
-//                                .then(workRequest2)
-//                                .enqueue()
-//                        },
-//                        modifier = Modifier.fillParentMaxWidth(),
-//                        shape = MaterialTheme.shapes.medium,
-//                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-//                    ) {
-//                        Text(text = "DEBUG | Przetestuj powiadomienia | Pobierz nowy plan oraz zastępstwa\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie)")
-//                    }
-//                }
-
                 item {
                     val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                         putExtra(Settings.EXTRA_APP_PACKAGE, "com.ak.twojetlimc")
@@ -475,7 +543,89 @@ fun NavGraph(
                     Text(text = "- Adam Jankowski 4tB\n Betatester aplikacji")
                 }
                 item {
+                    Text(text = "- Kamil Zagórski 5tB\n Betatester aplikacji")
+                }
+                item {
                     Text(text = "- Julka Januszek 5tF\n Ikony do aplikacji")
+                }
+            }
+        }
+
+        composable(route = "debug") {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                modifier = Modifier.padding(horizontal = 15.dp)
+            ) {
+                item {
+                    Text(text = "Debug menu:", style = MaterialTheme.typography.titleLarge)
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Button(
+                        onClick = {
+                            WorkManager.getInstance(context)
+                                .beginWith(OneTimeWorkRequestBuilder<RefreshWorker>().build())
+                                .enqueue()
+                        },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "DEBUG | Przetestuj powiadomienia \n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie)")
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = {
+
+                            WorkManager.getInstance(context)
+                                .beginWith(OneTimeWorkRequestBuilder<ZasCheck>().build())
+                                .enqueue()
+                        },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "DEBUG | Pobierz zastępstwa")
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = {
+
+                            WorkManager.getInstance(context)
+                                .beginWith(OneTimeWorkRequestBuilder<PlanCheck>().build())
+                                .enqueue()
+                        },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "DEBUG | Pobierz plan lekcji")
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = {
+                            createalarm(context)
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillParentMaxWidth()
+                    ) {
+                        Text(
+                            text = "Napraw wyświetlanie powiadomień",
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                    }
                 }
             }
         }
@@ -511,19 +661,20 @@ class SettingsActivity : ComponentActivity() {
                                 Text(stringResource(id = R.string.SETTINGS_BAR_TEXT))
                             },
                             navigationIcon = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                    contentDescription = "Powrót",
-                                    modifier = Modifier
-                                        .clickable {
-                                            if (currentBackStackEntry?.destination?.route == "mainsettings") {
-                                                finish()
-                                            } else {
-                                                navController.popBackStack()
-                                            }
+                                IconButton(
+                                    onClick = {
+                                        if (currentBackStackEntry?.destination?.route == "mainsettings") {
+                                            finish()
+                                        } else {
+                                            navController.popBackStack()
                                         }
-                                        .size(30.dp)
-                                )
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                        contentDescription = "Powrót"
+                                    )
+                                }
                             }
                         )
                     }

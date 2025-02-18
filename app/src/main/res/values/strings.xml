@@ -48,4 +48,9 @@
     <string name="SETTINGS_Paranoja_Opis">Opis trybu pranoi</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">tytul zastepstw</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Opis zmieniania trybow</string>
+    <string name="SETTINGS_Online_Tytul">tytul trybu online na planie lekcji</string>
+    <string name="SETTINGS_Online_Opis">Opis trybu online na karcie planu lekcji</string>
+    <string name="shortcut_short">Tekst skrótu</string>
+    <string name="shortcut_long">Tekst długiego opisu skrótu</string>
+    <string name="shortcut_disabled_message1">Tekst skrótu gdy wyłączony</string>
 </resources>

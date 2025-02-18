@@ -22,20 +22,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,7 +79,7 @@ class OBBE : AppCompatActivity() {
 
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         @Composable
-        fun NavGraph(navController: NavHostController) {
+        fun NavGraph(navController: NavHostController, padding: PaddingValues) {
             val contextu = LocalContext.current
             var checked by remember { mutableStateOf(false) }
             val effect = VibrationEffect.createOneShot(20, VibrationEffect.DEFAULT_AMPLITUDE)
@@ -92,10 +93,10 @@ class OBBE : AppCompatActivity() {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 10.dp)
-                            .systemBarsPadding(),
+                            .padding(horizontal = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
+                        contentPadding = padding
                     ) {
                         item {
                             Image(
@@ -136,6 +137,7 @@ class OBBE : AppCompatActivity() {
                         item {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxHeight()
                             ) {
                                 Button(
                                     onClick = { navController.navigate("OBBE_terms") },
@@ -226,11 +228,10 @@ class OBBE : AppCompatActivity() {
                         state = listState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding()
-                            .safeDrawingPadding()
                             .padding(horizontal = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        contentPadding = padding
                     ) {
                         item {
                             Text(text = stringResource(id = R.string.OBBE_WarunkiAplikacji))
@@ -250,7 +251,7 @@ class OBBE : AppCompatActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding(),
+                            .padding(padding),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -271,8 +272,8 @@ class OBBE : AppCompatActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding()
-                            .padding(horizontal = 10.dp),
+                            .padding(horizontal = 10.dp)
+                            .padding(padding),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -309,8 +310,8 @@ class OBBE : AppCompatActivity() {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .safeDrawingPadding()
-                                    .padding(horizontal = 10.dp),
+                                    .padding(horizontal = 10.dp)
+                                    .padding(padding),
                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 Text(
@@ -373,9 +374,12 @@ class OBBE : AppCompatActivity() {
         setContent {
 
             AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Scaffold(
+                    contentWindowInsets = WindowInsets.safeDrawing,
+                    modifier = Modifier.fillMaxSize()
+                ) { padding ->
                     val navController = rememberNavController()
-                    NavGraph(navController)
+                    NavGraph(navController, padding)
                     BackHandler(true) {
                         if (navController.currentBackStackEntry?.destination?.route == "OBBE_start") {
                             navController.popBackStack()

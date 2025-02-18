@@ -19,7 +19,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun webscrapeT(context: Context, htmllink: String, filename: String, timestamp: String) {
+fun webscrapeT(
+    context: Context,
+    htmllink: String,
+    filename: String,
+    timestamp: String,
+    online: Boolean
+): Schedule {
     val datastoremanager = Datastoremanager(context)
     val items = mutableListOf<ScheduleItem>()
     var tytul = filename
@@ -146,18 +152,23 @@ fun webscrapeT(context: Context, htmllink: String, filename: String, timestamp: 
             }
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            datastoremanager.storeSchedule(
-                context,
-                "$timestamp/$filename",
-                1,
-                Schedule(tytul, filename, items)
-            )
-            Log.d("UnpackPlan", "$tytul $items")
+
+        if (!online) {
+            CoroutineScope(Dispatchers.IO).launch {
+                datastoremanager.storeSchedule(
+                    context,
+                    "$timestamp/$filename",
+                    1,
+                    Schedule(tytul, filename, items)
+                )
+
+            }
         }
+        Log.d("UnpackPlan", "$tytul $items")
         Log.d("UnpackPlan", "Przetworzono dane $htmllink")
 
     } catch (e: Exception) {
         Log.d("UnpackPlan - Błąd", "Błąd $e")
     }
+    return Schedule(tytul, filename, items)
 }

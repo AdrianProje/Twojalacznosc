@@ -28,11 +28,11 @@ class Datastoremanager(private val context: Context) {
         val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
         val PARANOIA = booleanPreferencesKey("paranoia")
         val USER_REFRESH = booleanPreferencesKey("user_refresh")
+        val ONLINE_MODE = booleanPreferencesKey("online_mode")
 
         const val SCHEDULE_PREFIX = "schedule_"
         const val ZASTEPSTWO_PREFIX = "zastepstwo_"
     }
-
 
 
     val getUPObbe: Flow<Boolean?> =
@@ -85,6 +85,13 @@ class Datastoremanager(private val context: Context) {
 
     suspend fun savePlanTimestamp(value: String) {
         context.dataStore.edit { preferences -> preferences[PLAN_DATESTAMP] = value }
+    }
+
+    val getOnlineMode: Flow<Boolean?> =
+        context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] ?: false }
+
+    suspend fun saveOnlineMode(value: Boolean) {
+        context.dataStore.edit { preferences -> preferences[ONLINE_MODE] = value }
     }
 
     suspend fun getSchedule(context: Context, userId: String, version: Int): Schedule? {

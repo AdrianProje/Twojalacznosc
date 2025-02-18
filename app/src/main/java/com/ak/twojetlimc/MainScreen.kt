@@ -13,11 +13,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,25 +56,22 @@ class MainScreen : AppCompatActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         val accessdata = Datastoremanager(this)
+        val vibrator = applicationContext.getSystemService(Vibrator::class.java)
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         //Tworzenie kanału powiadomień, nie można zmienić ważności powiadomienia
+        //Kanał powiadomień 1: Powiadomienie o następej lekcji
         val name = getString(R.string.NOTIFICATION_Schedule)
-        val descriptionText = getString(R.string.NOTIFICATION_Schedule_ExtraText)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val mChannel = NotificationChannel("PLAN", name, importance)
-        val vibrator = applicationContext.getSystemService(Vibrator::class.java)
-        mChannel.description = descriptionText
-
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val mChannel = NotificationChannel("PLAN", name, NotificationManager.IMPORTANCE_DEFAULT)
+        mChannel.description = getString(R.string.NOTIFICATION_Schedule_ExtraText)
         notificationManager.createNotificationChannel(mChannel)
 
+        //Kanał powiadomień 2: Powiadomienie o pobieraniu planu lekcji
         val name2 = "Powiadomienie o trwającym pobieraniu planu lekcji"
-        val descriptionText2 = "Powiadomienie pokazywane w trakcie pobierania planu lekcji"
-        val mChannel2 = NotificationChannel("POBIERANIEPLANU", name2, importance)
-        mChannel.description = descriptionText2
-
-        val notificationManager2 = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager2.createNotificationChannel(mChannel2)
+        val mChannel2 =
+            NotificationChannel("POBIERANIEPLANU", name2, NotificationManager.IMPORTANCE_LOW)
+        mChannel2.description = "Powiadomienie pokazywane w trakcie pobierania planu lekcji"
+        notificationManager.createNotificationChannel(mChannel2)
 
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
@@ -103,25 +101,31 @@ class MainScreen : AppCompatActivity() {
                     }
                 }
 
-                var destination = intent.getStringExtra("destination")
-                if (destination == null) {
-                    destination = "home"
-                } else {
-                    NotificationManagerCompat.from(this).cancel(1)
+                val destination = when (intent.getStringExtra("destination")) {
+                    "plan" -> {
+                        "plan"
+                    }
+
+                    else -> {
+                        "home"
+                    }
                 }
+
+                NotificationManagerCompat.from(this).cancel(1)
                 // remember navController so it does not
                 // get recreated on recomposition
                 Scaffold(
+                    contentWindowInsets = WindowInsets.safeDrawing,
                     // Bottom navigation
                     bottomBar = {
                         BottomNavigationBar(navController = navController)
-                    },
-                    contentWindowInsets = WindowInsets.displayCutout
+                    }
                 ) { innerPadding ->
                     NavHostContainer(
                         navController = navController,
                         destination,
-                        vibrator
+                        vibrator,
+                        innerPadding
                     )
                 }
             }
@@ -191,7 +195,8 @@ fun BottomNavigationBar(navController: NavHostController) {
 fun NavHostContainer(
     navController: NavHostController,
     destination: String,
-    vibrator: Vibrator
+    vibrator: Vibrator,
+    padding: PaddingValues
 ) {
     val context = LocalContext.current
     NavHost(
@@ -210,7 +215,7 @@ fun NavHostContainer(
 
             // ścierzka główna
             composable("home") {
-                HomeScreen(navController)
+                HomeScreen(navController, padding)
             }
 
             composable("whatsnew") {

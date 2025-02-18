@@ -16,7 +16,7 @@
     <string name="MAIN_Pomoc_Kontakt2">Numer telefonu 📞:</string>
     <string name="MAIN_Pomoc_Kontakt3">Drugi numer telefonu 📞:</string>
     <string name="MAIN_Pomoc_Dyrektor">Dyrektor Szkoły\n-\nBartosz Stolarczuk</string>
-    <string name="SETTINGS_Wersja">"Przez: Ucznia - Adrian Kieliszek 4tB\n\nWersja Aplikacji: "</string>
+    <string name="SETTINGS_Wersja">"Wykonana przez: Adrian Kieliszek 4tB\n\nWersja Aplikacji: "</string>
     <string name="MAIN_Pomoc_Linki">Przydatne linki\n-</string>
     <string name="SETTINGS_BAR_TEXT">Ustawienia</string>
     <string name="SETTINGS_Podziekowanie">Podziękowania</string>
@@ -41,4 +41,9 @@
     <string name="SETTINGS_Paranoja_Opis">Włącz odświeżanie planu i zastępstw za każdym razem gdy włączysz aplikacje</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">Tryb odświeżania</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Włącz odświeżanie tylko zastępstw na karcie planu lekcji</string>
+    <string name="SETTINGS_Online_Tytul">Tryb online planu</string>
+    <string name="SETTINGS_Online_Opis">Włącz pobieranie planu dla danej klasy za każdym razem gdy jest ona wybrana (Wymagany internet)\n\nPlan lekcji offline będzie się dalej pobierał nawet po włączeniu tej opcji</string>
+    <string name="shortcut_short">Plan lekcji</string>
+    <string name="shortcut_long">Natychmiastowe otwarcie planu lekcji</string>
+    <string name="shortcut_disabled_message1">Ten skrót jest teraz niedostępny</string>
 </resources>

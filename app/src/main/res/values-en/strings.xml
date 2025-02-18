@@ -16,7 +16,7 @@
     <string name="MAIN_Pomoc_Kontakt2">Phone number 📞:</string>
     <string name="MAIN_Pomoc_Kontakt3">Second phone number 📞:</string>
     <string name="MAIN_Pomoc_Dyrektor">Principle \n-\nBartosz Stolarczuk</string>
-    <string name="SETTINGS_Wersja">"By: Student - Adrian Kieliszek 4tB\n\nApp Version: "</string>
+    <string name="SETTINGS_Wersja">"Made by: Adrian Kieliszek 4tB  \n\nApp Version: "</string>
     <string name="MAIN_Pomoc_Linki">Useful links \n-</string>
     <string name="SETTINGS_BAR_TEXT">Settings</string>
     <string name="SETTINGS_Podziekowanie">Thanks to (PL)</string>
@@ -41,4 +41,9 @@
     <string name="SETTINGS_Paranoja_Opis">Turn on refreshing sceagule everytime you open an app</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">Refreshing mode</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_OPIS">Turn on refreshing only substitutions on the sceagule card of the app</string>
+    <string name="SETTINGS_Online_Tytul">Online mode for Scheagule</string>
+    <string name="SETTINGS_Online_Opis">Turn on always online mode for scheadule</string>
+    <string name="shortcut_short">Scheagule</string>
+    <string name="shortcut_long">Instant scheagule open</string>
+    <string name="shortcut_disabled_message1">This shortcut is not available right now</string>
 </resources>
