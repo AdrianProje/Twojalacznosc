@@ -130,6 +130,37 @@ fun downloadplanandzas(context: Context): WorkRequest {
     return workRequest
 }
 
+fun getcurrenthour(): Int {
+    val calendarminutes = Calendar.getInstance().get(Calendar.MINUTE)
+    return when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        7 -> if (calendarminutes >= 20) 1 else 0
+
+        8 -> if (calendarminutes >= 5) 2 else 1
+
+        9 -> if (calendarminutes >= 55) 4 else 3
+
+        10 -> if (calendarminutes >= 50) 5 else 4
+
+        11 -> if (calendarminutes >= 50) 6 else 5
+
+        12 -> if (calendarminutes >= 45) 7 else 6
+
+        13 -> if (calendarminutes >= 40) 8 else 7
+
+        14 -> if (calendarminutes >= 35) 9 else 8
+
+        15 -> if (calendarminutes >= 30) 10 else 9
+
+        16 -> if (calendarminutes >= 25) 11 else 10
+
+        17 -> if (calendarminutes >= 20) 12 else 11
+
+        18 -> if (calendarminutes >= 15) 13 else 12
+        
+        else -> 0
+    }
+}
+
 //Link na stronę do osadzenia
 @Composable
 fun WebsiteLink(contextText: String, url: String) {

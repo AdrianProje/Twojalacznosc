@@ -3,6 +3,7 @@ package com.ak.twojetlimc.mainbottomnav
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.VibrationEffect
@@ -81,11 +82,13 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
@@ -104,6 +107,7 @@ import com.ak.twojetlimc.komponenty.ImageLinkButton
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.komponenty.downlodonlyzas
+import com.ak.twojetlimc.komponenty.getcurrenthour
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -486,7 +490,9 @@ fun WhatsNew(navController: NavHostController) {
 @Composable
 fun PlanScreen(context: Context, vibrator: Vibrator) {
     val accessdatastoremanager =
-        Datastoremanager(context) //Zmień na jeden datastore dla całej aktywności
+        Datastoremanager(context)
+    val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
+    //Zmień na jeden datastore dla całej aktywności
 
     val listState = rememberLazyListState() //Zapamiętaj stan listy
     val coroutineScope = rememberCoroutineScope() //Zapamiętaj stan coroutineScope
@@ -511,6 +517,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var selectedChipOption = remember { mutableIntStateOf(1) }
+    var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
     var scheduleData by remember { mutableStateOf<Schedule?>(null) }
@@ -528,8 +535,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
         )
     }
 
-
-
     LaunchedEffect(true) {
         accessdatastoremanager.getDefaultPlan.collect { defultplan ->
             selectedChipOption.intValue = defultplan ?: 1
@@ -537,9 +542,15 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     } //Domyślny chip na liście ModalBottomSheet przy pierwszym uruchomieniu
 
     LaunchedEffect(true) {
-        accessdatastoremanager.getOnlineMode.collect { onlinemode ->
-            online = onlinemode ?: false
+        Log.d("PlanScreen", connectivityManager!!.activeNetwork.toString())
+        if (connectivityManager.activeNetwork == null) {
+            online = false
+        } else {
+            accessdatastoremanager.getOnlineMode.collect { onlinemode ->
+                online = onlinemode == true
+            }
         }
+
     } //Czy online  przy pierwszym uruchomieniu
 
 
@@ -555,7 +566,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
             if (selectedData2!!.isNotEmpty()) {
                 klasa2 = selectedData!!.substring(0, 3)
-                when (online) {
+                when (online && connectivityManager!!.activeNetwork != null) {
                     true -> {
                         Log.d(
                             "PlanScreen",
@@ -571,6 +582,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     }
 
                     false -> {
+                        online = false
                         Log.d(
                             "PlanScreen",
                             "loadscheduledata offline (selecteddata not null)"
@@ -586,7 +598,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                 if (favSchedule!!.isNotEmpty()) {
                     selectedData = favSchedule.split(",")[0]
                     selectedData2 = favSchedule.split(",")[1]
-                    when (online) {
+                    when (online && connectivityManager!!.activeNetwork != null) {
                         true -> {
                             Log.d(
                                 "PlanScreen",
@@ -602,6 +614,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         }
 
                         false -> {
+                            online = false
                             Log.d(
                                 "PlanScreen",
                                 "loadscheduledata offline (favschedule not null)"
@@ -670,31 +683,17 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     val pattern = longArrayOf(0, 50)
 
-    val options = listOf(
-        stringResource(id = R.string.PLAN_Chip_Klasa),
-        stringResource(id = R.string.PLAN_Chip_Sala),
-        stringResource(id = R.string.PLAN_Chip_Nauczyciel)
-    )
+    val options = stringArrayResource(R.array.chip_values)
 
-    val daynames = listOf(
-        stringResource(id = R.string.PLAN_Button_Dropdownlist_Poniedziałek),
-        stringResource(id = R.string.PLAN_Button_Dropdownlist_Wtorek),
-        stringResource(id = R.string.PLAN_Button_Dropdownlist_Sroda),
-        stringResource(id = R.string.PLAN_Button_Dropdownlist_Czwartek),
-        stringResource(id = R.string.PLAN_Button_Dropdownlist_Piatek)
-    )
-
+    val daynames = stringArrayResource(R.array.days)
 
     val result = RefreshWorker.DataHolder.workerResult.value
-    LaunchedEffect(key1 = result) {
-        if (result != null) {
-            try {
-                Log.d("itemid - scrolowanie", result.toString())
-                listState.animateScrollToItem(index = result, scrollOffset = -600)
-            } catch (_: Exception) {
-                Toast.makeText(context, "Nie przeskrolowano, brak godziny", Toast.LENGTH_SHORT)
-                    .show()
-            }
+    LaunchedEffect(key1 = currenthour, result) {
+        try {
+            listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
+        } catch (_: Exception) {
+            Toast.makeText(context, "Nie przeskrolowano, brak godziny", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -729,7 +728,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             isLoading = false
             isrefresing = false
         }
-    }
+    } //Odświerzanie planu po zmienieniu jednej z zmiennej
 
     LaunchedEffect(selectedData, refreshTrigger, day) {
         isLoading = true
@@ -739,7 +738,14 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             isLoading = false
             isrefresing = false
         }
-    }
+    } //Odświerzanie zastępstw po zmienieniu jednej z zmiennej
+
+    LaunchedEffect(true) {
+        while (true) {
+            delay(60000)
+            currenthour = getcurrenthour()
+        }
+    } //Aktualizacja aktualnej godziny lekcyjnej do scrolowania
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -886,7 +892,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                         .fillParentMaxWidth(0.95f)
                                         .layoutId(numerlekcji),
                                     shape = MaterialTheme.shapes.medium,
-                                    colors = if (numerlekcji == result && day == LocalDate.now().dayOfWeek) {
+                                    colors = if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
                                         CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
                                     } else {
                                         CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
@@ -908,7 +914,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                 .fillMaxHeight()
                                                 .fillMaxWidth(0.3f)
                                                 .background(
-                                                    if (numerlekcji == result && day == LocalDate.now().dayOfWeek) {
+                                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
                                                         MaterialTheme.colorScheme.surfaceContainerHighest
                                                     } else {
                                                         MaterialTheme.colorScheme.primaryContainer

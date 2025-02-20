@@ -1,12 +1,16 @@
 <resources>
     <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
+    <string-array name="days">
+        <item>@string/PLAN_Button_Dropdownlist_Poniedziałek</item>
+        <item>@string/PLAN_Button_Dropdownlist_Wtorek</item>
+        <item>@string/PLAN_Button_Dropdownlist_Sroda</item>
+        <item>@string/PLAN_Button_Dropdownlist_Czwartek</item>
+        <item>@string/PLAN_Button_Dropdownlist_Piatek</item>
     </string-array>
 
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
+    <string-array name="chip_values">
+        <item>@string/PLAN_Chip_Klasa</item>
+        <item>@string/PLAN_Chip_Sala</item>
+        <item>@string/PLAN_Chip_Nauczyciel</item>
     </string-array>
 </resources>

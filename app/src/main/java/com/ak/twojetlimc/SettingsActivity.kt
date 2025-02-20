@@ -3,6 +3,7 @@ package com.ak.twojetlimc
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -15,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,7 +57,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -93,7 +97,6 @@ fun NavGraph(
     var cheched2 by remember { mutableStateOf(false) }
     var cheched3 by remember { mutableStateOf(false) }
     var cheched4 by remember { mutableStateOf(false) }
-//    var clickeddebug by remember { mutableIntStateOf(0) }
     var favschedulevalue by remember { mutableStateOf("") }
     val pattern = longArrayOf(0, 50)
 
@@ -430,33 +433,21 @@ fun NavGraph(
                     ClickableEmail("developer.adriank@gmail.com")
                 }
 
-//                item {
-//                    val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-//                    val version = pInfo.versionName
-//                    Text(
-//                        text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)",
-//                        modifier = Modifier.clickable(onClick = {
-//                            if (clickeddebug != 5) {
-//                                ++clickeddebug
-//                            } else {
-//                                clickeddebug = 0
-//                                AlertDialog(
-//                                    title = "Wprowadź hasło",
-//                                    onDismissRequest = { clickeddebug = 0 },
-//                                    confirmButton = {
-//
-//                                    },
-//                                    dismissButton = {
-//
-//                                    }
-//                                )
-//                            }
-//                            navController.navigate("debug")
-//
-//                        })
-//                    )
-//                    ClickableEmail("developer.adriank@gmail.com")
-//                }
+                if (ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+                    item {
+                        Button(
+                            onClick = { navController.navigate("debug") },
+                            modifier = Modifier.fillParentMaxWidth(),
+                            shape = MaterialTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text(
+                                text = "Debug",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -626,6 +617,18 @@ fun NavGraph(
                             style = MaterialTheme.typography.titleLarge,
                         )
                     }
+                }
+
+                item {
+                    Image(
+                        painter = painterResource(id = R.drawable.cukierki_ciut),
+                        contentDescription = "Debug",
+                        contentScale = ContentScale.FillBounds,
+                        alignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
+                    )
                 }
             }
         }

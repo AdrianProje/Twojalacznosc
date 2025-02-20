@@ -75,8 +75,13 @@ android {
     buildFeatures {
         compose = true
     }
+
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
     packaging {
         resources {

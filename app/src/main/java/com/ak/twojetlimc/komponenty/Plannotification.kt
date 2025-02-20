@@ -14,7 +14,6 @@ import com.ak.twojetlimc.R
 import com.ak.twojetlimc.Zastepstwa.Zastepstwo
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
-import java.util.Calendar
 
 class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -25,34 +24,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
 
 
     override suspend fun doWork(): Result {
-        val calendarminutes = Calendar.getInstance().get(Calendar.MINUTE)
-        val itemId = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-            7 -> 1
-
-            8 -> 2
-
-            9 -> if (calendarminutes < 30) 3 else 4
-
-            10 -> 5
-
-            11 -> 6
-
-            12 -> 7
-
-            13 -> 8
-
-            14 -> 9
-
-            15 -> 10
-
-            16 -> 11
-
-            17 -> 12
-
-            18 -> 13
-
-            else -> 0
-        }
+        val itemId = getcurrenthour()
 
         val accessdata = Datastoremanager(applicationContext)
         if (accessdata.getFavSchedule.first() != "") {

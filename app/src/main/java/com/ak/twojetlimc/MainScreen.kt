@@ -1,6 +1,5 @@
 package com.ak.twojetlimc
 
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
@@ -53,7 +52,6 @@ import kotlinx.coroutines.flow.first
 
 class MainScreen : AppCompatActivity() {
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         val accessdata = Datastoremanager(this)
         val vibrator = applicationContext.getSystemService(Vibrator::class.java)
@@ -62,7 +60,7 @@ class MainScreen : AppCompatActivity() {
         //Tworzenie kanału powiadomień, nie można zmienić ważności powiadomienia
         //Kanał powiadomień 1: Powiadomienie o następej lekcji
         val name = getString(R.string.NOTIFICATION_Schedule)
-        val mChannel = NotificationChannel("PLAN", name, NotificationManager.IMPORTANCE_DEFAULT)
+        val mChannel = NotificationChannel("PLAN", name, NotificationManager.IMPORTANCE_HIGH)
         mChannel.description = getString(R.string.NOTIFICATION_Schedule_ExtraText)
         notificationManager.createNotificationChannel(mChannel)
 
