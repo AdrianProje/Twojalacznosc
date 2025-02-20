@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="Twoja Łączność">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-15T10:57:31.005747800Z">
+        <DropdownSelection timestamp="2025-02-20T13:53:10.402164700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=R5CWC4BTSYZ" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kieli\.android\avd\Pixel_8a_API_35_16kb.avd" />
             </handle>
           </Target>
         </DropdownSelection>
