@@ -690,9 +690,11 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     val result = RefreshWorker.DataHolder.workerResult.value
     LaunchedEffect(key1 = currenthour, result) {
         try {
-            listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
+            if (day == LocalDate.now().dayOfWeek) {
+                listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
+            }
         } catch (_: Exception) {
-            Toast.makeText(context, "Nie przeskrolowano, brak godziny", Toast.LENGTH_SHORT)
+            Toast.makeText(context, "Nie przeskrolowano", Toast.LENGTH_SHORT)
                 .show()
         }
     }
@@ -1026,7 +1028,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         planstamptext = accessdatastoremanager.getPlanTimestamp.first().toString()
                     }
                     if (planstamptext != "") {
-                        Text(text = planstamptext)
+                        Text(text = "⬇️ Offline: " + planstamptext)
                     } else {
                         Text(text = "Brak pobranego planu lekcji")
                     }

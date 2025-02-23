@@ -9,18 +9,24 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,6 +35,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -78,8 +86,12 @@ import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.theme.AppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("NewApi")
@@ -142,6 +154,7 @@ fun NavGraph(
                 modifier = Modifier
                     .padding(top = 5.dp)
                     .padding(horizontal = 10.dp)
+                    .fillMaxSize()
             ) {
                 item {
                     Button(
@@ -455,7 +468,7 @@ fun NavGraph(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 10.dp)
             ) {
                 item {
@@ -520,7 +533,9 @@ fun NavGraph(
         composable(route = "podziekowania") {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.padding(horizontal = 15.dp)
+                modifier = Modifier
+                    .padding(horizontal = 15.dp)
+                    .fillMaxSize()
             ) {
                 item {
                     Text(text = "Podziękowania:", style = MaterialTheme.typography.titleLarge)
@@ -543,9 +558,19 @@ fun NavGraph(
         }
 
         composable(route = "debug") {
+            var groupedlist by remember { mutableStateOf(mapOf<String, List<String>>()) }
+            LaunchedEffect(key1 = Unit) {
+                scope.launch {
+                    groupedlist = datastoremanager.getAllScheduleKeysGrouped()
+                }
+
+            }
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.padding(horizontal = 15.dp)
+                modifier = Modifier
+                    .padding(horizontal = 15.dp)
+                    .fillMaxSize()
             ) {
                 item {
                     Text(text = "Debug menu:", style = MaterialTheme.typography.titleLarge)
@@ -613,9 +638,82 @@ fun NavGraph(
                         modifier = Modifier.fillParentMaxWidth()
                     ) {
                         Text(
-                            text = "Napraw wyświetlanie powiadomień",
-                            style = MaterialTheme.typography.titleLarge,
+                            text = "DEBUG | Napraw wyświetlanie powiadomień"
                         )
+                    }
+                }
+
+                item {
+
+                    val scope = rememberCoroutineScope()
+                    Column {
+                        Text("Debug | Zarządzanie zapisanymi planami")
+                        groupedlist.entries.reversed().forEach { (groupName, keys) ->
+                            var expanded by remember { mutableStateOf(false) }
+                            val rotationState by animateFloatAsState(
+                                targetValue = if (expanded) 180f else 0f,
+                                label = "rotation"
+                            )
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { expanded = !expanded }
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = groupName)
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Button(onClick = {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            datastoremanager.savePlanTimestamp(groupName)
+                                        }
+                                    }) {
+                                        Text("Zmień datę")
+                                    }
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Button(onClick = {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            keys.forEach { key ->
+                                                Log.d("SettingsActivity - Debug", "Usunięto: $key")
+                                                datastoremanager.deleteDataFromStringPreferencesKey(
+                                                    key
+                                                )
+                                            }
+                                        }
+                                    }) {
+                                        Text("Usuń wszy.")
+                                    }
+                                    IconButton(onClick = { expanded = !expanded }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            contentDescription = "Expand/Collapse",
+                                            modifier = Modifier.rotate(rotationState)
+                                        )
+                                    }
+                                }
+
+                                AnimatedVisibility(visible = expanded) {
+                                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                                        keys.forEach { key ->
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = key)
+                                                Spacer(modifier = Modifier.weight(1f))
+                                                Button(onClick = {
+                                                    scope.launch {
+                                                        datastoremanager.deleteDataFromStringPreferencesKey(
+                                                            key
+                                                        )
+                                                    }
+                                                }) {
+                                                    Text("Usuń")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

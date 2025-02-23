@@ -2,6 +2,7 @@ package com.ak.twojetlimc.komponenty
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -18,22 +19,32 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
+
 class Datastoremanager(private val context: Context) {
-    companion object {
+    companion object DataStoreKeys {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("userSettings")
-        val USER_PASS_OBBE = booleanPreferencesKey("user_pass_obbe")
         val USER_DEFAULT_CHIP = intPreferencesKey("user_default_plan")
-        val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
+
+        val USER_PASS_OBBE = booleanPreferencesKey("user_pass_obbe")
         val USER_FAV_SCHEDULE_ONOFF = booleanPreferencesKey("user_fav_schedule_onoff")
-        val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
         val PARANOIA = booleanPreferencesKey("paranoia")
         val USER_REFRESH = booleanPreferencesKey("user_refresh")
         val ONLINE_MODE = booleanPreferencesKey("online_mode")
 
-        const val SCHEDULE_PREFIX = "schedule_"
-        const val ZASTEPSTWO_PREFIX = "zastepstwo_"
+        val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
+        val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
+        val SCHEDULE_PREFIX = stringPreferencesKey("schedule_")
+        val ZASTEPSTWO_PREFIX = stringPreferencesKey("zastepstwo_")
+
+//        const val SCHEDULE_PREFIX = "schedule_"
+//        const val ZASTEPSTWO_PREFIX = "zastepstwo_"
     }
 
+    suspend fun editPreferences(action: suspend (MutablePreferences) -> Unit) {
+        context.dataStore.edit { preferences ->
+            action(preferences)
+        }
+    }
 
     val getUPObbe: Flow<Boolean?> =
         context.dataStore.data.map { preferences -> preferences[USER_PASS_OBBE] ?: false }
@@ -49,7 +60,6 @@ class Datastoremanager(private val context: Context) {
         context.dataStore.edit { preferences -> preferences[PARANOIA] = value }
     }
 
-    //TODO(Zainplementuj refresh czy tylko zastępstwo)
     val getUserRefresh: Flow<Boolean?> =
         context.dataStore.data.map { preferences -> preferences[USER_REFRESH] ?: false }
 
@@ -87,6 +97,10 @@ class Datastoremanager(private val context: Context) {
         context.dataStore.edit { preferences -> preferences[PLAN_DATESTAMP] = value }
     }
 
+    suspend fun deletePlanTimestamp(value: String) {
+        context.dataStore.edit { preferences -> preferences.remove(PLAN_DATESTAMP) }
+    }
+
     val getOnlineMode: Flow<Boolean?> =
         context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] ?: true }
 
@@ -111,6 +125,29 @@ class Datastoremanager(private val context: Context) {
             val key = "$SCHEDULE_PREFIX$userId$version" // Corrected key
             preferences[stringPreferencesKey(key)] = serializeSchedule(schedule)
         }
+    }
+
+    suspend fun deleteDataFromStringPreferencesKey(key: String) {
+        context.dataStore.edit { preferences ->
+            preferences.remove(stringPreferencesKey(key))
+        }
+    }
+
+    suspend fun getAllScheduleKeysGrouped(): Map<String, List<String>> {
+        val allPreferences = context.dataStore.data.firstOrNull() ?: return emptyMap()
+
+        return allPreferences.asMap().keys
+            .filter { it.name.startsWith(SCHEDULE_PREFIX.toString()) }
+            .map { it.name }
+            .groupBy { key ->
+                val parts = key.split("/")
+                if (parts.isNotEmpty()) {
+                    val datePart = parts[0].removePrefix("schedule_") // Remove "schedule_" prefix
+                    datePart // Use the date part as the group key
+                } else {
+                    key // Fallback to the full key if it doesn't match the expected format
+                }
+            }
     }
 
     suspend fun getZastepstwo(
