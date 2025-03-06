@@ -11,7 +11,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.ak.twojetlimc.MainScreen
 import com.ak.twojetlimc.R
-import com.ak.twojetlimc.Zastepstwa.Zastepstwo
+import com.ak.twojetlimc.zastepstwa.Zastepstwo
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
@@ -39,7 +39,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                 "$timestamp/$htmlvalue",
                 1
             )!!.plan.forEach {
-                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && it.przedmiot != "") {
+                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && !it.przedmiot.isEmpty()) {
                     var listitems = mutableListOf<Zastepstwo>()
                     try {
                         val datastore = Datastoremanager(applicationContext)
@@ -75,15 +75,15 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                     if (listitems.isEmpty()) {
                         showNotification(
                             applicationContext,
-                            "Następna lekcja: ${it.przedmiot}", if (it.sala != "") {
+                            "Następna lekcja: ${it.przedmiot}", if (!it.sala.isEmpty()) {
                                 "Sala: ${it.sala}, "
                             } else {
                                 ""
-                            } + if (it.klasa != "") {
+                            } + if (!it.klasa.isEmpty()) {
                                 "Klasa: ${it.klasa}, "
                             } else {
                                 ""
-                            } + if (it.nauczyciel != "") {
+                            } + if (!it.nauczyciel.isEmpty()) {
                                 "Nauczyciel: ${it.nauczyciel}, "
                             } else {
                                 ""

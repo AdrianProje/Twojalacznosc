@@ -234,7 +234,11 @@ class OBBE : AppCompatActivity() {
                         contentPadding = padding
                     ) {
                         item {
-                            Text(text = stringResource(id = R.string.OBBE_WarunkiAplikacji))
+                            val assetManager = contextu.assets
+                            val inputStream = assetManager.open("terms")
+                            val terms = inputStream.bufferedReader().use { it.readText() }
+                            Text(text = terms)
+                            inputStream.close()
                         }
                         item {
                             Button(

@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.PlanLekcji
+package com.ak.twojetlimc.planLekcji
 
 import android.content.Context
 import android.util.Log

@@ -10,8 +10,15 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +26,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,17 +40,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -52,6 +64,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
@@ -66,6 +79,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -74,6 +88,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
@@ -86,28 +101,33 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.ak.twojetlimc.PlanLekcji.GetList
-import com.ak.twojetlimc.PlanLekcji.Schedule
-import com.ak.twojetlimc.PlanLekcji.webscrapeT
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.SettingsActivity
-import com.ak.twojetlimc.Zastepstwa.Zastepstwo
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.ClickablePhoneNumber
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.ImageLinkButton
 import com.ak.twojetlimc.komponenty.RefreshWorker
+import com.ak.twojetlimc.komponenty.WebsiteLink
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.komponenty.downlodonlyzas
 import com.ak.twojetlimc.komponenty.getcurrenthour
+import com.ak.twojetlimc.planLekcji.GetList
+import com.ak.twojetlimc.planLekcji.Schedule
+import com.ak.twojetlimc.planLekcji.webscrapeT
+import com.ak.twojetlimc.zastepstwa.Zastepstwo
+import com.ak.twojetlimc.zditm.Tablicaodjazow
+import com.ak.twojetlimc.zditm.getthedeparturesdata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -118,7 +138,6 @@ import java.io.InputStreamReader
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-import kotlin.toString
 
 
 //-------------------------------Pomoc-------------------------------------------
@@ -278,11 +297,20 @@ fun HelpScreen() {
 
 //------------------------------------Główna-----------------------------------------
 
-
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
+    var zditmcardvisible by remember { mutableStateOf(false) }
+    var showdialog by remember { mutableStateOf(false) }
+
     var selectedKey by remember { mutableIntStateOf(0) }
+
+    var zditmtest by remember { mutableStateOf("") }
+
+    var listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
+
     val listState = rememberLazyListState()
+
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -290,7 +318,27 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
             selectedKey = (selectedKey + 1) % 4
             listState.animateScrollToItem(index = selectedKey)
         }
-    }
+    } //Przewijanie losowych tekstów na pasku
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            launch(Dispatchers.IO) {
+                try {
+                    val KM3220632 = getthedeparturesdata(20632)
+                    val KM2220622 = getthedeparturesdata(20622)
+                    val KM1120611 = getthedeparturesdata(20611)
+                    val P1226212 = getthedeparturesdata(26212)
+
+                    listofzditm.clear()
+                    listofzditm.addAll(listOf(KM3220632, KM2220622, KM1120611, P1226212))
+
+                } catch (e: Exception) {
+                    println("Error fetching data: ${e.message}")
+                }
+            }
+            delay(10000)
+        }
+    } //Pobieranie danych z ZDiTM
 
 //TODO("Dodać tło do HomeScreen")
 //    Image(
@@ -300,6 +348,52 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 //            .fillMaxSize()
 //            .background(Color.LightGray) // Optional: Fallback color
 //    )
+
+    if (showdialog) {
+        Dialog(onDismissRequest = { showdialog = false }) {
+            Card(
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                border = BorderStroke(1.dp, Color.Black),
+                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(10.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .weight(0.8f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Ta sekcja jest możliwa dzięki ZDiTM Szczecin\n",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(text = "Zostało wykorzystane poniższe API:")
+                    WebsiteLink(
+                        "API - tablice odjazdów",
+                        "https://www.zditm.szczecin.pl/pl/zditm/dla-programistow/api-tablice-odjazdow"
+                    )
+
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Button(
+                        onClick = { showdialog = false },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Super!")
+                    }
+                }
+            }
+        }
+    }
     LazyColumn(
         Modifier
             .fillMaxHeight()
@@ -347,6 +441,21 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 
                 items(5, key = { it }) {
                     val tip by remember { mutableStateOf(tips.random()) }
+                    val scrollstate = rememberScrollState(0)
+                    LaunchedEffect(tip) {
+                        if (scrollstate.maxValue > 0) {
+                            while (true) {
+                                scrollstate.animateScrollTo(
+                                    value = scrollstate.maxValue,
+                                    animationSpec = tween(
+                                        durationMillis = 10000,
+                                        easing = LinearEasing
+                                    )
+                                )
+                                scrollstate.scrollTo(0)
+                            }
+                        }
+                    }
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         border = BorderStroke(1.dp, Color.DarkGray),
@@ -362,16 +471,15 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                             Text(
                                 text = tip,
                                 style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .horizontalScroll(scrollstate),
+                                overflow = TextOverflow.Clip
                             )
                         }
                     }
                 }
             }
-        }
-
-        item {
-            Text(text = "Więcej funkcji już wkrótce")
         }
 
         item {
@@ -389,6 +497,132 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                         .fillMaxSize()
                 )
             }
+        }
+
+        item {
+            Card(
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier.fillParentMaxWidth(0.95f)
+            ) {
+                Row(modifier = Modifier.padding(10.dp)) {
+                    Text(
+                        "ZDiTM Szczecin",
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    IconButton(
+                        onClick = {
+                            showdialog = true
+                        },
+                        modifier = Modifier
+                            .weight(0.2f)
+                            .size(20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Info"
+                        )
+                    }
+                }
+
+                for (item in listofzditm) {
+                    var expanded by remember { mutableStateOf(false) }
+                    val rotationState by animateFloatAsState(
+                        targetValue = if (expanded) 180f else 0f,
+                        label = "rotation"
+                    )
+
+                    val realtime = item.departures.first().time_real
+
+                    val odjazd = when (realtime) {
+                        0 -> {
+                            " Na przystanku"
+                        }
+
+                        null -> {
+                            item.departures.first().time_scheduled.toString()
+                        }
+
+                        else -> {
+                            " Za: " + realtime + " min."
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .clickable { expanded = !expanded }
+                            .padding(10.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .weight(1f)
+                        ) {
+                            Text(text = "(${item.stop_number}) " + item.stop_name)
+                            Text(
+                                text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction}) |" + odjazd
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { expanded = !expanded }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = "Rozwiń/Zwiń",
+                                modifier = Modifier.rotate(rotationState)
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(visible = expanded) {
+                        Spacer(Modifier.weight(1f))
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            item.departures.subList(1, item.departures.size.coerceAtMost(5))
+                                .forEach { departure ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = departure.line_number,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f)
+                                        )
+                                        Text(
+                                            text = departure.direction,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f)
+                                        )
+                                        val timetext = when (departure.time_real) {
+                                            0 -> {
+                                                " Na przystanku"
+                                            }
+
+                                            null -> {
+                                                " " + departure.time_scheduled.toString()
+                                            }
+
+                                            else -> {
+                                                departure.time_real.toString() + " min."
+                                            }
+                                        }
+                                        Text(
+                                            text = timetext,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f)
+                                        )
+                                    }
+                                }
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Text(text = "Więcej funkcji już wkrótce")
         }
 
 //        item {
@@ -484,6 +718,7 @@ fun WhatsNew(navController: NavHostController) {
 
 //-----------------------------PLAN-----------------------------------------
 
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalComposeUiApi
@@ -517,6 +752,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var selectedChipOption = remember { mutableIntStateOf(1) }
+    var progressofprogressbar by remember { mutableStateOf(0f) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -541,7 +777,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
         }
     } //Domyślny chip na liście ModalBottomSheet przy pierwszym uruchomieniu
 
-    LaunchedEffect(true) {
+    LaunchedEffect(true, refreshTrigger) {
         Log.d("PlanScreen", connectivityManager!!.activeNetwork.toString())
         if (connectivityManager.activeNetwork == null) {
             online = false
@@ -811,6 +1047,17 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     .height(1.dp)
                     .fillMaxWidth()
             )
+        },
+        topBar = {
+            if (isLoading) {
+                LinearProgressIndicator(
+                    progress = { progressofprogressbar },
+                    modifier = Modifier
+                        .padding(paddingValues = WindowInsets.safeDrawing.asPaddingValues())
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp)
+                )
+            }
         }
     ) { padding ->
         //Wyświetlane ekrany w zależności od opcji
@@ -847,7 +1094,14 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                     .getWorkInfoByIdLiveData(workrequest.id)
                                     .observe(
                                         lifecycleOwner, Observer { status ->
-                                            if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                            progressofprogressbar =
+                                                status!!.progress.getInt("progress", 0)
+                                                    .toFloat() / status.progress.getInt(
+                                                    "max",
+                                                    150
+                                                )
+                                            Log.d("PLANLOADING", "$progressofprogressbar")
+                                            if (status.state == WorkInfo.State.SUCCEEDED) {
                                                 isrefresing = false
                                                 refreshTrigger++
                                                 Toast.makeText(
@@ -866,6 +1120,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                 }
             }
         ) {
+
             if (scheduleData != null) {
                 LazyColumn(
                     modifier = Modifier
@@ -874,6 +1129,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     contentPadding = padding
                 ) {
+
                     scheduleData!!.plan.forEach {
                         val numerlekcji = it.numerLekcji
                         val czas = it.czas
@@ -904,7 +1160,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                         modifier = Modifier.fillParentMaxWidth(),
                                         horizontalArrangement = Arrangement.Center,
                                     ) {
-                                        Text(text = sala)
+                                        Text(text = sala.toString())
                                     }
                                     Row(
                                         modifier = Modifier
@@ -940,37 +1196,53 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                     }
                                 }
 
-                                if (listitems != null && przedmiot != "" && dzien == day.ordinal) {
+                                if (listitems != null && !przedmiot.isEmpty() && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
                                         if (numerlekcji == zastdata2.numerLekcji) {
                                             OutlinedCard(
                                                 modifier = Modifier
                                                     .padding(vertical = 5.dp)
-                                                    .fillParentMaxWidth(0.95f)
-                                                    .layoutId(numerlekcji),
+                                                    .height(65.dp)
+                                                    .fillParentMaxWidth(0.95f),
                                                 shape = MaterialTheme.shapes.medium,
                                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                                             ) {
-                                                Column(
-                                                    verticalArrangement = Arrangement.SpaceEvenly,
-                                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                                Row(
+                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                                    modifier = Modifier
+                                                        .align(Alignment.CenterHorizontally)
+                                                        .fillMaxSize()
                                                 ) {
-                                                    Text(
-                                                        text = "⬆️",
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                    Text(
-                                                        text = zastdata2.klasa,
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                    Text(
-                                                        text = zastdata2.zastepca,
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                    Text(
-                                                        text = zastdata2.uwagi,
-                                                        textAlign = TextAlign.Center
-                                                    )
+                                                    Column(
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        modifier = Modifier
+                                                            .align(Alignment.CenterVertically)
+                                                            .weight(0.5f)
+                                                    ) {
+                                                        Text(
+                                                            text = "⬆️",
+                                                            textAlign = TextAlign.Center,
+                                                        )
+                                                    }
+                                                    Column(
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        modifier = Modifier
+                                                            .align(Alignment.CenterVertically)
+                                                            .weight(1f)
+                                                    ) {
+                                                        Text(
+                                                            text = zastdata2.klasa,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                        Text(
+                                                            text = zastdata2.zastepca,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                        Text(
+                                                            text = zastdata2.uwagi,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }

@@ -5,7 +5,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.ak.twojetlimc.Zastepstwa.webscrapeZT
+import com.ak.twojetlimc.zastepstwa.webscrapeZT
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.PlanLekcji
+package com.ak.twojetlimc.planLekcji
 
 import com.google.gson.Gson
 

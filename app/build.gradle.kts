@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
 }
 
 android {
@@ -24,7 +25,7 @@ android {
             useSupportLibrary = true
         }
         targetSdk = 35
-        versionName = "Ciuty - 0.50.9.1"
+        versionName = "Ciuty - 0.50.9.2"
     }
 
     buildTypes {
@@ -40,6 +41,8 @@ android {
             )
 
             signingConfig = signingConfigs.getByName("release")
+            isDebuggable = false
+            isJniDebuggable = false
         }
         getByName("debug") {
             signingConfig = signingConfigs.getByName("debug")
@@ -80,9 +83,6 @@ android {
         generateLocaleConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1,DEPENDENCIES,INDEX.LIST}"
@@ -95,24 +95,25 @@ dependencies {
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.core.ktx.v1101)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui:1.7.8")
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-graphics:1.7.8")
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.ui.test.junit4)
+    implementation(libs.compose.ui.tooling)
+    implementation(libs.androidx.material)
+    implementation(libs.javax.servlet.api)
+    implementation(libs.mimedir)
+    implementation(libs.gson)
+    debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference)
     implementation(libs.skrapeit) {
-        exclude(group = "it.skrape", module = "skrapeit-http-fetcher")
+        exclude(group = "it.skrape", module = "skrapeit-async-fetcher")
     }
-    implementation(libs.gson)
+
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.androidx.annotation)
@@ -120,18 +121,9 @@ dependencies {
     implementation(libs.junit)
     implementation(libs.androidx.junit)
     implementation(libs.androidx.espresso.core)
-    implementation(libs.skrapeit.browser.fetcher)
-    implementation(libs.ui.test.manifest)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.glance.material)
     implementation(libs.androidx.glance.appwidget)
-    androidTestImplementation(platform(libs.androidx.compose.bom.v20230300))
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-test-junit4:1.7.8")
-    //noinspection UseTomlInstead
-    implementation("androidx.compose.ui:ui-tooling:1.7.8")
-    //noinspection UseTomlInstead
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.8")
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)

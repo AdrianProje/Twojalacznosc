@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.Zastepstwa
+package com.ak.twojetlimc.zastepstwa
 
 //Jedno zastepstwo
 data class Zastepstwo(

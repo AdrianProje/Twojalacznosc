@@ -5,7 +5,7 @@ import android.content.Intent
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 
-class BroadcastReceiver : android.content.BroadcastReceiver() {
+open class BroadcastReceiver : android.content.BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val workRequest = OneTimeWorkRequestBuilder<RefreshWorker>().build()
         val workRequest2 = OneTimeWorkRequestBuilder<ZasCheck>().build()

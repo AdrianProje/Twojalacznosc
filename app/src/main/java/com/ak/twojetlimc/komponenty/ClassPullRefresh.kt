@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.ak.twojetlimc.PlanLekcji.webscrapeT
+import com.ak.twojetlimc.planLekcji.webscrapeT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

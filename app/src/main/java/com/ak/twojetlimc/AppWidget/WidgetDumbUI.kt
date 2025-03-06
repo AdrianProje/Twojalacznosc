@@ -8,6 +8,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.components.Scaffold
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -48,7 +49,7 @@ class WidgetActionUpdate : AppWidgetProvider() {
         }
 
         if (plantimestamp != "" && fafsch != "") {
-            
+
         }
 
         super.onUpdate(context, appWidgetManager, appWidgetIds)
@@ -57,19 +58,21 @@ class WidgetActionUpdate : AppWidgetProvider() {
 
 @Composable
 private fun MyContent() {
-    Column(
-        modifier = GlanceModifier.fillMaxSize().background(GlanceTheme.colors.widgetBackground)
+    Scaffold(
+        backgroundColor = GlanceTheme.colors.widgetBackground
     ) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth().background(GlanceTheme.colors.surface),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Sala placeholder")
-        }
-        Row(
-            modifier = GlanceModifier.fillMaxSize()
-        ) {
-            Text("Przedmiot placeholder")
+        Column {
+            Row(
+                modifier = GlanceModifier.fillMaxWidth().background(GlanceTheme.colors.surface),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Sala placeholder")
+            }
+            Row(
+                modifier = GlanceModifier.fillMaxSize()
+            ) {
+                Text("Przedmiot placeholder")
+            }
         }
     }
 }

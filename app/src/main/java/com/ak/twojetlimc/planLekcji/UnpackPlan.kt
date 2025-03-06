@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.PlanLekcji
+package com.ak.twojetlimc.planLekcji
 
 import android.content.Context
 import android.util.Log
@@ -161,7 +161,6 @@ fun webscrapeT(
                     1,
                     Schedule(tytul, filename, items)
                 )
-
             }
         }
         Log.d("UnpackPlan", "$tytul $items")

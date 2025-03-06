@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.Zastepstwa
+package com.ak.twojetlimc.zastepstwa
 
 import com.google.gson.Gson
 

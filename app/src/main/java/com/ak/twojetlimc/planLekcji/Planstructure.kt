@@ -1,4 +1,4 @@
-package com.ak.twojetlimc.PlanLekcji
+package com.ak.twojetlimc.planLekcji
 
 //Jedna lekcja z planu
 data class ScheduleItem(

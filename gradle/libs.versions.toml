@@ -1,133 +1,67 @@
 [versions]
-agp = "8.8.1"
-composeBom = "2024.08.00"
-composeBomVersion = "2024.09.01"
-coreKtxVersion = "1.13.1"
-datastoreCore = "1.1.1"
-kotlin = "2.0.0"
-coreKtx = "1.13.1"
+agp = "8.9.0"
+kotlin = "2.1.10"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
-activity = "1.9.2"
-constraintlayout = "2.1.4"
 legacySupportV4 = "1.0.0"
 gridlayout = "1.0.0"
-lifecycleLivedataKtx = "2.8.5"
-lifecycleViewmodelKtx = "2.8.5"
-navigationFragmentKtx = "2.7.7"
-navigationUiKtx = "2.8.0"
-fragmentKtx = "1.8.3"
-material3 = "1.3.0"
-navigationCompose = "2.8.0"
-mapsCompose = "6.1.2"
 preference = "1.2.1"
-skrapeit = "1.3.0-alpha.2"
-gson = "2.11.0"
-workRuntimeKtx = "2.9.0"
-ktorClientCore = "3.0.0-rc-1"
-ktorClientCio = "3.0.0-rc-1"
-firebaseCrashlyticsBuildtools = "3.0.2"
-httpclientAndroid = "4.3.5.1"
 accompanistSwiperefresh = "0.36.0"
-annotation = "1.8.2"
 javaxAnnotationApi = "1.3.2"
-htmlunit = "2.70.0"
-htmlunitAndroid = "2.67.0"
-dom = "2.3.0-jaxb-1.0.6"
-skrapeitBrowserFetcher = "1.3.0-alpha.2"
-skrapeitKtor = "1.0.0"
-skrapeitKtorExtension = "1.3.0-alpha.2"
-skrapeitDsl = "1.3.0-alpha.2"
-xalan = "2.7.3"
-core = "0.4.1"
-skrapeItVersion = "1.0.0-alpha7"
-itSkrapeit = "1.3.0-alpha.2"
-skrapeitAssertions = "1.3.0-alpha.2"
-skrapeitAsyncFetcher = "1.3.0-alpha.2"
-skrapeitBaseFetcher = "1.3.0-alpha.2"
-skrapeitBrowserFetcherVersion = "1.3.0-alpha.2"
-skrapeitCore = "1.0.0-alpha8"
-skrapeitParent = "0.1.1"
-skrapeitMockmvc = "1.0.2"
-skrapeitMockMvcExtension = "1.3.0-alpha.2"
-sax = "2.0.1"
-uiTestManifest = "1.7.1"
-kotlinxSerializationJson = "1.7.3"
 glanceMaterial = "1.1.1"
 glanceAppwidget = "1.1.1"
-lintGradle = "31.7.2"
+compose = "1.7.8"
+materialVersion = "1.7.8"
+javaxServletApi = "4.0.1"
+mimedir = "2.1.0"
+animationCore = "1.7.8"
 
 [libraries]
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.0" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.1" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.02.00" }
-androidx-compose-bom-v20230300 = { module = "androidx.compose:compose-bom", version = "2025.02.00" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.15.0" }
-androidx-core-ktx-v1101 = { module = "androidx.core:core-ktx", version = "1.15.0" }
-androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.1.2" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.1.2" }
+androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.1.3" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.1.3" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.8.7" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.0" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.0" }
+androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version.ref = "gridlayout" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.8.7" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.8.7" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.8.7" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.8.7" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.8.8" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.8.8" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.6" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.3.1" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.8.7" }
-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.8.8" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 skrapeit = { group = "it.skrape", name = "skrapeit", version = "1.2.2" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.12.1" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version = "2.10.0" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorClientCore" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktorClientCio" }
-firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
-httpclient-android = { group = "org.apache.httpcomponents", name = "httpclient-android", version.ref = "httpclientAndroid" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version = "1.9.1" }
 javax-annotation-api = { group = "javax.annotation", name = "javax.annotation-api", version.ref = "javaxAnnotationApi" }
-htmlunit = { group = "net.sourceforge.htmlunit", name = "htmlunit", version.ref = "htmlunit" }
-htmlunit-android = { group = "net.sourceforge.htmlunit", name = "htmlunit-android", version.ref = "htmlunitAndroid" }
-dom = { group = "org.w3c", name = "dom", version.ref = "dom" }
-skrapeit-browser-fetcher = { group = "it.skrape", name = "skrapeit-browser-fetcher", version = "1.2.2" }
-skrapeit-ktor = { group = "it.skrape", name = "skrapeit-ktor", version.ref = "skrapeitKtor" }
-skrapeit-ktor-extension = { group = "it.skrape", name = "skrapeit-ktor-extension", version.ref = "skrapeitKtorExtension" }
-skrapeit-dsl = { group = "it.skrape", name = "skrapeit-dsl", version.ref = "skrapeitDsl" }
-xalan = { group = "xalan", name = "xalan", version.ref = "xalan" }
-core = { group = "it.skrape", name = "core", version.ref = "core" }
-skrape-it = { group = "it.skrape", name = "skrape-it", version.ref = "skrapeItVersion" }
-it-skrapeit = { group = "it.skrape", name = "skrapeit", version.ref = "itSkrapeit" }
-skrapeit-assertions = { group = "it.skrape", name = "skrapeit-assertions", version.ref = "skrapeitAssertions" }
-skrapeit-async-fetcher = { group = "it.skrape", name = "skrapeit-async-fetcher", version.ref = "skrapeitAsyncFetcher" }
-skrapeit-base-fetcher = { group = "it.skrape", name = "skrapeit-base-fetcher", version.ref = "skrapeitBaseFetcher" }
-it-skrapeit-browser-fetcher = { group = "it.skrape", name = "skrapeit-browser-fetcher", version.ref = "skrapeitBrowserFetcherVersion" }
-skrapeit-core = { group = "it.skrape", name = "skrapeit-core", version.ref = "skrapeitCore" }
-skrapeit-parent = { group = "it.skrape", name = "skrapeit-parent", version.ref = "skrapeitParent" }
-skrapeit-mockmvc = { group = "it.skrape", name = "skrapeit-mockmvc", version.ref = "skrapeitMockmvc" }
-skrapeit-mock-mvc-extension = { group = "it.skrape", name = "skrapeit-mock-mvc-extension", version.ref = "skrapeitMockMvcExtension" }
-sax = { group = "sax", name = "sax", version.ref = "sax" }
-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.7.8" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.8.0" }
 androidx-glance-material = { group = "androidx.glance", name = "glance-material", version.ref = "glanceMaterial" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glanceAppwidget" }
-lint-gradle = { group = "com.android.tools.lint", name = "lint-gradle", version.ref = "lintGradle" }
+androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "materialVersion" }
+javax-servlet-api = { group = "javax.servlet", name = "javax.servlet-api", version.ref = "javaxServletApi" }
+mimedir = { group = "org.ietf", name = "mimedir", version.ref = "mimedir" }
+androidx-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +21,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TwojaŁączność">
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
@@ -51,6 +56,9 @@
             android:parentActivityName=".MainScreen" />
 
         <receiver android:name=".komponenty.BroadcastReceiver" />
+        <receiver
+            android:name=".komponenty.StopNotification"
+            android:exported="false" />
 
         <receiver
             android:name=".komponenty.SecondBroadcastReceiver"

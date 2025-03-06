@@ -78,20 +78,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.ak.twojetlimc.PlanLekcji.GetList
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.PlanCheck
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
 import com.ak.twojetlimc.komponenty.createalarm
+import com.ak.twojetlimc.planLekcji.GetList
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("NewApi")
@@ -446,7 +444,7 @@ fun NavGraph(
                     ClickableEmail("developer.adriank@gmail.com")
                 }
 
-                if (ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+                if (ApplicationInfo.FLAG_DEBUGGABLE == context.applicationInfo.flags) {
                     item {
                         Button(
                             onClick = { navController.navigate("debug") },
@@ -502,7 +500,7 @@ fun NavGraph(
                                 )
                                 Text(
                                     text =
-                                    "(Potrzebna zgoda na ustawianie alarmów oraz zgoda na powiadomienia)",
+                                        "(Potrzebna zgoda na ustawianie alarmów oraz zgoda na powiadomienia)",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -644,12 +642,11 @@ fun NavGraph(
                 }
 
                 item {
-
                     val scope = rememberCoroutineScope()
                     Column {
                         Text("Debug | Zarządzanie zapisanymi planami")
                         groupedlist.entries.reversed().forEach { (groupName, keys) ->
-                            var expanded by remember { mutableStateOf(false) }
+                            var expanded2 by remember { mutableStateOf(false) }
                             val rotationState by animateFloatAsState(
                                 targetValue = if (expanded) 180f else 0f,
                                 label = "rotation"
@@ -658,7 +655,7 @@ fun NavGraph(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { expanded = !expanded }
+                                        .clickable { expanded2 = !expanded2 }
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -684,7 +681,7 @@ fun NavGraph(
                                     }) {
                                         Text("Usuń wszy.")
                                     }
-                                    IconButton(onClick = { expanded = !expanded }) {
+                                    IconButton(onClick = { expanded2 = !expanded2 }) {
                                         Icon(
                                             imageVector = Icons.Filled.ArrowDropDown,
                                             contentDescription = "Expand/Collapse",
@@ -693,7 +690,7 @@ fun NavGraph(
                                     }
                                 }
 
-                                AnimatedVisibility(visible = expanded) {
+                                AnimatedVisibility(visible = expanded2) {
                                     Column(modifier = Modifier.padding(start = 16.dp)) {
                                         keys.forEach { key ->
                                             Row(verticalAlignment = Alignment.CenterVertically) {
