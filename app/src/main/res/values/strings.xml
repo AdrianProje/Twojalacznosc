@@ -53,4 +53,5 @@
     <string name="shortcut_short">Tekst skrótu</string>
     <string name="shortcut_long">Tekst długiego opisu skrótu</string>
     <string name="shortcut_disabled_message1">Tekst skrótu gdy wyłączony</string>
+    <string name="WIDGET_Opis">Opis widgetu z planem lekcji</string>
 </resources>

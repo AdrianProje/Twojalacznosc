@@ -46,4 +46,5 @@
     <string name="shortcut_short">Scheagule</string>
     <string name="shortcut_long">Instant scheagule open</string>
     <string name="shortcut_disabled_message1">This shortcut is not available right now</string>
+    <string name="WIDGET_Opis">Add schedule to your home screen</string>
 </resources>

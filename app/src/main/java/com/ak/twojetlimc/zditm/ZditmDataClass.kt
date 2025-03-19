@@ -15,8 +15,8 @@ data class Tablicaodjazow(
 
 @Serializable
 data class Departure(
-    val line_number: String,
-    val direction: String,
+    val line_number: String?,
+    val direction: String?,
     val time_real: Int?,
     val time_scheduled: String?
 )

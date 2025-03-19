@@ -46,4 +46,5 @@
     <string name="shortcut_short">Plan lekcji</string>
     <string name="shortcut_long">Natychmiastowe otwarcie planu lekcji</string>
     <string name="shortcut_disabled_message1">Ten skrót jest teraz niedostępny</string>
+    <string name="WIDGET_Opis">Dodaj plan lekcji do ekranu startowego</string>
 </resources>

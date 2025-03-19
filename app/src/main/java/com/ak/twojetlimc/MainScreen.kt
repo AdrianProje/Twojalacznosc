@@ -12,12 +12,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,11 +36,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -41,7 +54,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ak.twojetlimc.komponenty.Datastoremanager
+import com.ak.twojetlimc.komponenty.WebsiteLink
 import com.ak.twojetlimc.komponenty.downloadplanandzas
+import com.ak.twojetlimc.komponenty.instalnewversion
+import com.ak.twojetlimc.komponenty.isthereanewversion
 import com.ak.twojetlimc.mainbottomnav.HelpScreen
 import com.ak.twojetlimc.mainbottomnav.HomeScreen
 import com.ak.twojetlimc.mainbottomnav.MainNavItems
@@ -78,8 +94,10 @@ class MainScreen : AppCompatActivity() {
         setContent {
             AppTheme {
                 val navController = rememberNavController()
-                //Sprawdzanie czy aplikacja włączona jest pierwszy raz
+
                 val contextu = LocalContext.current
+
+                var updateready by remember { mutableStateOf(false) }
 
                 LaunchedEffect(key1 = accessdata) {
                     val value = accessdata.getUPObbe.first()
@@ -97,7 +115,18 @@ class MainScreen : AppCompatActivity() {
                             Log.d("Main_Screen", "Uruchomiono paranoje")
                         }
                     }
-                }
+                }  //Sprawdzanie czy aplikacja włączona jest pierwszy raz
+
+                LaunchedEffect(key1 = Unit) {
+                    if (!contextu.packageManager.getPackageInfo(
+                            contextu.packageName,
+                            0
+                        ).versionName.toString()
+                            .endsWith("debug") && contextu.packageManager.canRequestPackageInstalls()
+                    ) {
+                        updateready = isthereanewversion(contextu)
+                    }
+                } //Sprawdzanie czy jest nowa wersja aplikacji
 
                 val destination = when (intent.getStringExtra("destination")) {
                     "plan" -> {
@@ -119,6 +148,52 @@ class MainScreen : AppCompatActivity() {
                         BottomNavigationBar(navController = navController)
                     }
                 ) { innerPadding ->
+                    if (updateready) {
+                        val context = LocalContext.current
+                        Dialog(onDismissRequest = { }) {
+                            Card(
+                                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                                border = BorderStroke(1.dp, Color.Black),
+                                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp)
+                                    .padding(10.dp),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(15.dp)
+                                        .weight(0.8f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "Nowa aktualizacja jest dostępna!\n",
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Text(text = "Nowa aktualizacja dodaje nowe funkcje, poprawia bezpieczeństwo oraz pozwala jeszczze bardziej cieszyć się aplikacją!\n")
+                                    WebsiteLink(
+                                        "Pobierz ręcznie",
+                                        "https://www.tlimc.szczecin.pl/Apka/TwojaLacznosc.apk"
+                                    )
+
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(0.2f),
+                                    horizontalArrangement = Arrangement.Center,
+                                ) {
+                                    Button(
+                                        onClick = { instalnewversion(context) },
+                                        modifier = Modifier.padding(8.dp),
+                                    ) {
+                                        Text("Zainstaluj")
+                                    }
+                                }
+                            }
+                        }
+                    }
                     NavHostContainer(
                         navController = navController,
                         destination,

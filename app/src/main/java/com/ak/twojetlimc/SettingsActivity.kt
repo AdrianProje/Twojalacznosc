@@ -3,7 +3,6 @@ package com.ak.twojetlimc
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -128,11 +127,12 @@ fun NavGraph(
 
         composable(route = "mainsettings") {
             LaunchedEffect(key1 = Unit) {
+                favschedulevalue = (datastoremanager.getFavSchedule.first() ?: "").split(",")[0]
                 cheched = datastoremanager.getFavScheduleOnOff.first() == true
                 cheched2 = datastoremanager.getParanoia.first() == true
                 cheched3 = datastoremanager.getUserRefresh.first() == true
                 cheched4 = datastoremanager.getOnlineMode.first() == true
-                favschedulevalue = (datastoremanager.getFavSchedule.first() ?: "").split(",")[0]
+
                 datastoremanager.getDefaultPlan.collect { defultplan ->
                     when (defultplan) {
                         1 -> selectedchip = options[0]
@@ -444,7 +444,11 @@ fun NavGraph(
                     ClickableEmail("developer.adriank@gmail.com")
                 }
 
-                if (ApplicationInfo.FLAG_DEBUGGABLE == context.applicationInfo.flags) {
+                if (context.packageManager.getPackageInfo(
+                        context.packageName,
+                        0
+                    ).versionName.toString().endsWith("debug")
+                ) {
                     item {
                         Button(
                             onClick = { navController.navigate("debug") },

@@ -52,6 +52,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -78,6 +79,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -138,7 +140,6 @@ import java.io.InputStreamReader
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-
 
 //-------------------------------Pomoc-------------------------------------------
 
@@ -300,14 +301,18 @@ fun HelpScreen() {
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
-    var zditmcardvisible by remember { mutableStateOf(false) }
     var showdialog by remember { mutableStateOf(false) }
+    var isloadingzditm by remember { mutableStateOf(false) }
 
     var selectedKey by remember { mutableIntStateOf(0) }
-
-    var zditmtest by remember { mutableStateOf("") }
+    var refreshzditmcount by remember { mutableIntStateOf(0) }
 
     var listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
+
+    val rotationStateloading by animateFloatAsState(
+        targetValue = if (isloadingzditm) 360f else 0f,
+        label = "rotation"
+    )
 
     val listState = rememberLazyListState()
 
@@ -320,9 +325,10 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
         }
     } //Przewijanie losowych tekstów na pasku
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit, refreshzditmcount) {
         while (true) {
             launch(Dispatchers.IO) {
+                isloadingzditm = true
                 try {
                     val KM3220632 = getthedeparturesdata(20632)
                     val KM2220622 = getthedeparturesdata(20622)
@@ -335,6 +341,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                 } catch (e: Exception) {
                     println("Error fetching data: ${e.message}")
                 }
+                isloadingzditm = false
             }
             delay(10000)
         }
@@ -394,17 +401,18 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
             }
         }
     }
+
     LazyColumn(
-        Modifier
-            .fillMaxHeight()
+        modifier = Modifier
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = padding
     ) {
+
         item {
             val context = LocalContext.current
-
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -435,7 +443,8 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 
                 val assetManager = context.assets
                 val inputStream = assetManager.open("Tipsu")
-                val tips = BufferedReader(InputStreamReader(inputStream)).readLines()
+                val tips =
+                    BufferedReader(InputStreamReader(inputStream)).readLines()
                 inputStream.close()
 
 
@@ -505,7 +514,10 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier.fillParentMaxWidth(0.95f)
             ) {
-                Row(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier
+                        .padding(10.dp)
+                ) {
                     Text(
                         "ZDiTM Szczecin",
                         modifier = Modifier.weight(1f)
@@ -524,7 +536,23 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                             contentDescription = "Info"
                         )
                     }
+
+                    IconButton(
+                        onClick = {
+                            ++refreshzditmcount
+                        },
+                        modifier = Modifier
+                            .weight(0.2f)
+                            .size(20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Refresh",
+                            modifier = Modifier.rotate(rotationStateloading)
+                        )
+                    }
                 }
+
 
                 for (item in listofzditm) {
                     var expanded by remember { mutableStateOf(false) }
@@ -541,18 +569,19 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                         }
 
                         null -> {
-                            item.departures.first().time_scheduled.toString()
+                            " " + item.departures.first().time_scheduled.toString()
                         }
 
                         else -> {
-                            " Za: " + realtime + " min."
+                            " Za: $realtime min."
                         }
                     }
+
 
                     Row(
                         modifier = Modifier
                             .clickable { expanded = !expanded }
-                            .padding(10.dp)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -563,6 +592,12 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                             Text(
                                 text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction}) |" + odjazd
                             )
+                            if (item.message != null) {
+                                Text(
+                                    text = item.message.toString(),
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
 
                         IconButton(
@@ -583,13 +618,13 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                 .forEach { departure ->
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = departure.line_number,
+                                            text = departure.line_number.toString(),
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .weight(1f)
                                         )
                                         Text(
-                                            text = departure.direction,
+                                            text = departure.direction.toString(),
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .weight(1f)
@@ -752,7 +787,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var selectedChipOption = remember { mutableIntStateOf(1) }
-    var progressofprogressbar by remember { mutableStateOf(0f) }
+    var progressofprogressbar by remember { mutableFloatStateOf(0f) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -980,8 +1015,8 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     LaunchedEffect(true) {
         while (true) {
-            delay(60000)
             currenthour = getcurrenthour()
+            delay(60000)
         }
     } //Aktualizacja aktualnej godziny lekcyjnej do scrolowania
 
@@ -1198,7 +1233,12 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
                                 if (listitems != null && !przedmiot.isEmpty() && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
-                                        if (numerlekcji == zastdata2.numerLekcji) {
+                                        if (przedmiot.contains(
+                                                "religia"
+                                            ) && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
+                                                "religia"
+                                            ) || numerlekcji == zastdata2.numerLekcji
+                                        ) {
                                             OutlinedCard(
                                                 modifier = Modifier
                                                     .padding(vertical = 5.dp)
@@ -1217,7 +1257,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                         horizontalAlignment = Alignment.CenterHorizontally,
                                                         modifier = Modifier
                                                             .align(Alignment.CenterVertically)
-                                                            .weight(0.5f)
+                                                            .weight(0.43f)
                                                     ) {
                                                         Text(
                                                             text = "⬆️",
@@ -1300,7 +1340,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         planstamptext = accessdatastoremanager.getPlanTimestamp.first().toString()
                     }
                     if (planstamptext != "") {
-                        Text(text = "⬇️ Offline: " + planstamptext)
+                        Text(text = "⬇️ Offline: $planstamptext")
                     } else {
                         Text(text = "Brak pobranego planu lekcji")
                     }

@@ -1,7 +1,6 @@
 package com.ak.twojetlimc
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.Manifest.permission.SCHEDULE_EXACT_ALARM
 import android.app.AlarmManager
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
 import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import android.widget.Toast
@@ -19,21 +19,24 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -63,6 +67,7 @@ import androidx.work.WorkManager
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.komponenty.downloadplanandzas
+import com.ak.twojetlimc.planLekcji.GetList
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -90,54 +95,13 @@ class OBBE : AppCompatActivity() {
                 startDestination = "OBBE_start",
             ) {
                 composable(route = "OBBE_start") {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = padding
-                    ) {
-                        item {
-                            Image(
-                                painter = painterResource(id = R.drawable.lacznosclogo),
-                                contentDescription = R.string.OBBE_Zdjecie_text.toString(),
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(300.dp),
-                            )
-                        }
-
-                        item {
-                            Text(
-                                text = stringResource(id = R.string.OBBE_text),
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleLarge,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-
-                        item {
-                            Row {
-                                Text(
-                                    stringResource(id = R.string.OBEE_WarunkiZgoda),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                                Switch(
-                                    checked = checked,
-                                    onCheckedChange = {
-                                        checked = it
-                                        vibrator.vibrate(effect)
-                                    }
-                                )
-                            }
-                        }
-
-                        item {
+                    Scaffold(
+                        bottomBar = {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                modifier = Modifier.fillMaxHeight()
+                                modifier = Modifier
+                                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                                    .padding(horizontal = 10.dp)
                             ) {
                                 Button(
                                     onClick = { navController.navigate("OBBE_terms") },
@@ -168,7 +132,7 @@ class OBBE : AppCompatActivity() {
                                                                         "OBBE",
                                                                         "Zakończono pracę pomyślnie, przechodznie do przyznania powiadomień"
                                                                     )
-                                                                    navController.navigate("OBBE_Permissions")
+                                                                    navController.navigate("OBBE_konfiguracja")
                                                                 } else {
                                                                     Log.d("OBBE", "Błąd")
                                                                     navController.navigate("OBBE_pob_error")
@@ -220,35 +184,88 @@ class OBBE : AppCompatActivity() {
                                 }
                             }
                         }
+                    ) { padding ->
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            contentPadding = padding
+                        ) {
+                            item {
+                                Image(
+                                    painter = painterResource(id = R.drawable.lacznosclogo),
+                                    contentDescription = R.string.OBBE_Zdjecie_text.toString(),
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(300.dp),
+                                )
+                            }
+
+                            item {
+                                Text(
+                                    text = stringResource(id = R.string.OBBE_text),
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+
+                            item {
+                                Row {
+                                    Text(
+                                        stringResource(id = R.string.OBEE_WarunkiZgoda),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                    Switch(
+                                        checked = checked,
+                                        onCheckedChange = {
+                                            checked = it
+                                            vibrator.vibrate(effect)
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
                 composable(route = "OBBE_terms") {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        contentPadding = padding
-                    ) {
-                        item {
-                            val assetManager = contextu.assets
-                            val inputStream = assetManager.open("terms")
-                            val terms = inputStream.bufferedReader().use { it.readText() }
-                            Text(text = terms)
-                            inputStream.close()
-                        }
-                        item {
+                    Scaffold(
+                        bottomBar = {
                             Button(
                                 onClick = { navController.navigate("OBBE_start") },
-                                Modifier.fillMaxWidth(1f), shape = MaterialTheme.shapes.medium,
+                                Modifier
+                                    .fillMaxWidth(1f)
+                                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                                    .padding(horizontal = 10.dp),
+                                shape = MaterialTheme.shapes.medium,
                             ) {
                                 Text(text = stringResource(id = R.string.OBBE_Back))
                             }
                         }
+                    ) { padding ->
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            contentPadding = padding
+                        ) {
+                            item {
+                                val assetManager = contextu.assets
+                                val inputStream = assetManager.open("terms")
+                                val terms = inputStream.bufferedReader().use { it.readText() }
+                                Text(text = terms)
+                                inputStream.close()
+                            }
+                        }
                     }
+
                 }
 
                 composable(route = "OBBE_pobieranie") {
@@ -294,74 +311,198 @@ class OBBE : AppCompatActivity() {
                     }
                 }
 
+                composable(route = "OBBE_konfiguracja") {
+                    val scheduleData by remember { mutableStateOf(GetList(0, contextu)) }
+
+                    var checkedoption by remember { mutableStateOf("") }
+
+                    Scaffold(
+                        topBar = {
+                            Column(
+                                modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+                            ) {
+                                Text(
+                                    stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                                        .padding(10.dp),
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp)
+                                ) {
+                                    Text(
+                                        "Brak (Domyślne)",
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .align(Alignment.CenterVertically)
+                                    )
+                                    Checkbox(
+                                        checked = checkedoption == "",
+                                        onCheckedChange = { isChecked ->
+                                            if (isChecked) {
+                                                checkedoption = ""
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        },
+                        bottomBar = {
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth(1f)
+                                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                                    .padding(horizontal = 10.dp),
+                                onClick = {
+                                    if (checkedoption != "") {
+                                        serviceScope.launch {
+                                            accessdatastoremanager.saveFavSchedule(checkedoption)
+                                            accessdatastoremanager.saveFavScheduleOnOff(true)
+                                        }
+                                    }
+                                    navController.navigate("OBBE_Permissions")
+                                }
+                            ) {
+                                Text("Przejdź dalej")
+                            }
+                        }
+                    ) { padding ->
+                        LazyColumn(
+                            contentPadding = padding
+                        ) {
+                            scheduleData.forEach { item ->
+                                item {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable(onClick = {
+                                                checkedoption =
+                                                    item!!.imieinazwisko + "," + item.htmlvalue
+                                            })
+                                            .padding(10.dp)
+                                    ) {
+                                        Text(
+                                            text = item!!.imieinazwisko,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .align(Alignment.CenterVertically)
+                                        )
+                                        Checkbox(
+                                            checked = checkedoption == item.imieinazwisko + "," + item.htmlvalue,
+                                            onCheckedChange = { isChecked ->
+                                                if (isChecked) {
+                                                    checkedoption =
+                                                        item.imieinazwisko + "," + item.htmlvalue
+                                                } else {
+                                                    if (checkedoption == item.imieinazwisko) checkedoption =
+                                                        ""
+                                                    else checkedoption
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 composable(route = "OBBE_Permissions") {
                     val alarmManager =
                         applicationContext.getSystemService(ALARM_SERVICE) as AlarmManager
-                    requestPermissions(arrayOf(POST_NOTIFICATIONS, SCHEDULE_EXACT_ALARM), 1)
+                    requestPermissions(
+                        arrayOf(
+                            POST_NOTIFICATIONS
+                        ), 1
+                    )
                     when {
                         ContextCompat.checkSelfPermission(
                             this@OBBE,
                             POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED && alarmManager.canScheduleExactAlarms() -> {
-
                             createalarm(applicationContext)
-
-                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             startActivity(obbetomaintent)
                         }
 
                         else -> {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 10.dp)
-                                    .padding(padding),
-                                verticalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Text(
-                                    text = "Aplikacja korzysta z uprawnień powiadamiania oraz planowania alarmów",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                Text(
-                                    text = "\n\n- Potrzebujemy twojego zezwolenia na powiadomienia (do powiadamiania o planie lekcji oraz innych ważnych rzeczach)\n\n- Potrzebujemy twojego zezwolenia na ustawianie alarmów, aby aplikacja mogła w tle sprawdzać nadchodzące lekcje i wykonywać odpowiednie czynności związane z nimi\n\nZezwolenia zawsze możesz wycofać później w ustawieniach systemu",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .weight(1f),
-                                    contentAlignment = Alignment.BottomStart
-
-                                ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            Scaffold(
+                                bottomBar = {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .windowInsetsPadding(WindowInsets.safeDrawing)
+                                            .padding(horizontal = 10.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Button(
-                                            onClick = {
-                                                createalarm(applicationContext)
-                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                                startActivity(obbetomaintent)
-                                            },
-                                            shape = MaterialTheme.shapes.medium,
-                                            modifier = Modifier.weight(0.5f)
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         ) {
-                                            Text(text = "Przejdź do aplikacji")
-                                        }
-                                        Button(
-                                            onClick = {
-                                                startActivity(
-                                                    Intent(
-                                                        ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+                                            Button(
+                                                onClick = {
+                                                    startActivity(
+                                                        Intent(
+                                                            ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                                            "package:${applicationContext.packageName}".toUri()
+                                                        )
                                                     )
-                                                )
-                                            },
-                                            shape = MaterialTheme.shapes.medium,
-                                            modifier = Modifier.weight(0.5f)
+                                                },
+                                                shape = MaterialTheme.shapes.medium,
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(text = "Przyznaj Alarm")
+                                            }
+                                            Button(
+                                                onClick = {
+                                                    startActivity(
+                                                        Intent(
+                                                            ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                                            "package:${applicationContext.packageName}".toUri()
+                                                        )
+                                                    )
+                                                },
+                                                shape = MaterialTheme.shapes.medium,
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(text = "Przyznaj Instalowanie")
+                                            }
+                                        }
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         ) {
-                                            Text(text = "Przyznaj teraz")
+                                            Button(
+                                                onClick = {
+                                                    createalarm(applicationContext)
+                                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                                    startActivity(obbetomaintent)
+                                                },
+                                                shape = MaterialTheme.shapes.medium,
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(text = "Przejdź do aplikacji")
+                                            }
                                         }
                                     }
+                                }
+                            ) { padding ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 10.dp)
+                                        .padding(padding),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = "Aplikacja korzysta z uprawnień powiadamiania oraz planowania alarmów",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    Text(
+                                        text = "\n\n- Potrzebujemy twojego zezwolenia na powiadomienia (do powiadamiania o planie lekcji oraz innych ważnych rzeczach)\n\n- Potrzebujemy twojego zezwolenia na ustawianie alarmów, aby aplikacja mogła w tle sprawdzać nadchodzące lekcje i wykonywać odpowiednie czynności związane z nimi\n\n-Potrzebujemy twojego zezwolenia na instalowanie aplikacji na Twoim urządzeniu, aby automatycznie aktualizować aplikację\n\n-Dla lepszego działania, przyznaj możliwość nieograniczonego działania aplikacji w tle (Niograniczone wykorzystywanie baterii)\n\nZezwolenia zawsze możesz wycofać później w ustawieniach systemu",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
                                 }
                             }
                         }

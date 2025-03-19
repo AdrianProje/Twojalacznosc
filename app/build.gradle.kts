@@ -25,7 +25,7 @@ android {
             useSupportLibrary = true
         }
         targetSdk = 35
-        versionName = "Ciuty - 0.50.9.2"
+        versionName = "Ciuty - 0.51"
     }
 
     buildTypes {
