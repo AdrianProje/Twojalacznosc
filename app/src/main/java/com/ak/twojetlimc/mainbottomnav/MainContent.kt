@@ -555,101 +555,103 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 
 
                 for (item in listofzditm) {
-                    var expanded by remember { mutableStateOf(false) }
-                    val rotationState by animateFloatAsState(
-                        targetValue = if (expanded) 180f else 0f,
-                        label = "rotation"
-                    )
+                    if (!item.departures.isEmpty()) {
+                        var expanded by remember { mutableStateOf(false) }
+                        val rotationState by animateFloatAsState(
+                            targetValue = if (expanded) 180f else 0f,
+                            label = "rotation"
+                        )
 
-                    val realtime = item.departures.first().time_real
+                        val realtime = item.departures.first().time_real
 
-                    val odjazd = when (realtime) {
-                        0 -> {
-                            " Na przystanku"
+                        val odjazd = when (realtime) {
+                            0 -> {
+                                " Na przystanku"
+                            }
+
+                            null -> {
+                                " " + item.departures.first().time_scheduled.toString()
+                            }
+
+                            else -> {
+                                " Za: $realtime min."
+                            }
                         }
 
-                        null -> {
-                            " " + item.departures.first().time_scheduled.toString()
-                        }
 
-                        else -> {
-                            " Za: $realtime min."
-                        }
-                    }
-
-
-                    Row(
-                        modifier = Modifier
-                            .clickable { expanded = !expanded }
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Column(
+                        Row(
                             modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .weight(1f)
+                                .clickable { expanded = !expanded }
+                                .padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
-                            Text(text = "(${item.stop_number}) " + item.stop_name)
-                            Text(
-                                text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction}) |" + odjazd
-                            )
-                            if (item.message != null) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.8f)
+                                    .weight(1f)
+                            ) {
+                                Text(text = "(${item.stop_number}) " + item.stop_name)
                                 Text(
-                                    text = item.message.toString(),
-                                    overflow = TextOverflow.Ellipsis
+                                    text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction}) |" + odjazd
+                                )
+                                if (item.message != null) {
+                                    Text(
+                                        text = item.message.toString(),
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+
+                            IconButton(
+                                onClick = { expanded = !expanded }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDropDown,
+                                    contentDescription = "Rozwiń/Zwiń",
+                                    modifier = Modifier.rotate(rotationState)
                                 )
                             }
                         }
 
-                        IconButton(
-                            onClick = { expanded = !expanded }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                contentDescription = "Rozwiń/Zwiń",
-                                modifier = Modifier.rotate(rotationState)
-                            )
-                        }
-                    }
+                        AnimatedVisibility(visible = expanded) {
+                            Spacer(Modifier.weight(1f))
+                            Column(modifier = Modifier.padding(10.dp)) {
+                                item.departures.subList(1, item.departures.size.coerceAtMost(5))
+                                    .forEach { departure ->
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = departure.line_number.toString(),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .weight(1f)
+                                            )
+                                            Text(
+                                                text = departure.direction.toString(),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .weight(1f)
+                                            )
+                                            val timetext = when (departure.time_real) {
+                                                0 -> {
+                                                    " Na przystanku"
+                                                }
 
-                    AnimatedVisibility(visible = expanded) {
-                        Spacer(Modifier.weight(1f))
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            item.departures.subList(1, item.departures.size.coerceAtMost(5))
-                                .forEach { departure ->
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = departure.line_number.toString(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(1f)
-                                        )
-                                        Text(
-                                            text = departure.direction.toString(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(1f)
-                                        )
-                                        val timetext = when (departure.time_real) {
-                                            0 -> {
-                                                " Na przystanku"
-                                            }
+                                                null -> {
+                                                    " " + departure.time_scheduled.toString()
+                                                }
 
-                                            null -> {
-                                                " " + departure.time_scheduled.toString()
+                                                else -> {
+                                                    departure.time_real.toString() + " min."
+                                                }
                                             }
-
-                                            else -> {
-                                                departure.time_real.toString() + " min."
-                                            }
+                                            Text(
+                                                text = timetext,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .weight(1f)
+                                            )
                                         }
-                                        Text(
-                                            text = timetext,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(1f)
-                                        )
                                     }
-                                }
+                            }
                         }
                     }
                 }
@@ -973,7 +975,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     LaunchedEffect(refreshTrigger2) {
         sheetState.hide()
         showBottomSheet = false
-    }
+    } //Schowaj BottomSheet
 
     when (day.value) {
         1 -> daytext = daynames[0]
@@ -1029,6 +1031,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             ) {
                 Text(
                     if (selectedData != "") {
+                        Log.d("PLANLOADING", selectedData.toString())
                         selectedData.toString().substring(0, 5) + "..."
                     } else {
                         ""
@@ -1233,9 +1236,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
                                 if (listitems != null && !przedmiot.isEmpty() && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
-                                        if (przedmiot.contains(
-                                                "religia"
-                                            ) && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
+                                        if (przedmiot.contains("religia") && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
                                                 "religia"
                                             ) || numerlekcji == zastdata2.numerLekcji
                                         ) {

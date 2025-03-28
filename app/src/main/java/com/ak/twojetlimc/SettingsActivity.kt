@@ -70,6 +70,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.updateAll
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -77,6 +78,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.PlanCheck
@@ -250,7 +252,10 @@ fun NavGraph(
                                         text = { Text(text = data!!.imieinazwisko) },
                                         onClick = {
                                             expanded2 = false
-                                            scope.launch { datastoremanager.saveFavSchedule(data!!.imieinazwisko + "," + data.htmlvalue) }
+                                            scope.launch {
+                                                datastoremanager.saveFavSchedule(data!!.imieinazwisko + "," + data.htmlvalue)
+                                                WidgetDumbUI().updateAll(context)
+                                            }
                                             favschedulevalue = data!!.imieinazwisko
                                         })
                                 }
@@ -263,15 +268,21 @@ fun NavGraph(
                                 vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
                                 if (it) {
                                     cheched = true
-                                    scope.launch { datastoremanager.saveFavScheduleOnOff(true) }
-                                    scope.launch { datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue) }
+                                    scope.launch {
+                                        datastoremanager.saveFavScheduleOnOff(true)
+                                        datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue)
+                                        WidgetDumbUI().updateAll(context)
+                                    }
                                     favschedulevalue = scheduleData.first()!!.imieinazwisko
 
                                 } else {
                                     cheched = false
-                                    scope.launch { datastoremanager.saveFavSchedule("") }
+                                    scope.launch {
+                                        datastoremanager.saveFavScheduleOnOff(false)
+                                        datastoremanager.saveFavSchedule("")
+                                        WidgetDumbUI().updateAll(context)
+                                    }
                                     favschedulevalue = ""
-                                    scope.launch { datastoremanager.saveFavScheduleOnOff(false) }
                                 }
                             }
                         )

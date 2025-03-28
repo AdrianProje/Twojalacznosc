@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
+import android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -48,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -122,7 +124,7 @@ class MainScreen : AppCompatActivity() {
                             contextu.packageName,
                             0
                         ).versionName.toString()
-                            .endsWith("debug") && contextu.packageManager.canRequestPackageInstalls()
+                            .endsWith("debug")
                     ) {
                         updateready = isthereanewversion(contextu)
                     }
@@ -148,7 +150,7 @@ class MainScreen : AppCompatActivity() {
                         BottomNavigationBar(navController = navController)
                     }
                 ) { innerPadding ->
-                    if (updateready) {
+                    if (updateready && contextu.packageManager.canRequestPackageInstalls()) {
                         val context = LocalContext.current
                         Dialog(onDismissRequest = { }) {
                             Card(
@@ -192,7 +194,67 @@ class MainScreen : AppCompatActivity() {
                                     }
                                 }
                             }
-                        }
+                        } //Można zainstalować aktualizację
+                    } else if (updateready) {
+                        Dialog(onDismissRequest = { updateready = false }) {
+                            Card(
+                                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                                border = BorderStroke(1.dp, Color.Black),
+                                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp)
+                                    .padding(10.dp),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(15.dp)
+                                        .weight(0.8f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "Nowa aktualizacja jest dostępna!\nBrak uprawnień do instalacji\n",
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Text(
+                                        text = "Nowa aktualizacja dodaje nowe funkcje, poprawia bezpieczeństwo oraz pozwala jeszcze bardziej cieszyć się aplikacją!\n\nPrzyznaj uprawnienia aby zainstalować, lub",
+                                        textAlign = TextAlign.Center
+                                    )
+                                    WebsiteLink(
+                                        "Pobierz ręcznie",
+                                        "https://www.tlimc.szczecin.pl/Apka/TwojaLacznosc.apk"
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .weight(0.2f)
+                                        .padding(8.dp),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Button(
+                                        onClick = { updateready = false },
+                                        modifier = Modifier.padding(horizontal = 5.dp),
+                                    ) {
+                                        Text("Anuluj")
+                                    }
+                                    Button(
+                                        onClick = {
+                                            startActivity(
+                                                Intent(
+                                                    ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                                    "package:${applicationContext.packageName}".toUri()
+                                                )
+                                            )
+                                        },
+                                        modifier = Modifier.padding(horizontal = 5.dp),
+                                    ) {
+                                        Text("Przyznaj instalowanie")
+                                    }
+                                }
+                            }
+                        } //Aktualizacja dostępna ale brak uprawnień
                     }
                     NavHostContainer(
                         navController = navController,

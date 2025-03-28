@@ -35,9 +35,6 @@ class Datastoremanager(private val context: Context) {
         val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
         val SCHEDULE_PREFIX = stringPreferencesKey("schedule_")
         val ZASTEPSTWO_PREFIX = stringPreferencesKey("zastepstwo_")
-
-//        const val SCHEDULE_PREFIX = "schedule_"
-//        const val ZASTEPSTWO_PREFIX = "zastepstwo_"
     }
 
     suspend fun editPreferences(action: suspend (MutablePreferences) -> Unit) {
@@ -61,7 +58,7 @@ class Datastoremanager(private val context: Context) {
     }
 
     val getUserRefresh: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[USER_REFRESH] ?: false }
+        context.dataStore.data.map { preferences -> preferences[USER_REFRESH] ?: true }
 
     suspend fun saveUserRefresh(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[USER_REFRESH] = value }
