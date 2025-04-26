@@ -16,6 +16,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.components.Scaffold
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -33,6 +34,7 @@ import com.ak.twojetlimc.SettingsActivity
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.getcurrenthour
 import com.ak.twojetlimc.planLekcji.Schedule
+import com.ak.twojetlimc.zastepstwa.Zastepstwo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -80,13 +82,14 @@ class WidgetDumbUI : GlanceAppWidget() {
                 val schedulefromload = runBlocking {
                     datastore.getSchedule(context, "$plantimestamp/$fafsch", 1)
                 }
-                MyContent(schedulefromload)
+                MyContent(schedulefromload, datastore, context)
             }
         }
     }
 }
 
 class WidgetActionUpdate : AppWidgetProvider() {
+    //TODO(Ulepszyć on update)
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -104,10 +107,15 @@ class WidgetActionUpdate : AppWidgetProvider() {
 }
 
 @Composable
-private fun MyContent(schedulefromload: Schedule?) {
+private fun MyContent(
+    schedulefromload: Schedule?,
+    datastore: Datastoremanager,
+    context: Context
+) {
     val currenthour = getcurrenthour()
+    var listitems = mutableListOf<Zastepstwo>()
     Scaffold(
-        backgroundColor = GlanceTheme.colors.background,
+        backgroundColor = GlanceTheme.colors.widgetBackground,
         modifier = GlanceModifier.clickable(
             actionStartActivity(MainScreen::class.java)
         ).fillMaxSize()
@@ -143,18 +151,82 @@ private fun MyContent(schedulefromload: Schedule?) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "${item.numerLekcji}\n-\n${item.czas}",
+                                "${item.numerLekcji}",
                                 modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                    .defaultWeight()
+                            )
+                            Text(
+                                "-",
+                                modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                    .defaultWeight()
+                            )
+                            Text(
+                                item.czas,
+                                modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                    .defaultWeight()
                             )
                         }
                         Column(
                             modifier = GlanceModifier.fillMaxWidth().fillMaxHeight()
-                                .defaultWeight(),
+                                .defaultWeight().background(GlanceTheme.colors.background)
+                                .cornerRadius(15.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(item.przedmiot)
-                            Text(item.nauczyciel)
+                            Text(
+                                item.przedmiot,
+                                modifier = GlanceModifier.padding(horizontal = 10.dp)
+                            )
+                            Text(
+                                item.nauczyciel,
+                                modifier = GlanceModifier.padding(horizontal = 10.dp)
+                            )
+                        }
+                    }
+
+                    runBlocking {
+                        try {
+                            val data1 = datastore.getZastepstwo(
+                                context = context, item.numerLekcji, item.klasa,
+                                LocalDate.now().toString(), 1
+                            )
+                            val data2 = datastore.getZastepstwo(
+                                context, item.numerLekcji, item.klasa + "(1)",
+                                LocalDate.now().toString(), 1
+                            )
+                            val data3 = datastore.getZastepstwo(
+                                context, item.numerLekcji, item.klasa + "(2)",
+                                LocalDate.now().toString(), 1
+                            )
+                            if (data1 != null) {
+                                listitems.add(data1)
+                            }
+                            if (data2 != null) {
+                                listitems.add(data2)
+                            }
+                            if (data3 != null) {
+                                listitems.add(data3)
+                            }
+                        } catch (e: Exception) {
+                            Log.d(
+                                "Plannotification",
+                                "Nie znaleziono zastępstwa dla danej lekcji"
+                            )
+                            null
+                        }
+                    }
+                    if (!listitems.isEmpty()) {
+                        listitems.forEach {
+                            Row(
+                                modifier = GlanceModifier.fillMaxWidth()
+                                    .background(GlanceTheme.colors.widgetBackground).fillMaxHeight()
+                                    .defaultWeight()
+                            ) {
+                                Text(
+                                    it.klasa + " -- " + it.zastepca + " -- " + it.uwagi,
+                                    modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                )
+                            }
                         }
                     }
                 }

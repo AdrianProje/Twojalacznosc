@@ -10,10 +10,11 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.ak.twojetlimc.R
+import com.ak.twojetlimc.planLekcji.Schedule
 import com.ak.twojetlimc.planLekcji.webscrapeT
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
@@ -27,14 +28,14 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val cancelIntent = Intent(applicationContext, StopNotification::class.java)
-        cancelIntent.action = "CANCEL_PLAN_CHECK"
         val cancelPendingIntent = PendingIntent.getBroadcast(
             applicationContext,
             3456,
-            cancelIntent,
+            Intent(applicationContext, StopNotification::class.java),
             PendingIntent.FLAG_IMMUTABLE
         )
+
+        var planlist = mutableListOf<Schedule>()
 
         val notification = NotificationCompat.Builder(applicationContext, "POBIERANIEPLANU")
             .setSmallIcon(R.drawable.lacznosc_logo_transparent)
@@ -58,71 +59,85 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             var maxProgress = 150;
 
             runBlocking {
-                val jobs = listOf(
-                    launch {
-                        for (i in 1..30) {
-                            ++currentProgress
-                            updateProgress(
-                                currentProgress,
-                                maxProgress,
-                                notificationManager,
-                                notification
-                            )
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
-                                "o$i",
-                                timestamp,
-                                false
-                            )
-                        }
-                    },
+//                val jobs = listOf(
+                withContext(Dispatchers.IO) {
+                    for (i in 1..30) {
+                        ++currentProgress
+                        updateProgress(
+                            currentProgress,
+                            maxProgress,
+                            notificationManager,
+                            notification
+                        )
 
-
-                    launch(Dispatchers.IO) {
-                        for (i in 1..70) {
-                            ++currentProgress
-                            updateProgress(
-                                currentProgress,
-                                maxProgress,
-                                notificationManager,
-                                notification
-                            )
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
-                                "n$i",
-                                timestamp,
-                                false
-                            )
-                        }
-                    },
-
-                    launch {
-                        for (i in 1..50) {
-                            ++currentProgress
-                            updateProgress(
-                                currentProgress,
-                                maxProgress,
-                                notificationManager,
-                                notification
-                            )
-                            webscrapeT(
-                                applicationContext,
-                                "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
-                                "s$i",
-                                timestamp,
-                                false
-                            )
-                        }
+                        val result = webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
+                            "o$i"
+                        )
+                        if (result != null) planlist.add(result)
                     }
-                )
-                jobs.forEach { it.join() }
+                }
+
+                withContext(Dispatchers.IO) {
+                    for (i in 1..70) {
+                        ++currentProgress
+                        updateProgress(
+                            currentProgress,
+                            maxProgress,
+                            notificationManager,
+                            notification
+                        )
+                        val result = webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
+                            "n$i"
+                        )
+
+                        if (result != null) planlist.add(result)
+                    }
+                }
+
+                withContext(Dispatchers.IO) {
+                    for (i in 1..50) {
+                        ++currentProgress
+                        updateProgress(
+                            currentProgress,
+                            maxProgress,
+                            notificationManager,
+                            notification
+                        )
+
+                        val result = webscrapeT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
+                            "s$i"
+                        )
+
+                        if (result != null) planlist.add(result)
+                    }
+                }
+//                )
+//                jobs.forEach { it.join() }
             }
 
-            runBlocking {
-                datastoremanager.savePlanTimestamp(timestamp)
+            if (!isStopped) {
+                runBlocking {
+                    datastoremanager.savePlanTimestamp(timestamp)
+                    planlist.forEach { schedule ->
+                        datastoremanager.storeSchedule(
+                            applicationContext,
+                            "$timestamp/${schedule.html}",
+                            1,
+                            schedule
+                        )
+                    }
+                }
+            } else {
+                notificationManager.cancel(2)
+                return Result.failure()
             }
+
 
             Log.d("PlanCheck", "Zakończono")
             notificationManager.cancel(2)
@@ -138,10 +153,24 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
         currentProgress: Int,
         maxProgress: Int,
         notificationManager: NotificationManager,
-        notification: NotificationCompat.Builder
+        notificationBuilder: NotificationCompat.Builder
     ) {
-        notification.setProgress(maxProgress, currentProgress, false)
-        notificationManager.notify(2, notification.build())
+        val notification = if (isStopped) {
+            notificationBuilder.setProgress(maxProgress, currentProgress, true)
+                .setContentTitle("Zatrzymywanie").setContentText("Zatrzymywanie pobierania")
+                .clearActions()
+                .build()
+        } else if (currentProgress >= maxProgress - 25) {
+            notificationBuilder.setProgress(maxProgress, currentProgress, true)
+                .setContentTitle("Zapisywanie planu")
+                .clearActions()
+                .build()
+        } else {
+            notificationBuilder.setProgress(maxProgress, currentProgress, false)
+                .build()
+        }
+
+        notificationManager.notify(2, notification)
 
         setProgressAsync(
             workDataOf(

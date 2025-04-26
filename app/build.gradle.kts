@@ -20,12 +20,12 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 2
+        versionCode = 4
         vectorDrawables {
             useSupportLibrary = true
         }
         targetSdk = 35
-        versionName = "Ciuty - 0.51.1"
+        versionName = "Ciuty - 0.51.2.1"
     }
 
     buildTypes {
@@ -60,13 +60,13 @@ android {
         includeInBundle = true
         includeInApk = true
     }
-    buildToolsVersion = "35.0.1"
-    ndkVersion = "28.0.13004108"
+    buildToolsVersion = "36.0.0"
+    ndkVersion = "28.1.13356709"
     flavorDimensions += listOf("BaseApp")
     productFlavors {
         create("Galaxy") {
             dimension = "BaseApp"
-            minSdk = 31
+            minSdk = 33
         }
         create("Pixel") {
             dimension = "BaseApp"
@@ -107,6 +107,7 @@ dependencies {
     implementation(libs.javax.servlet.api)
     implementation(libs.mimedir)
     implementation(libs.gson)
+    implementation(libs.groovy)
     debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference)

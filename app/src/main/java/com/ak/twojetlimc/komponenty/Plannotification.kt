@@ -74,41 +74,42 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                         null
                     }
 
-                    if (listitems.isEmpty()) {
-                        showNotification(
-                            applicationContext,
-                            "Następna lekcja: ${it.przedmiot}", if (!it.sala.isEmpty()) {
-                                "Sala: ${it.sala}, "
-                            } else {
-                                ""
-                            } + if (!it.klasa.isEmpty()) {
-                                "Klasa: ${it.klasa}, "
-                            } else {
-                                ""
-                            } + if (!it.nauczyciel.isEmpty()) {
-                                "Nauczyciel: ${it.nauczyciel}, "
-                            } else {
-                                ""
-                            } + "Godzina: ${it.czas}"
-                        )
-                        Log.d("Plannotification", "Wysyłanie powiadomienia!")
-                        DataHolder.workerResult.postValue(it.numerLekcji)
-                    } else {
+                    showNotification(
+                        applicationContext,
+                        "Następna lekcja: ${it.przedmiot}", if (!it.sala.isEmpty()) {
+                            "Sala: ${it.sala}, "
+                        } else {
+                            ""
+                        } + if (!it.klasa.isEmpty()) {
+                            "Klasa: ${it.klasa}, "
+                        } else {
+                            ""
+                        } + if (!it.nauczyciel.isEmpty()) {
+                            "Nauczyciel: ${it.nauczyciel}, "
+                        } else {
+                            ""
+                        } + "Godzina: ${it.czas}"
+                    )
+                    Log.d("Plannotification", "Wysyłanie powiadomienia!")
+
+                    if (!listitems.isEmpty()) {
+
                         var notificationTextklasa = ""
                         var notificationTextzastepca = ""
                         var notificationTextuwagi = ""
+
                         listitems.forEach { zastdata2 ->
                             notificationTextklasa += zastdata2.klasa + " -- "
                             notificationTextzastepca += zastdata2.zastepca + " -- "
                             notificationTextuwagi += zastdata2.uwagi + " -- "
                         }
-                        showNotification(
+
+                        showNotificationZas(
                             applicationContext,
                             "Następna lekcja (zastępstwo): ${notificationTextklasa}",
                             notificationTextzastepca + " | " + notificationTextuwagi
                         )
                         Log.d("Plannotification", "Wysyłanie powiadomienia (zastępstwo)!")
-                        DataHolder.workerResult.postValue(it.numerLekcji)
                     }
                 } else {
                     Log.d("Plannotification", "Dane lekcji się nie zgadzają z porównywanymi danymi")
@@ -134,8 +135,35 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-
         val notificationBuilder = NotificationCompat.Builder(applicationContext, "PLAN")
+            .setContentTitle(title)
+            .setContentText(description)
+            .setSmallIcon(R.drawable.lacznosc_logo_transparent)
+            .setContentIntent(notifyPendingIntent)
+
+        notificationManager.notify(1, notificationBuilder.build())
+    }
+
+    private fun showNotificationZas(
+        applicationContext: Context,
+        title: String,
+        description: String
+    ) {
+        val notificationManager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // Create an Intent for the activity you want to start.
+        val notifyIntent = Intent(applicationContext, MainScreen::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("destination", "plan")
+        }
+
+        val notifyPendingIntent = PendingIntent.getActivity(
+            applicationContext, 0, notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notificationBuilder = NotificationCompat.Builder(applicationContext, "ZASTEPSTWO")
             .setContentTitle(title)
             .setContentText(description)
             .setSmallIcon(R.drawable.lacznosc_logo_transparent)

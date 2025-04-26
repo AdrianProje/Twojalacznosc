@@ -22,6 +22,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.displayCutoutPadding
@@ -48,7 +49,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -99,7 +99,8 @@ fun NavGraph(
     navController: NavHostController,
     context: Context,
     vibrator: Vibrator,
-    datastoremanager: Datastoremanager
+    datastoremanager: Datastoremanager,
+    paddingvalues: PaddingValues
 ) {
     val scheduleData = GetList(0, context)
     var expanded by remember { mutableStateOf(false) }
@@ -151,11 +152,19 @@ fun NavGraph(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = paddingvalues,
                 modifier = Modifier
-                    .padding(top = 5.dp)
                     .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
+                item {
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                            .height(1.dp)
+                            .fillMaxWidth()
+                    )
+                }
                 item {
                     Button(
                         modifier = Modifier
@@ -480,6 +489,7 @@ fun NavGraph(
         composable(route = "powiadomienia") {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = paddingvalues,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 10.dp)
@@ -546,8 +556,9 @@ fun NavGraph(
         composable(route = "podziekowania") {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
+                contentPadding = paddingvalues,
                 modifier = Modifier
-                    .padding(horizontal = 15.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
                 item {
@@ -581,8 +592,9 @@ fun NavGraph(
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
+                contentPadding = paddingvalues,
                 modifier = Modifier
-                    .padding(horizontal = 15.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
                 item {
@@ -792,15 +804,7 @@ class SettingsActivity : ComponentActivity() {
                         )
                     }
                 ) { paddingValues ->
-                    Surface(modifier = Modifier.padding(paddingValues)) {
-                        HorizontalDivider(
-                            color = Color.Black,
-                            modifier = Modifier
-                                .height(1.dp)
-                                .fillMaxWidth()
-                        )
-                        NavGraph(navController, context, vibrator, datastoremanager)
-                    }
+                    NavGraph(navController, context, vibrator, datastoremanager, paddingValues)
                 }
             }
         }

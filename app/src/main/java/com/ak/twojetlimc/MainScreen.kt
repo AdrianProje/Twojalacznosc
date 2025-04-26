@@ -89,6 +89,14 @@ class MainScreen : AppCompatActivity() {
         mChannel2.description = "Powiadomienie pokazywane w trakcie pobierania planu lekcji"
         notificationManager.createNotificationChannel(mChannel2)
 
+        val name3 = "Powiadomienie o zastępstwie"
+        val mChannel3 =
+            NotificationChannel("ZASTEPSTWO", name3, NotificationManager.IMPORTANCE_HIGH)
+        mChannel3.description = "Powiadomienie pokazywane gdy będzie zastępstwo"
+        notificationManager.createNotificationChannel(mChannel3)
+
+
+
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
             false
@@ -173,7 +181,7 @@ class MainScreen : AppCompatActivity() {
                                         text = "Nowa aktualizacja jest dostępna!\n",
                                         textAlign = TextAlign.Center
                                     )
-                                    Text(text = "Nowa aktualizacja dodaje nowe funkcje, poprawia bezpieczeństwo oraz pozwala jeszczze bardziej cieszyć się aplikacją!\n")
+                                    Text(text = "Nowa aktualizacja dodaje nowe funkcje, poprawia bezpieczeństwo oraz pozwala jeszcze bardziej cieszyć się aplikacją!\n")
                                     WebsiteLink(
                                         "Pobierz ręcznie",
                                         "https://www.tlimc.szczecin.pl/Apka/TwojaLacznosc.apk"
@@ -210,7 +218,8 @@ class MainScreen : AppCompatActivity() {
                                 Column(
                                     modifier = Modifier
                                         .padding(15.dp)
-                                        .weight(0.8f),
+                                        .weight(0.8f)
+                                        .fillMaxWidth(),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
@@ -287,7 +296,13 @@ fun BottomNavigationBar(navController: NavHostController) {
                 // przejście do konkretnej ścierzki na przycisk
                 onClick = {
                     if (currentRoute != navItem.route) {
-                        navController.navigate(navItem.route)
+                        navController.navigate(navItem.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 },
 
@@ -346,6 +361,7 @@ fun NavHostContainer(
             // ścierzka pomoc
             composable("pomoc") {
                 HelpScreen()
+
             }
 
             // ścierzka główna

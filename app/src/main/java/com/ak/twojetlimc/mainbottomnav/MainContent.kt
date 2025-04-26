@@ -10,23 +10,26 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -65,7 +68,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
@@ -90,6 +92,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -119,7 +122,6 @@ import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.ClickablePhoneNumber
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.ImageLinkButton
-import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.WebsiteLink
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.komponenty.downlodonlyzas
@@ -786,6 +788,8 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var selectedData2 by rememberSaveable { mutableStateOf<String?>("") }
     var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
 
+    var backPressCount by remember { mutableIntStateOf(0) }
+    val showBottomBar = backPressCount == 0
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var selectedChipOption = remember { mutableIntStateOf(1) }
@@ -848,9 +852,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         scheduleFromLoad = webscrapeT(
                             context,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/$selectedData2.html",
-                            selectedData2.toString(),
-                            LocalDate.now().toString(),
-                            true
+                            selectedData2.toString()
                         )
                     }
 
@@ -880,9 +882,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                             scheduleFromLoad = webscrapeT(
                                 context,
                                 "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/$selectedData2.html",
-                                selectedData2.toString(),
-                                LocalDate.now().toString(),
-                                true
+                                selectedData2.toString()
                             )
                         }
 
@@ -960,22 +960,31 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     val daynames = stringArrayResource(R.array.days)
 
-    val result = RefreshWorker.DataHolder.workerResult.value
-    LaunchedEffect(key1 = currenthour, result) {
+    LaunchedEffect(key1 = currenthour) {
         try {
             if (day == LocalDate.now().dayOfWeek) {
                 listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
             }
-        } catch (_: Exception) {
-            Toast.makeText(context, "Nie przeskrolowano", Toast.LENGTH_SHORT)
-                .show()
+        } catch (e: Exception) {
+            Log.d("PlanScreen", "Błąd animacji $e")
         }
-    }
+    } //Scrollowanie na karcie planu lekcji
 
     LaunchedEffect(refreshTrigger2) {
         sheetState.hide()
         showBottomSheet = false
     } //Schowaj BottomSheet
+
+    BackHandler(enabled = true) {
+        backPressCount++ // Increment on back press
+    }
+
+    // Reset on back press when it is on second back press
+    LaunchedEffect(backPressCount) {
+        if (backPressCount >= 1) {
+            backPressCount = 0
+        }
+    }
 
     when (day.value) {
         1 -> daytext = daynames[0]
@@ -1025,56 +1034,62 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentPadding = PaddingValues(horizontal = 10.dp)
+            AnimatedVisibility(
+                visible = showBottomBar,
+                enter = slideInVertically() + scaleIn(),
+                exit = slideOutVertically() + scaleOut()
             ) {
-                Text(
-                    if (selectedData != "") {
-                        Log.d("PLANLOADING", selectedData.toString())
-                        selectedData.toString().substring(0, 5) + "..."
-                    } else {
-                        ""
-                    }
-                )
-
-                Spacer(Modifier.weight(1f))
-
-                Button(
-                    onClick = { showDropdownMenu = true },
-                    modifier = Modifier
-                        .onGloballyPositioned {
-                            buttonPosition = it.positionInRoot()
-                        }
-                        .padding(horizontal = 10.dp)
-                ) { Text(daytext) }
-
-                Button(onClick = {
-                    showBottomSheet = true
-                }) { Text(stringResource(id = R.string.PLAN_Button_Zmień)) }
-
-                DropdownMenu(
-                    expanded = showDropdownMenu,
-                    onDismissRequest = {
-                        showDropdownMenu = false
-                    },
-                    offset = DpOffset(x = offsetX, y = offsetY)
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentPadding = PaddingValues(horizontal = 10.dp)
                 ) {
-                    daynames.forEach {
-                        DropdownMenuItem(
-                            text = { Text(text = it) },
-                            onClick = {
-                                showDropdownMenu = false
-                                when (it) {
-                                    daynames[0] -> day = DayOfWeek.MONDAY
-                                    daynames[1] -> day = DayOfWeek.TUESDAY
-                                    daynames[2] -> day = DayOfWeek.WEDNESDAY
-                                    daynames[3] -> day = DayOfWeek.THURSDAY
-                                    daynames[4] -> day = DayOfWeek.FRIDAY
-                                }
-                                daytext = it
+                    Text(
+                        if (selectedData != "") {
+                            Log.d("PLANLOADING", selectedData.toString())
+                            selectedData.toString().substring(0, 5) + "..."
+                        } else {
+                            ""
+                        }
+                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    Button(
+                        onClick = { showDropdownMenu = true },
+                        modifier = Modifier
+                            .onGloballyPositioned {
+                                buttonPosition = it.positionInRoot()
                             }
-                        )
+                            .padding(horizontal = 10.dp)
+                    ) { Text(daytext) }
+
+                    Button(onClick = {
+                        showBottomSheet = true
+                    }) { Text(stringResource(id = R.string.PLAN_Button_Zmień)) }
+
+                    DropdownMenu(
+                        expanded = showDropdownMenu,
+                        onDismissRequest = {
+                            showDropdownMenu = false
+                        },
+                        offset = DpOffset(x = offsetX, y = offsetY)
+                    ) {
+                        daynames.forEach {
+                            DropdownMenuItem(
+                                text = { Text(text = it) },
+                                onClick = {
+                                    showDropdownMenu = false
+                                    when (it) {
+                                        daynames[0] -> day = DayOfWeek.MONDAY
+                                        daynames[1] -> day = DayOfWeek.TUESDAY
+                                        daynames[2] -> day = DayOfWeek.WEDNESDAY
+                                        daynames[3] -> day = DayOfWeek.THURSDAY
+                                        daynames[4] -> day = DayOfWeek.FRIDAY
+                                    }
+                                    daytext = it
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -1085,17 +1100,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     .height(1.dp)
                     .fillMaxWidth()
             )
-        },
-        topBar = {
-            if (isLoading) {
-                LinearProgressIndicator(
-                    progress = { progressofprogressbar },
-                    modifier = Modifier
-                        .padding(paddingValues = WindowInsets.safeDrawing.asPaddingValues())
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                )
-            }
         }
     ) { padding ->
         //Wyświetlane ekrany w zależności od opcji
@@ -1159,7 +1163,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             }
         ) {
 
-            if (scheduleData != null) {
+            scheduleData?.let { it1 ->
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -1195,15 +1199,15 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                     }
                                 ) {
                                     Row(
-                                        modifier = Modifier.fillParentMaxWidth(),
-                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .fillParentMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
                                     ) {
                                         Text(text = sala.toString())
                                     }
                                     Row(
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
                                     ) {
                                         Column(
                                             Modifier
@@ -1224,13 +1228,20 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                 textAlign = TextAlign.Center
                                             )
                                         }
-                                        Text(
-                                            text = "$przedmiot \n $nauczyciel \n $klasa",
-                                            textAlign = TextAlign.Center,
+                                        Column(
                                             modifier = Modifier
-                                                .fillMaxWidth(1f)
-                                                .align(Alignment.CenterVertically)
-                                        )
+                                                .clip(MaterialTheme.shapes.large)
+                                                .fillMaxWidth()
+                                                .fillMaxHeight()
+                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = "$przedmiot \n $nauczyciel \n $klasa",
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        }
                                     }
                                 }
 
@@ -1246,7 +1257,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                     .height(65.dp)
                                                     .fillParentMaxWidth(0.95f),
                                                 shape = MaterialTheme.shapes.medium,
-                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
                                             ) {
                                                 Row(
                                                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -1292,14 +1303,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                             }
                         }
                     }
-                }
-            } else {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Text(
-                        text = "Wybierz plan",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
                 }
             }
         }
