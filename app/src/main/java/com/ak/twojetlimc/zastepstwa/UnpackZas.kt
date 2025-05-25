@@ -55,7 +55,6 @@ fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
                                 klasa.split("-")[0].filter { !it.isWhitespace() }
 
                             if (numerlekcji != 0) {
-
                                 CoroutineScope(Dispatchers.IO).launch {
                                     Datastoremanager(context).storeZastepstwo(
                                         context,
@@ -75,6 +74,6 @@ fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
         }
         Log.d("UnpackZas", "Przetworzono dane $dzien")
     } catch (e: Exception) {
-        Log.d("UnpackZas", "Błąd $dzien")
+        Log.d("UnpackZas", "Błąd $dzien : $e")
     }
 }

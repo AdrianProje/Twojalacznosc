@@ -7,7 +7,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.glance.appwidget.updateAll
-import androidx.lifecycle.MutableLiveData
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.ak.twojetlimc.AppWidget.WidgetDumbUI
@@ -20,11 +19,6 @@ import java.time.LocalDate
 class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
-    object DataHolder {
-        val workerResult = MutableLiveData<Int>()
-    }
-
-
     override suspend fun doWork(): Result {
         val itemId = getcurrenthour()
 
@@ -33,7 +27,8 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
             val klasa = accessdata.getFavSchedule.first()!!.split(",")[0].substring(0, 3)
             val htmlvalue = accessdata.getFavSchedule.first()!!.split(",")[1]
             val timestamp = accessdata.getPlanTimestamp.first()
-
+            val notificationManager =
+                applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             Log.d("Plannotification", "Wywołanie funkcji $timestamp/$htmlvalue")
             accessdata.getSchedule(
@@ -76,6 +71,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
 
                     showNotification(
                         applicationContext,
+                        notificationManager,
                         "Następna lekcja: ${it.przedmiot}", if (!it.sala.isEmpty()) {
                             "Sala: ${it.sala}, "
                         } else {
@@ -106,10 +102,13 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
 
                         showNotificationZas(
                             applicationContext,
+                            notificationManager,
                             "Następna lekcja (zastępstwo): ${notificationTextklasa}",
                             notificationTextzastepca + " | " + notificationTextuwagi
                         )
                         Log.d("Plannotification", "Wysyłanie powiadomienia (zastępstwo)!")
+                    } else {
+                        notificationManager.cancel(2)
                     }
                 } else {
                     Log.d("Plannotification", "Dane lekcji się nie zgadzają z porównywanymi danymi")
@@ -120,9 +119,13 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
         return Result.success()
     }
 
-    private fun showNotification(applicationContext: Context, title: String, description: String) {
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private fun showNotification(
+        applicationContext: Context,
+        notificationManager: NotificationManager,
+        title: String,
+        description: String
+    ) {
+
 
         // Create an Intent for the activity you want to start.
         val notifyIntent = Intent(applicationContext, MainScreen::class.java).apply {
@@ -139,18 +142,18 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
             .setContentTitle(title)
             .setContentText(description)
             .setSmallIcon(R.drawable.lacznosc_logo_transparent)
-            .setContentIntent(notifyPendingIntent)
+            .setContentIntent(notifyPendingIntent).setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
 
         notificationManager.notify(1, notificationBuilder.build())
     }
 
     private fun showNotificationZas(
         applicationContext: Context,
+        notificationManager: NotificationManager,
         title: String,
         description: String
     ) {
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // Create an Intent for the activity you want to start.
         val notifyIntent = Intent(applicationContext, MainScreen::class.java).apply {
@@ -167,8 +170,9 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
             .setContentTitle(title)
             .setContentText(description)
             .setSmallIcon(R.drawable.lacznosc_logo_transparent)
-            .setContentIntent(notifyPendingIntent)
+            .setContentIntent(notifyPendingIntent).setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setAutoCancel(true)
 
-        notificationManager.notify(1, notificationBuilder.build())
+        notificationManager.notify(2, notificationBuilder.build())
     }
 }

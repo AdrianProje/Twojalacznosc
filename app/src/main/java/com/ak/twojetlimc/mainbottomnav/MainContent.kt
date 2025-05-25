@@ -10,30 +10,29 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -50,6 +49,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
@@ -81,7 +81,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -126,6 +125,7 @@ import com.ak.twojetlimc.komponenty.WebsiteLink
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.komponenty.downlodonlyzas
 import com.ak.twojetlimc.komponenty.getcurrenthour
+import com.ak.twojetlimc.komponenty.switchvibrate
 import com.ak.twojetlimc.planLekcji.GetList
 import com.ak.twojetlimc.planLekcji.Schedule
 import com.ak.twojetlimc.planLekcji.webscrapeT
@@ -422,7 +422,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                 contentPadding = PaddingValues(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (SDK_INT <= Build.VERSION_CODES.R) {
+                if (SDK_INT <= Build.VERSION_CODES.S_V2) {
                     item(key = 5) {
                         OutlinedCard(
                             colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -484,7 +484,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
-                                    .horizontalScroll(scrollstate),
+                                    .basicMarquee(),
                                 overflow = TextOverflow.Clip
                             )
                         }
@@ -598,7 +598,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                 if (item.message != null) {
                                     Text(
                                         text = item.message.toString(),
-                                        overflow = TextOverflow.Ellipsis
+                                        modifier = Modifier.basicMarquee()
                                     )
                                 }
                             }
@@ -759,7 +759,7 @@ fun WhatsNew(navController: NavHostController) {
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @ExperimentalComposeUiApi
 @Composable
 fun PlanScreen(context: Context, vibrator: Vibrator) {
@@ -789,11 +789,9 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
 
     var backPressCount by remember { mutableIntStateOf(0) }
-    val showBottomBar = backPressCount == 0
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
-    var selectedChipOption = remember { mutableIntStateOf(1) }
-    var progressofprogressbar by remember { mutableFloatStateOf(0f) }
+    var selectedChipOption = remember { mutableIntStateOf(0) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -814,7 +812,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     LaunchedEffect(true) {
         accessdatastoremanager.getDefaultPlan.collect { defultplan ->
-            selectedChipOption.intValue = defultplan ?: 1
+            selectedChipOption.intValue = defultplan ?: 0
         }
     } //Domyślny chip na liście ModalBottomSheet przy pierwszym uruchomieniu
 
@@ -975,16 +973,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
         showBottomSheet = false
     } //Schowaj BottomSheet
 
-    BackHandler(enabled = true) {
-        backPressCount++ // Increment on back press
-    }
-
-    // Reset on back press when it is on second back press
-    LaunchedEffect(backPressCount) {
-        if (backPressCount >= 1) {
-            backPressCount = 0
-        }
-    }
 
     when (day.value) {
         1 -> daytext = daynames[0]
@@ -1034,14 +1022,13 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            AnimatedVisibility(
-                visible = showBottomBar,
-                enter = slideInVertically() + scaleIn(),
-                exit = slideOutVertically() + scaleOut()
+            BottomAppBar(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentPadding = PaddingValues(horizontal = 10.dp),
+                windowInsets = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
             ) {
-                BottomAppBar(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentPadding = PaddingValues(horizontal = 10.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         if (selectedData != "") {
@@ -1092,7 +1079,9 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         }
                     }
                 }
+
             }
+
 
             HorizontalDivider(
                 color = Color.Black,
@@ -1136,14 +1125,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                     .getWorkInfoByIdLiveData(workrequest.id)
                                     .observe(
                                         lifecycleOwner, Observer { status ->
-                                            progressofprogressbar =
-                                                status!!.progress.getInt("progress", 0)
-                                                    .toFloat() / status.progress.getInt(
-                                                    "max",
-                                                    150
-                                                )
-                                            Log.d("PLANLOADING", "$progressofprogressbar")
-                                            if (status.state == WorkInfo.State.SUCCEEDED) {
+                                            if (status!!.state == WorkInfo.State.SUCCEEDED) {
                                                 isrefresing = false
                                                 refreshTrigger++
                                                 Toast.makeText(
@@ -1286,14 +1268,18 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                             text = zastdata2.klasa,
                                                             textAlign = TextAlign.Center
                                                         )
-                                                        Text(
-                                                            text = zastdata2.zastepca,
-                                                            textAlign = TextAlign.Center
-                                                        )
-                                                        Text(
-                                                            text = zastdata2.uwagi,
-                                                            textAlign = TextAlign.Center
-                                                        )
+                                                        if (zastdata2.zastepca.isNotEmpty()) {
+                                                            Text(
+                                                                text = zastdata2.zastepca,
+                                                                textAlign = TextAlign.Center
+                                                            )
+                                                        }
+                                                        if (zastdata2.uwagi.isNotEmpty()) {
+                                                            Text(
+                                                                text = zastdata2.uwagi,
+                                                                textAlign = TextAlign.Center
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1330,6 +1316,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     Switch(
                         checked = online,
                         onCheckedChange = {
+                            switchvibrate(context)
                             online = it
                         }
                     )
@@ -1351,34 +1338,39 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                 }
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
                 ) {
                     items(options) { option ->
                         FilterChip(
                             selected = when (selectedChipOption.intValue) {
-                                1 -> option == options[0]
-                                2 -> option == options[1]
-                                3 -> option == options[2]
+                                0 -> option == options[0]
+                                1 -> option == options[1]
+                                2 -> option == options[2]
+                                3 -> option == options[3]
                                 else -> {
                                     false
                                 }
                             },
                             onClick = {
                                 selectedChipOption.intValue = when (option) {
-                                    options[0] -> 1
-                                    options[1] -> 2
-                                    options[2] -> 3
+                                    options[0] -> 0
+                                    options[1] -> 1
+                                    options[2] -> 2
+                                    options[3] -> 3
                                     else -> {
-                                        1
+                                        0
                                     }
                                 }
                             },
                             label = { Text(option) },
                             leadingIcon = {
                                 val imageVector = when (option) {
-                                    stringResource(id = R.string.PLAN_Chip_Klasa) -> Icons.Filled.Star
-                                    stringResource(id = R.string.PLAN_Chip_Sala) -> Icons.Filled.LocationOn
-                                    stringResource(id = R.string.PLAN_Chip_Nauczyciel) -> Icons.Filled.AccountCircle
+                                    options[0] -> Icons.Filled.Clear
+                                    options[1] -> Icons.Filled.Star
+                                    options[2] -> Icons.Filled.LocationOn
+                                    options[3] -> Icons.Filled.AccountCircle
                                     else -> null
                                 }
                                 if (imageVector != null) {

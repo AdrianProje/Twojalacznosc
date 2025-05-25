@@ -1,3 +1,21 @@
+--- 0.51.2.5 Beta ---
+- Naprawiono zachownie Bottom Bar na karcie planu lekcji w trybie poziomym
+- Dodano wibrację do switcha w BottomSheet na karcie planu lekcji
+
+--- 0.51.2.4 Beta ---
+- Zaktualizowano podgląd widgetu w systemie
+- Poprawa zachowania powiadomienia zastępstwa
+
+--- 0.51.2.3 Beta ---
+- Aktualizacja modułów
+- Zaktualizowano kartę podziękowań
+- Powiadomienia mają od teraz swoją ważność oraz wibracje systemowe
+- Dodano przycisk "Brak Filtru" do chipów na karcie planu lekcji
+
+--- 0.51.2.2 Beta ---
+- Aktualizacja modułów
+- Poprawa wyglądu zastępstw
+
 --- 0.51.2.1 Beta ---
 - Aktualizacja modułów
 - Poprawa wyglądu ekranu ustawień

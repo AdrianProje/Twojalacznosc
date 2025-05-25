@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -104,6 +106,11 @@ fun createalarm(context: Context) {
     }
 }
 
+fun switchvibrate(context: Context) {
+    val vibrator = context.getSystemService(Vibrator::class.java)
+    vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 50), -1))
+}
+
 fun downlodonlyzas(context: Context): WorkRequest {
     val workRequest2 =
         OneTimeWorkRequestBuilder<ZasCheck>().build()
@@ -156,7 +163,7 @@ fun getcurrenthour(): Int {
         17 -> if (calendarminutes >= 20) 12 else 11
 
         18 -> if (calendarminutes >= 15) 13 else 12
-        
+
         else -> 0
     }
 }

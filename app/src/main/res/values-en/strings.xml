@@ -25,7 +25,7 @@
     <string name="PLAN_Chip_Nauczyciel">Teacher</string>
     <string name="PLAN_Button_Zmień">Change</string>
     <string name="SETTINGS_Button_DomysnyChip">The default chip</string>
-    <string name="SETTINGS_Button_DomysnyChip_Opis">The default chip selected when you open the plan selection</string>
+    <string name="SETTINGS_Button_DomysnyChip_Opis">The default chip selected when you open the plan selection\n\n</string>
     <string name="SETTINGS_Zmiana_Plan_Toast">Default timetable view has been changed</string>
     <string name="MAIN_Loading">We are creating Sceagule for you\n- Keep the internet connection on -</string>
     <string name="NOTIFICATION_Schedule">Notification about next lesson</string>
@@ -36,7 +36,7 @@
     <string name="PLAN_Button_Dropdownlist_Czwartek">Thursday</string>
     <string name="PLAN_Button_Dropdownlist_Piatek">Friday</string>
     <string name="SETTING_Button_DomyslnyPlan">Default schedule</string>
-    <string name="SETTINGS_Button_DomysnyPlan_Opis">The default selected timetable when you create a timetable section\n\nNotifications will be sent for the selected timetable, you can manage them below.</string>
+    <string name="SETTINGS_Button_DomysnyPlan_Opis">The default selected timetable when you enter a timetable section\n\nThis timetable will be used to show information on widgets\n\nNotifications will be sent for the selected timetable, you can manage them below\n</string>
     <string name="SETTINGS_Paranoja_Tytul">Paranoic mode</string>
     <string name="SETTINGS_Paranoja_Opis">Turn on refreshing sceagule everytime you open an app</string>
     <string name="SETTINGS_ZASTEPSTWA_REFRESH_TYTUL">Refreshing mode</string>
@@ -47,4 +47,5 @@
     <string name="shortcut_long">Instant scheagule open</string>
     <string name="shortcut_disabled_message1">This shortcut is not available right now</string>
     <string name="WIDGET_Opis">Add schedule to your home screen</string>
+    <string name="PLAN_Chip_Wszyscy">No Filter</string>
 </resources>

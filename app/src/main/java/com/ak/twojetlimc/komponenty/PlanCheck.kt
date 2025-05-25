@@ -45,7 +45,7 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             .addAction(R.drawable.lacznosc_logo_transparent, "Zatrzymaj", cancelPendingIntent)
 
 
-        notificationManager.notify(2, notification.build())
+        notificationManager.notify(3, notification.build())
 
         return try {
             Log.d("PlanCheck", "Pobieranie danych planu lekcji")
@@ -134,17 +134,17 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                     }
                 }
             } else {
-                notificationManager.cancel(2)
+                notificationManager.cancel(3)
                 return Result.failure()
             }
 
 
             Log.d("PlanCheck", "Zakończono")
-            notificationManager.cancel(2)
+            notificationManager.cancel(3)
             return Result.success()
         } catch (e: Exception) {
             Log.d("PlanCheck", e.toString())
-            notificationManager.cancel(2)
+            notificationManager.cancel(3)
             return Result.failure()
         }
     }
@@ -158,19 +158,20 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
         val notification = if (isStopped) {
             notificationBuilder.setProgress(maxProgress, currentProgress, true)
                 .setContentTitle("Zatrzymywanie").setContentText("Zatrzymywanie pobierania")
-                .clearActions()
+                .clearActions().setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .build()
         } else if (currentProgress >= maxProgress - 25) {
             notificationBuilder.setProgress(maxProgress, currentProgress, true)
                 .setContentTitle("Zapisywanie planu")
-                .clearActions()
+                .clearActions().setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .build()
         } else {
             notificationBuilder.setProgress(maxProgress, currentProgress, false)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
                 .build()
         }
 
-        notificationManager.notify(2, notification)
+        notificationManager.notify(3, notification)
 
         setProgressAsync(
             workDataOf(

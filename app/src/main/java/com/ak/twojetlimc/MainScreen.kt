@@ -79,6 +79,7 @@ class MainScreen : AppCompatActivity() {
         //Kanał powiadomień 1: Powiadomienie o następej lekcji
         val name = getString(R.string.NOTIFICATION_Schedule)
         val mChannel = NotificationChannel("PLAN", name, NotificationManager.IMPORTANCE_HIGH)
+        mChannel.enableVibration(true)
         mChannel.description = getString(R.string.NOTIFICATION_Schedule_ExtraText)
         notificationManager.createNotificationChannel(mChannel)
 
@@ -92,6 +93,7 @@ class MainScreen : AppCompatActivity() {
         val name3 = "Powiadomienie o zastępstwie"
         val mChannel3 =
             NotificationChannel("ZASTEPSTWO", name3, NotificationManager.IMPORTANCE_HIGH)
+        mChannel3.enableVibration(true)
         mChannel3.description = "Powiadomienie pokazywane gdy będzie zastępstwo"
         notificationManager.createNotificationChannel(mChannel3)
 
@@ -351,7 +353,7 @@ fun NavHostContainer(
     val context = LocalContext.current
     NavHost(
         modifier = Modifier
-            .padding(bottom = 80.dp),
+            .padding(bottom = padding.calculateBottomPadding()),
         navController = navController,
         startDestination = destination,
         enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },

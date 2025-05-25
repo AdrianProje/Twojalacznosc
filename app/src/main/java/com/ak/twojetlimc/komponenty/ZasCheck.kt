@@ -20,36 +20,25 @@ class ZasCheck(appContext: Context, workerParams: WorkerParameters) :
             Log.d("ZasCheck", "Pobieranie danych zastepstw")
             //Wykonywanie działania
 
-            //Wykonywanie działania
-            val serviceScope = CoroutineScope(Dispatchers.IO)
-
-            serviceScope.launch {
-
+            CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    Log.d("ZasCheck", (LocalDate.now()).toString())
-                    val currentday = LocalDate.now()
-                    webscrapeZT(
-                        applicationContext,
-                        "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/zastepstwa/index.php?info=dokumenty/$currentday.html",
-                        currentday.toString()
-                    )
-
-                    Log.d("ZasCheck", (LocalDate.now().plusDays(1)).toString())
-                    val nextday = currentday.plusDays(1)
-                    webscrapeZT(
-                        applicationContext,
-                        "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/zastepstwa/index.php?info=dokumenty/$nextday.html",
-                        nextday.toString()
-                    )
-
-                } catch (e: java.io.FileNotFoundException) {
-                    Log.d("ZasCheck", "Błąd - dzisiaj")
+                    for (i in 0..4) {
+                        val nextdays = LocalDate.now().plusDays(i.toLong())
+                        Log.d("ZasCheck", nextdays.toString())
+                        webscrapeZT(
+                            applicationContext,
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/zastepstwa/index.php?info=dokumenty/$nextdays.html",
+                            nextdays.toString()
+                        )
+                    }
+                } catch (_: java.io.FileNotFoundException) {
+                    Log.d("ZasCheck", "Błąd")
                 }
             }
 
             Log.d("ZasCheck", "Zakończono")
             return Result.success()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Log.d("ZasCheck", "Wystąpił błąd")
             return Result.failure()
         }

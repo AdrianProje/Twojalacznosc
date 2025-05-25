@@ -34,7 +34,6 @@ import com.ak.twojetlimc.SettingsActivity
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.getcurrenthour
 import com.ak.twojetlimc.planLekcji.Schedule
-import com.ak.twojetlimc.zastepstwa.Zastepstwo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -48,15 +47,27 @@ class WidgetDumbUI : GlanceAppWidget() {
         context: Context,
         id: GlanceId
     ) {
-
         provideContent {
             val datastore = Datastoremanager(context)
-            val plantimestamp = runBlocking {
-                datastore.getPlanTimestamp.first()
+            val plantimestamp = try {
+                runBlocking {
+                    datastore.getPlanTimestamp.first()
+                }
+            } catch (_: Exception) {
+                ""
             }
-            val fafsch = runBlocking {
-                datastore.getFavSchedule.first()
-            }.toString().split(",")[1]
+
+            val fafsch =
+                try {
+                    runBlocking {
+                        datastore.getFavSchedule.first()
+                    }.toString().split(",")[1]
+                } catch (_: Exception) {
+                    ""
+                }
+
+
+            Log.d("WidgetDumbUi", "Plantimestamp: $plantimestamp && Fafsch: $fafsch")
 
             if (fafsch == "" || plantimestamp == "") {
                 Scaffold(
@@ -74,7 +85,10 @@ class WidgetDumbUI : GlanceAppWidget() {
                             "Logo aplikacji",
                             modifier = GlanceModifier.padding(horizontal = 10.dp)
                         )
-                        Text("Brak danych klasy\n-\nUstaw domyślną klasę w ustawieniach aplikacji")
+                        Text(
+                            "Brak danych klasy\n-\nUstaw domyślną klasę w ustawieniach aplikacji",
+                            style = androidx.glance.text.TextStyle(textAlign = androidx.glance.text.TextAlign.Center)
+                        )
                     }
                 }
 
@@ -95,16 +109,16 @@ class WidgetActionUpdate : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        val scope = CoroutineScope(Dispatchers.IO)
         appWidgetIds.forEach { appWidgetId ->
             val glanceId =
                 GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
-            scope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 WidgetDumbUI().update(context, glanceId)
             }
         }
     }
 }
+
 
 @Composable
 private fun MyContent(
@@ -113,12 +127,12 @@ private fun MyContent(
     context: Context
 ) {
     val currenthour = getcurrenthour()
-    var listitems = mutableListOf<Zastepstwo>()
+//    var listitems = mutableListOf<Zastepstwo>()
     Scaffold(
         backgroundColor = GlanceTheme.colors.widgetBackground,
         modifier = GlanceModifier.clickable(
             actionStartActivity(MainScreen::class.java)
-        ).fillMaxSize()
+        )
     ) {
         Column(
             modifier = GlanceModifier.fillMaxWidth()
@@ -175,59 +189,69 @@ private fun MyContent(
                         ) {
                             Text(
                                 item.przedmiot,
-                                modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                style = androidx.glance.text.TextStyle(
+                                    textAlign = androidx.glance.text.TextAlign.Center
+                                )
                             )
                             Text(
                                 item.nauczyciel,
-                                modifier = GlanceModifier.padding(horizontal = 10.dp)
-                            )
-                        }
-                    }
-
-                    runBlocking {
-                        try {
-                            val data1 = datastore.getZastepstwo(
-                                context = context, item.numerLekcji, item.klasa,
-                                LocalDate.now().toString(), 1
-                            )
-                            val data2 = datastore.getZastepstwo(
-                                context, item.numerLekcji, item.klasa + "(1)",
-                                LocalDate.now().toString(), 1
-                            )
-                            val data3 = datastore.getZastepstwo(
-                                context, item.numerLekcji, item.klasa + "(2)",
-                                LocalDate.now().toString(), 1
-                            )
-                            if (data1 != null) {
-                                listitems.add(data1)
-                            }
-                            if (data2 != null) {
-                                listitems.add(data2)
-                            }
-                            if (data3 != null) {
-                                listitems.add(data3)
-                            }
-                        } catch (e: Exception) {
-                            Log.d(
-                                "Plannotification",
-                                "Nie znaleziono zastępstwa dla danej lekcji"
-                            )
-                            null
-                        }
-                    }
-                    if (!listitems.isEmpty()) {
-                        listitems.forEach {
-                            Row(
-                                modifier = GlanceModifier.fillMaxWidth()
-                                    .background(GlanceTheme.colors.widgetBackground).fillMaxHeight()
-                                    .defaultWeight()
-                            ) {
-                                Text(
-                                    it.klasa + " -- " + it.zastepca + " -- " + it.uwagi,
-                                    modifier = GlanceModifier.padding(horizontal = 10.dp)
+                                style = androidx.glance.text.TextStyle(
+                                    textAlign = androidx.glance.text.TextAlign.Center
                                 )
-                            }
+                            )
                         }
+
+
+//                        runBlocking {
+//                            try {
+//                                val data1 = datastore.getZastepstwo(
+//                                    context = context, item.numerLekcji, item.klasa,
+//                                    LocalDate.now().toString(), 1
+//                                )
+//                                val data2 = datastore.getZastepstwo(
+//                                    context, item.numerLekcji, item.klasa + "(1)",
+//                                    LocalDate.now().toString(), 1
+//                                )
+//                                val data3 = datastore.getZastepstwo(
+//                                    context, item.numerLekcji, item.klasa + "(2)",
+//                                    LocalDate.now().toString(), 1
+//                                )
+//                                if (data1 != null) {
+//                                    listitems.add(data1)
+//                                }
+//                                if (data2 != null) {
+//                                    listitems.add(data2)
+//                                }
+//                                if (data3 != null) {
+//                                    listitems.add(data3)
+//                                }
+//                            } catch (e: Exception) {
+//                                Log.d(
+//                                    "Plannotification",
+//                                    "Nie znaleziono zastępstwa dla danej lekcji"
+//                                )
+//                                null
+//                            }
+//                        }
+//                        Log.d("WidgetDumbUi", listitems.toString())
+//
+//                        if (!listitems.isEmpty()) {
+//
+//                            listitems.forEach {
+//                                Column(
+//                                    modifier = GlanceModifier.fillMaxWidth().fillMaxHeight()
+//                                        .defaultWeight()
+//                                        .background(GlanceTheme.colors.widgetBackground),
+//                                    verticalAlignment = Alignment.CenterVertically,
+//                                    horizontalAlignment = Alignment.CenterHorizontally
+//                                ) {
+//                                    Text(
+//                                        it.klasa + " -- " + it.zastepca + " -- " + it.uwagi,
+//                                        modifier = GlanceModifier.padding(horizontal = 10.dp)
+//                                    )
+//                                }
+//                            }
+//                        }
                     }
                 }
             }

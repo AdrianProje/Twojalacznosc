@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
 import android.util.Log
@@ -67,6 +66,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -85,10 +85,9 @@ import com.ak.twojetlimc.komponenty.PlanCheck
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
 import com.ak.twojetlimc.komponenty.createalarm
+import com.ak.twojetlimc.komponenty.switchvibrate
 import com.ak.twojetlimc.planLekcji.GetList
 import com.ak.twojetlimc.theme.AppTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -112,11 +111,7 @@ fun NavGraph(
     var favschedulevalue by remember { mutableStateOf("") }
     val pattern = longArrayOf(0, 50)
 
-    val options = listOf(
-        stringResource(id = R.string.PLAN_Chip_Klasa),
-        stringResource(id = R.string.PLAN_Chip_Sala),
-        stringResource(id = R.string.PLAN_Chip_Nauczyciel)
-    )
+    val options = stringArrayResource(id = R.array.chip_values)
     var selectedchip by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
@@ -138,9 +133,10 @@ fun NavGraph(
 
                 datastoremanager.getDefaultPlan.collect { defultplan ->
                     when (defultplan) {
-                        1 -> selectedchip = options[0]
-                        2 -> selectedchip = options[1]
-                        3 -> selectedchip = options[2]
+                        0 -> selectedchip = options[0]
+                        1 -> selectedchip = options[1]
+                        2 -> selectedchip = options[2]
+                        3 -> selectedchip = options[3]
                     }
                 }
             }
@@ -180,7 +176,7 @@ fun NavGraph(
                                 style = MaterialTheme.typography.titleLarge
                             )
                             Text(
-                                text = stringResource(id = R.string.SETTINGS_Button_DomysnyChip_Opis) + "\n\n$selectedchip",
+                                text = stringResource(id = R.string.SETTINGS_Button_DomysnyChip_Opis) + selectedchip,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -191,30 +187,16 @@ fun NavGraph(
                                 expanded = false
                             }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(id = R.string.PLAN_Chip_Klasa)) },
-                                onClick = {
-                                    quicksafe(1)
-                                    selectedchip = options[0]
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(id = R.string.PLAN_Chip_Sala)) },
-                                onClick = {
-                                    quicksafe(2)
-                                    selectedchip = options[1]
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(text = stringResource(id = R.string.PLAN_Chip_Nauczyciel)) },
-                                onClick = {
-                                    quicksafe(3)
-                                    selectedchip = options[2]
-                                    expanded = false
-                                }
-                            )
+                            stringArrayResource(R.array.chip_values).forEachIndexed { index, s ->
+                                DropdownMenuItem(
+                                    text = { Text(text = s) },
+                                    onClick = {
+                                        quicksafe(index)
+                                        selectedchip = options[index]
+                                        expanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -246,7 +228,7 @@ fun NavGraph(
                                     style = MaterialTheme.typography.titleLarge
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis) + "\n\n$favschedulevalue",
+                                    text = stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis) + favschedulevalue,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -274,24 +256,22 @@ fun NavGraph(
                         Switch(
                             checked = cheched,
                             onCheckedChange = {
-                                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
-                                if (it) {
-                                    cheched = true
-                                    scope.launch {
+                                switchvibrate(context)
+                                scope.launch {
+                                    if (it) {
+                                        cheched = true
                                         datastoremanager.saveFavScheduleOnOff(true)
                                         datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue)
                                         WidgetDumbUI().updateAll(context)
-                                    }
-                                    favschedulevalue = scheduleData.first()!!.imieinazwisko
+                                        favschedulevalue = scheduleData.first()!!.imieinazwisko
 
-                                } else {
-                                    cheched = false
-                                    scope.launch {
+                                    } else {
+                                        cheched = false
                                         datastoremanager.saveFavScheduleOnOff(false)
                                         datastoremanager.saveFavSchedule("")
-                                        WidgetDumbUI().updateAll(context)
+                                        favschedulevalue = ""
                                     }
-                                    favschedulevalue = ""
+                                    WidgetDumbUI().updateAll(context)
                                 }
                             }
                         )
@@ -328,16 +308,21 @@ fun NavGraph(
                                 color = contentColorFor(MaterialTheme.colorScheme.primary)
                             )
                         }
-                        Switch(checked = cheched2, onCheckedChange = {
-                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
-                            if (it) {
-                                cheched2 = true
-                                scope.launch { datastoremanager.saveParanoia(true) }
-                            } else {
-                                cheched2 = false
-                                scope.launch { datastoremanager.saveParanoia(false) }
+                        Switch(
+                            checked = cheched2,
+                            onCheckedChange = {
+                                switchvibrate(context)
+                                scope.launch {
+                                    if (it) {
+                                        cheched2 = true
+                                        datastoremanager.saveParanoia(true)
+                                    } else {
+                                        cheched2 = false
+                                        datastoremanager.saveParanoia(false)
+                                    }
+                                }
                             }
-                        })
+                        )
                     }
                 }
 
@@ -372,13 +357,15 @@ fun NavGraph(
                             )
                         }
                         Switch(checked = cheched3, onCheckedChange = {
-                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
-                            if (it) {
-                                cheched3 = true
-                                scope.launch { datastoremanager.saveUserRefresh(true) }
-                            } else {
-                                cheched3 = false
-                                scope.launch { datastoremanager.saveUserRefresh(false) }
+                            switchvibrate(context)
+                            scope.launch {
+                                if (it) {
+                                    cheched3 = true
+                                    datastoremanager.saveUserRefresh(true)
+                                } else {
+                                    cheched3 = false
+                                    datastoremanager.saveUserRefresh(false)
+                                }
                             }
                         })
                     }
@@ -415,17 +402,53 @@ fun NavGraph(
                             )
                         }
                         Switch(checked = cheched4, onCheckedChange = {
-                            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
-                            if (it) {
-                                cheched4 = true
-                                scope.launch { datastoremanager.saveOnlineMode(true) }
-                            } else {
-                                cheched4 = false
-                                scope.launch { datastoremanager.saveOnlineMode(false) }
+                            switchvibrate(context)
+                            scope.launch {
+                                if (it) {
+                                    cheched4 = true
+                                    datastoremanager.saveOnlineMode(true)
+                                } else {
+                                    cheched4 = false
+                                    datastoremanager.saveOnlineMode(false)
+                                }
                             }
                         })
                     }
                 }
+
+//                item {
+//                    Button(
+//                        onClick = {
+//                            try {
+//                                val appWidgetManager =
+//                                    AppWidgetManager.getInstance(context)
+//                                val myProvider = ComponentName(context, WidgetDumbUI::class.java)
+//
+//                                val successCallback = PendingIntent.getBroadcast(
+//                                    context,
+//                                    32784, // requestCode
+//                                    Intent("com.ak.twojetlimc.ACTION_WIDGET_PINNED"),
+//                                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//                                )
+//                                appWidgetManager.requestPinAppWidget(
+//                                    myProvider,
+//                                    null,
+//                                    successCallback
+//                                )
+//                            } catch (e: Exception) {
+//                                Log.d("SettingsActivity", "Błąd dodawania widgetu $e")
+//                            }
+//                        },
+//                        modifier = Modifier.fillParentMaxWidth(),
+//                        shape = MaterialTheme.shapes.medium,
+//                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+//                    ) {
+//                        Text(
+//                            text = "Dodaj widget do ekranu startowego",
+//                            style = MaterialTheme.typography.titleMedium
+//                        )
+//                    }
+//                }
 
                 item {
                     Button(
@@ -573,10 +596,10 @@ fun NavGraph(
                     Text(text = "- Adam Jankowski 4tB\n Betatester aplikacji")
                 }
                 item {
-                    Text(text = "- Kamil Zagórski 5tB\n Betatester aplikacji")
+                    Text(text = "- Kamil Zagórski (Absolwent)\n Betatester aplikacji")
                 }
                 item {
-                    Text(text = "- Julka Januszek 5tF\n Ikony do aplikacji")
+                    Text(text = "- Julka Januszek (Absolwentka)\n Ikony do aplikacji")
                 }
             }
         }
@@ -587,7 +610,6 @@ fun NavGraph(
                 scope.launch {
                     groupedlist = datastoremanager.getAllScheduleKeysGrouped()
                 }
-
             }
 
             LazyColumn(
@@ -603,6 +625,17 @@ fun NavGraph(
                         color = Color.Black,
                         modifier = Modifier
                             .fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Text(
+                        "Aktualna wersja (kod): ${
+                            context.packageManager.getPackageInfo(
+                                context.packageName,
+                                0
+                            ).longVersionCode
+                        }"
                     )
                 }
 
@@ -669,7 +702,6 @@ fun NavGraph(
                 }
 
                 item {
-                    val scope = rememberCoroutineScope()
                     Column {
                         Text("Debug | Zarządzanie zapisanymi planami")
                         groupedlist.entries.reversed().forEach { (groupName, keys) ->
@@ -689,7 +721,7 @@ fun NavGraph(
                                     Text(text = groupName)
                                     Spacer(modifier = Modifier.weight(1f))
                                     Button(onClick = {
-                                        CoroutineScope(Dispatchers.IO).launch {
+                                        scope.launch {
                                             datastoremanager.savePlanTimestamp(groupName)
                                         }
                                     }) {
@@ -697,7 +729,7 @@ fun NavGraph(
                                     }
                                     Spacer(modifier = Modifier.weight(1f))
                                     Button(onClick = {
-                                        CoroutineScope(Dispatchers.IO).launch {
+                                        scope.launch {
                                             keys.forEach { key ->
                                                 Log.d("SettingsActivity - Debug", "Usunięto: $key")
                                                 datastoremanager.deleteDataFromStringPreferencesKey(

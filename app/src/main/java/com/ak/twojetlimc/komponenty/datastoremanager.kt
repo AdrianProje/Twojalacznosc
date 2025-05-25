@@ -2,7 +2,6 @@ package com.ak.twojetlimc.komponenty
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -37,35 +36,35 @@ class Datastoremanager(private val context: Context) {
         val ZASTEPSTWO_PREFIX = stringPreferencesKey("zastepstwo_")
     }
 
-    suspend fun editPreferences(action: suspend (MutablePreferences) -> Unit) {
-        context.dataStore.edit { preferences ->
-            action(preferences)
-        }
-    }
+//    suspend fun editPreferences(action: suspend (MutablePreferences) -> Unit) {
+//        context.dataStore.edit { preferences ->
+//            action(preferences)
+//        }
+//    }
 
     val getUPObbe: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[USER_PASS_OBBE] ?: false }
+        context.dataStore.data.map { preferences -> preferences[USER_PASS_OBBE] == true }
 
     suspend fun saveUPObbe(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[USER_PASS_OBBE] = value }
     }
 
     val getParanoia: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[PARANOIA] ?: false }
+        context.dataStore.data.map { preferences -> preferences[PARANOIA] == true }
 
     suspend fun saveParanoia(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[PARANOIA] = value }
     }
 
     val getUserRefresh: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[USER_REFRESH] ?: true }
+        context.dataStore.data.map { preferences -> preferences[USER_REFRESH] != false }
 
     suspend fun saveUserRefresh(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[USER_REFRESH] = value }
     }
 
     val getDefaultPlan: Flow<Int?> =
-        context.dataStore.data.map { preferences -> preferences[USER_DEFAULT_CHIP] ?: 1 }
+        context.dataStore.data.map { preferences -> preferences[USER_DEFAULT_CHIP] ?: 0 }
 
     suspend fun saveDefaultPlan(value: Int) {
         context.dataStore.edit { preferences -> preferences[USER_DEFAULT_CHIP] = value }
@@ -81,7 +80,7 @@ class Datastoremanager(private val context: Context) {
     }
 
     val getFavScheduleOnOff: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[USER_FAV_SCHEDULE_ONOFF] ?: false }
+        context.dataStore.data.map { preferences -> preferences[USER_FAV_SCHEDULE_ONOFF] == true }
 
     suspend fun saveFavScheduleOnOff(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[USER_FAV_SCHEDULE_ONOFF] = value }
@@ -94,12 +93,12 @@ class Datastoremanager(private val context: Context) {
         context.dataStore.edit { preferences -> preferences[PLAN_DATESTAMP] = value }
     }
 
-    suspend fun deletePlanTimestamp(value: String) {
-        context.dataStore.edit { preferences -> preferences.remove(PLAN_DATESTAMP) }
-    }
+//    suspend fun deletePlanTimestamp(value: String) {
+//        context.dataStore.edit { preferences -> preferences.remove(PLAN_DATESTAMP) }
+//    }
 
     val getOnlineMode: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] ?: true }
+        context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] != false }
 
     suspend fun saveOnlineMode(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[ONLINE_MODE] = value }

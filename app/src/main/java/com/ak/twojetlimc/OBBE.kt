@@ -58,12 +58,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.glance.appwidget.updateAll
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.komponenty.downloadplanandzas
@@ -145,7 +147,9 @@ class OBBE : AppCompatActivity() {
 
                                                             WorkInfo.State.RUNNING -> {
                                                                 Log.d("OBBE", "Trwa Praca")
-                                                                navController.navigate("OBBE_pobieranie")
+                                                                if (navController.currentBackStackEntry?.destination?.route == "OBBE_start") {
+                                                                    navController.navigate("OBBE_pobieranie")
+                                                                }
                                                             }
 
                                                             WorkInfo.State.FAILED -> {
@@ -319,7 +323,8 @@ class OBBE : AppCompatActivity() {
                     Scaffold(
                         topBar = {
                             Column(
-                                modifier = Modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
+                                modifier = Modifier
+                                    .background(color = MaterialTheme.colorScheme.primaryContainer)
                             ) {
                                 Text(
                                     stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis),
@@ -361,6 +366,7 @@ class OBBE : AppCompatActivity() {
                                         serviceScope.launch {
                                             accessdatastoremanager.saveFavSchedule(checkedoption)
                                             accessdatastoremanager.saveFavScheduleOnOff(true)
+                                            WidgetDumbUI().updateAll(contextu)
                                         }
                                     }
                                     navController.navigate("OBBE_Permissions")
