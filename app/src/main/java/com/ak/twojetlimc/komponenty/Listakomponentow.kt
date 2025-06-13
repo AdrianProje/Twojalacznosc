@@ -27,6 +27,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -234,7 +235,8 @@ fun ClickableEmail(email: String) {
                     data = Uri.parse("mailto:$email")
                 })
             },
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center
     )
 }
 
@@ -267,6 +269,7 @@ fun ClickablePhoneNumber(contextText: String, phoneNumber: String) {
                     data = Uri.parse("tel:$phoneNumber")
                 })
             },
-        style = MaterialTheme.typography.bodyMedium
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center
     )
 }

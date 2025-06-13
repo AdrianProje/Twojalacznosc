@@ -81,6 +81,7 @@ import androidx.work.WorkManager
 import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
+import com.ak.twojetlimc.komponenty.LiveNotification
 import com.ak.twojetlimc.komponenty.PlanCheck
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
@@ -466,6 +467,21 @@ fun NavGraph(
 
                 item {
                     Button(
+                        onClick = { navController.navigate("terms") },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.SETTINGS_Button_Terms),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+
+
+                item {
+                    Button(
                         onClick = { navController.navigate("podziekowania") },
                         modifier = Modifier.fillParentMaxWidth(),
                         shape = MaterialTheme.shapes.medium,
@@ -604,6 +620,32 @@ fun NavGraph(
             }
         }
 
+        composable(route = "terms") {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                contentPadding = paddingvalues,
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+            ) {
+                item {
+                    Text(
+                        text = stringResource(R.string.SETTINGS_Button_Terms),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                    )
+                }
+                item {
+                    val inputStream = context.assets.open("terms")
+                    val terms = inputStream.bufferedReader().use { it.readText() }
+                    Text(text = terms)
+                    inputStream.close()
+                }
+            }
+        }
+
         composable(route = "debug") {
             var groupedlist by remember { mutableStateOf(mapOf<String, List<String>>()) }
             LaunchedEffect(key1 = Unit) {
@@ -651,6 +693,21 @@ fun NavGraph(
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
                     ) {
                         Text(text = "DEBUG | Przetestuj powiadomienia \n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie)")
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = {
+                            WorkManager.getInstance(context)
+                                .beginWith(OneTimeWorkRequestBuilder<LiveNotification>().build())
+                                .enqueue()
+                        },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "DEBUG | Przetestuj powiadomienia na żywo\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie na żywo w odpowiednim miejscu)")
                     }
                 }
 

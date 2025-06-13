@@ -15,17 +15,17 @@ android {
         }
     }
     namespace = "com.ak.twojetlimc"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 9
+        versionCode = 14
         vectorDrawables {
             useSupportLibrary = true
         }
-        targetSdk = 35
-        versionName = "Ciuty - 0.51.2.5"
+        targetSdk = 36
+        versionName = "Ciuty - 0.51.3.2"
     }
 
     buildTypes {

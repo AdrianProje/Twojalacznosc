@@ -55,4 +55,5 @@
     <string name="shortcut_disabled_message1">Tekst skrótu gdy wyłączony</string>
     <string name="WIDGET_Opis">Opis widgetu z planem lekcji</string>
     <string name="PLAN_Chip_Wszyscy">Wszyscy</string>
+    <string name="SETTINGS_Button_Terms">Tekst na przycisku prowadzący do warunków aplikacji</string>
 </resources>

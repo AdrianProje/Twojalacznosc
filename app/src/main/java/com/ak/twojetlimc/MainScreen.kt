@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -98,6 +99,13 @@ class MainScreen : AppCompatActivity() {
         notificationManager.createNotificationChannel(mChannel3)
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val name4 = "Powiadomienie na zywo"
+            val mChannel4 =
+                NotificationChannel("NAZYWO", name4, NotificationManager.IMPORTANCE_MIN)
+            mChannel4.description = "Powiadomienie wysyłane na zywo w trakcie trwania lekcji"
+            notificationManager.createNotificationChannel(mChannel4)
+        }
 
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =
@@ -287,6 +295,10 @@ fun BottomNavigationBar(navController: NavHostController) {
     // observe current route to change the icon
     // color,label color when navigated
     val currentRoute = navBackStackEntry?.destination?.route
+    val gradient = Brush.verticalGradient(
+        0f to MaterialTheme.colorScheme.primaryContainer,
+        1f to MaterialTheme.colorScheme.primary
+    )
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
     ) {

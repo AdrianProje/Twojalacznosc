@@ -59,7 +59,6 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             var maxProgress = 150;
 
             runBlocking {
-//                val jobs = listOf(
                 withContext(Dispatchers.IO) {
                     for (i in 1..30) {
                         ++currentProgress
@@ -117,8 +116,6 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                         if (result != null) planlist.add(result)
                     }
                 }
-//                )
-//                jobs.forEach { it.join() }
             }
 
             if (!isStopped) {

@@ -1,5 +1,26 @@
+--- 0.51.3.2 Beta ---
+- Aktualizacja modułów
+- Naprawiono zastępstwa (na zawsze)
+- Poprawa widoczności tekstu na kartach na planu lekcji
+
+--- 0.51.3.1 Beta ---
+- Dodano przycisk "Warunki korzystania z aplikacji" w ustawieniach
+- Wiadomość o zakończeniu wsparcia systemu operacyjnynego jest wyświetlana zawsze, gdy urządzenie nie jest już wspierane przez AOSP
+
+--- 0.51.3 Beta ---
+- Aktualizacja modułów
+- Poprawa zachowania menu "pomoc" w trybie poziomym
+- Zmiana wyglądu kart menu "pomoc"
+- Lekka zmiana wyglądu karty ZDiTM Szczecin
+
+--- 0.51.2.7 Beta ---
+- Naprawiono zastępstwa (znowu)
+
+--- 0.51.2.6 Beta ---
+- Zaktualizowano podgląd widgetu w systemie
+
 --- 0.51.2.5 Beta ---
-- Naprawiono zachownie Bottom Bar na karcie planu lekcji w trybie poziomym
+- Poprawiono zachownie Bottom Bar na karcie planu lekcji w trybie poziomym
 - Dodano wibrację do switcha w BottomSheet na karcie planu lekcji
 
 --- 0.51.2.4 Beta ---

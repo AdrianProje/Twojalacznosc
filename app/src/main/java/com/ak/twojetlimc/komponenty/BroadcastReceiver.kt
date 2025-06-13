@@ -9,10 +9,11 @@ open class BroadcastReceiver : android.content.BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val workRequest = OneTimeWorkRequestBuilder<RefreshWorker>().build()
         val workRequest2 = OneTimeWorkRequestBuilder<ZasCheck>().build()
+        val workRequest3 = OneTimeWorkRequestBuilder<LiveNotification>().build()
 
         WorkManager.getInstance(context)
             .beginWith(workRequest)
-            .then(workRequest2)
+            .then(workRequest2).then(workRequest3)
             .enqueue()
     }
 }

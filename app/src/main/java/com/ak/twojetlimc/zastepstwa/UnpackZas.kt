@@ -6,7 +6,6 @@ import com.ak.twojetlimc.komponenty.Datastoremanager
 import it.skrape.core.htmlDocument
 import it.skrape.selects.html5.table
 import it.skrape.selects.html5.td
-import it.skrape.selects.html5.tr
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +32,8 @@ fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
 
         htmlDocument(htmlfile, Charset.forName("ISO-8859-2")) {
             table {
-                val zastDetailsTrs = (findAll("tbody")[6].tr { findAll { this } }).drop(3)
+                val zastDetailsTrs = findAll("tbody") { findAll("tr") }
+                Log.d("UnpackZas", zastDetailsTrs.toString())
 
                 zastDetailsTrs.forEach {
                     if ((it.td { findAll { this } }).size == 4) {
@@ -64,7 +64,7 @@ fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
                                         1,
                                         dane
                                     )
-                                    Log.d("UnpackZas", "Zapisano: $dane")
+                                    Log.d("UnpackZas", "Zapisano: $dane na dzień $dzien")
                                 }
                             }
                         }

@@ -5,51 +5,55 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:background="@color/material_dynamic_primary90">
+        android:layout_height="wrap_content"
+        android:background="@color/material_dynamic_primary90"
+        android:orientation="horizontal">
 
         <TextView
-            android:text="3TA 3TPa\n29"
-            android:gravity="center"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent" />
+            android:gravity="center"
+            android:text="3TA 3TPa\n29" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="@color/material_dynamic_primary90">
 
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:padding="10dp"
-            android:background="@color/material_dynamic_primary90">
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@color/material_dynamic_primary90"
+            android:orientation="vertical">
 
             <TextView
-                android:text="8\n-\n13:50-14:35"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:layout_height="wrap_content"
-                android:layout_width="match_parent" />
+                android:text="8\n-\n13:50-14:35" />
 
         </LinearLayout>
 
 
         <LinearLayout
-            android:layout_height="match_parent"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/cornerradius">
 
             <TextView
-                android:text="Język polski\nJL"
-                android:gravity="center"
-                android:layout_gravity="center"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_width="match_parent" />
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="Język polski\nJL" />
 
         </LinearLayout>
     </LinearLayout>

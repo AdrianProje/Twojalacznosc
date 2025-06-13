@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.10.1"
 commonsLogging = "1.2"
 kotlin = "2.1.10"
 junit = "4.13.2"
@@ -33,25 +33,25 @@ compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.8.2" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.8.2" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.1" }
-androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.05.01" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.06.00" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.2.0-alpha02" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.0-alpha02" }
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.0" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.1" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.1" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version = "1.1.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.0" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.0" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.1" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.1" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.9.0" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.9.0" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.7" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.8" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.3.2" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.0" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
@@ -69,7 +69,7 @@ javax-servlet-api = { group = "javax.servlet", name = "javax.servlet-api", versi
 mimedir = { group = "org.ietf", name = "mimedir", version.ref = "mimedir" }
 androidx-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
 commons-logging-commons-logging = { group = "commons-logging", name = "commons-logging", version.ref = "commonsLoggingVersion" }
-groovy = { group = "org.codehaus.groovy", name = "groovy", version.ref = "groovy" }
+groovy = { group = "org.codehaus.groovy", name = "groovy", version = "3.0.25" }
 tomcat-juli = { group = "org.apache.tomcat", name = "tomcat-juli", version.ref = "tomcatJuli" }
 juli = { group = "org.apache.tomcat", name = "juli", version.ref = "juli" }
 

@@ -27,7 +27,7 @@ class ZasCheck(appContext: Context, workerParams: WorkerParameters) :
                         Log.d("ZasCheck", nextdays.toString())
                         webscrapeZT(
                             applicationContext,
-                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/zastepstwa/index.php?info=dokumenty/$nextdays.html",
+                            "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/zastepstwa/dokumenty/$nextdays.html",
                             nextdays.toString()
                         )
                     }

@@ -16,18 +16,19 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -91,7 +92,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -167,97 +167,67 @@ fun HelpScreen() {
             )
         }
     ) { paddingvalues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 5.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = paddingvalues
-        ) {
+        LazyColumn {
             item {
-                HorizontalDivider(
-                    color = Color.Black,
+                FlowRow(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    maxItemsInEachRow = 2,
                     modifier = Modifier
-                        .height(1.dp)
-                        .fillMaxWidth()
-                )
-            }
-            item {
-                OutlinedCard(
-                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    border = BorderStroke(1.dp, Color.Black),
-                    modifier = Modifier.size(390.dp, 200.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        .padding(paddingvalues)
+                        .fillMaxSize(),
+
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.MAIN_Pomoc_Kontakt1),
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                            .height(1.dp)
+                            .fillMaxWidth()
+                    )
+                    OutlinedCard(
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        border = BorderStroke(1.dp, Color.Black),
+                        modifier = Modifier.size(390.dp, 200.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.MAIN_Pomoc_Kontakt1),
+                                modifier = Modifier.padding(top = 10.dp),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
 
-                        Text(
-                            text = "UL. Ku Słońcu 27-30 | 71-080 Szczecin",
-                            modifier = Modifier.padding(horizontal = 10.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                            Text(
+                                text = "UL. Ku Słońcu 27-30 | 71-080 Szczecin",
+                                modifier = Modifier.padding(horizontal = 10.dp),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
 
-                        ClickablePhoneNumber(
-                            stringResource(id = R.string.MAIN_Pomoc_Kontakt2),
-                            "91-48-48-056"
-                        )
+                            ClickablePhoneNumber(
+                                stringResource(id = R.string.MAIN_Pomoc_Kontakt2),
+                                "91-48-48-056"
+                            )
 
-                        ClickablePhoneNumber(
-                            stringResource(id = R.string.MAIN_Pomoc_Kontakt3),
-                            "91-48-56-996"
-                        )
+                            ClickablePhoneNumber(
+                                stringResource(id = R.string.MAIN_Pomoc_Kontakt3),
+                                "91-48-56-996"
+                            )
 
-                        ClickableEmail(email = "sekretariat@tlimc.szczecin.pl")
+                            ClickableEmail(email = "sekretariat@tlimc.szczecin.pl")
 
+                        }
                     }
-                }
-            }
 
-//                    item {
-//                        OutlinedCard(
-//                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-//                            border = BorderStroke(1.dp, Color.Black),
-//                            modifier = Modifier.size(390.dp, 200.dp)
-//                        ) {
-//                            Row(
-//                                modifier = Modifier
-//                                    .align(Alignment.CenterHorizontally)
-//                                    .padding(vertical = 50.dp),
-//                                verticalAlignment = Alignment.CenterVertically
-//                            ) {
-//                                Image(
-//                                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-//                                    contentDescription = "hello"
-//                                )
-//
-//                                Text(
-//                                    text = stringResource(id = R.string.MAIN_Pomoc_Dyrektor),
-//                                    textAlign = TextAlign.Center,
-//                                    modifier = Modifier.align(Alignment.CenterVertically),
-//                                    style = MaterialTheme.typography.bodyLarge
-//                                )
-//                            }
-//                        }
-//                    }
-
-            item {
-                OutlinedCard(
-                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    border = BorderStroke(1.dp, Color.Black),
-                    modifier = Modifier.size(390.dp, 200.dp)
-                ) {
-                    Column(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-
+                    OutlinedCard(
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        border = BorderStroke(1.dp, Color.Black),
+                        modifier = Modifier.size(390.dp, 200.dp)
+                    ) {
                         Text(
                             text = stringResource(id = R.string.MAIN_Pomoc_Linki),
                             modifier = Modifier
@@ -266,9 +236,11 @@ fun HelpScreen() {
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center
                         )
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        FlowRow(
+                            horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            maxItemsInEachRow = 3,
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             ImageLinkButton(
                                 iconId = R.drawable.lacznosc_logo_full_ia,
@@ -422,27 +394,6 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                 contentPadding = PaddingValues(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (SDK_INT <= Build.VERSION_CODES.S_V2) {
-                    item(key = 5) {
-                        OutlinedCard(
-                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                            border = BorderStroke(1.dp, Color.Black),
-                            elevation = CardDefaults.elevatedCardElevation(10.dp),
-                            modifier = Modifier
-                                .fillParentMaxWidth(1f)
-                                .wrapContentHeight()
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text(
-                                    text = "Ta wersja Androida jest niebezpieczna!",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                Text(text = "Android ${Build.VERSION.RELEASE} nie jest już wspierany przez Google i AOSP.\nJeśli jest to możliwe zaktualizuj swój smartfon.")
-                            }
-                        }
-                    }
-                }
-
                 val assetManager = context.assets
                 val inputStream = assetManager.open("Tipsu")
                 val tips =
@@ -467,6 +418,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                             }
                         }
                     }
+
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         border = BorderStroke(1.dp, Color.DarkGray),
@@ -488,6 +440,27 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                 overflow = TextOverflow.Clip
                             )
                         }
+                    }
+                }
+            }
+        }
+
+        if (SDK_INT <= Build.VERSION_CODES.S_V2) {
+            item {
+                OutlinedCard(
+                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    border = BorderStroke(1.dp, Color.Black),
+                    elevation = CardDefaults.elevatedCardElevation(10.dp),
+                    modifier = Modifier
+                        .fillParentMaxWidth(0.95f)
+                        .wrapContentHeight()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Text(
+                            text = "Ta wersja Androida jest niebezpieczna!",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Text(text = "Android ${Build.VERSION.RELEASE} nie jest już wspierany przez Google i AOSP")
                     }
                 }
             }
@@ -568,15 +541,15 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 
                         val odjazd = when (realtime) {
                             0 -> {
-                                " Na przystanku"
+                                "Na przystanku"
                             }
 
                             null -> {
-                                " " + item.departures.first().time_scheduled.toString()
+                                item.departures.first().time_scheduled.toString()
                             }
 
                             else -> {
-                                " Za: $realtime min."
+                                "Za: $realtime min."
                             }
                         }
 
@@ -585,15 +558,37 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                             modifier = Modifier
                                 .clickable { expanded = !expanded }
                                 .padding(horizontal = 10.dp, vertical = 5.dp)
+                                .fillMaxHeight()
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth(0.8f)
+                                    .fillMaxSize()
                                     .weight(1f)
                             ) {
-                                Text(text = "(${item.stop_number}) " + item.stop_name)
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "(${item.stop_number}) ${item.stop_name}",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .basicMarquee(spacing = MarqueeSpacing(10.dp))
+                                            .weight(1f)
+                                    )
+                                    Text(
+                                        "| $odjazd",
+                                        modifier = Modifier
+                                            .padding(horizontal = 5.dp)
+                                            .basicMarquee(spacing = MarqueeSpacing(10.dp))
+                                            .weight(0.5f),
+                                        textAlign = TextAlign.Right
+                                    )
+                                }
+
                                 Text(
-                                    text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction}) |" + odjazd
+                                    text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction})",
+                                    modifier = Modifier.basicMarquee(spacing = MarqueeSpacing(10.dp))
                                 )
                                 if (item.message != null) {
                                     Text(
@@ -628,25 +623,28 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                             )
                                             Text(
                                                 text = departure.direction.toString(),
+                                                textAlign = TextAlign.Center,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .weight(1f)
+                                                    .basicMarquee()
                                             )
                                             val timetext = when (departure.time_real) {
                                                 0 -> {
-                                                    " Na przystanku"
+                                                    "Na przystanku"
                                                 }
 
                                                 null -> {
-                                                    " " + departure.time_scheduled.toString()
+                                                    "${departure.time_scheduled}"
                                                 }
 
                                                 else -> {
-                                                    departure.time_real.toString() + " min."
+                                                    "${departure.time_real} min."
                                                 }
                                             }
                                             Text(
                                                 text = timetext,
+                                                textAlign = TextAlign.Center,
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .weight(1f)
@@ -788,7 +786,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var selectedData2 by rememberSaveable { mutableStateOf<String?>("") }
     var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
 
-    var backPressCount by remember { mutableIntStateOf(0) }
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var selectedChipOption = remember { mutableIntStateOf(0) }
@@ -902,7 +899,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                 }
             }
         } catch (e: Exception) {
-            // Handle errors here, e.g., log the error
             Log.e("PlanScreen", "Error loading schedule: ${e.message}")
             scheduleFromLoad = null
         }
@@ -1025,9 +1021,10 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentPadding = PaddingValues(horizontal = 10.dp),
-                windowInsets = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
             ) {
                 Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -1048,11 +1045,28 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                 buttonPosition = it.positionInRoot()
                             }
                             .padding(horizontal = 10.dp)
-                    ) { Text(daytext) }
 
-                    Button(onClick = {
-                        showBottomSheet = true
-                    }) { Text(stringResource(id = R.string.PLAN_Button_Zmień)) }
+                    ) {
+                        Text(
+                            daytext,
+                            modifier = Modifier
+                                .basicMarquee(spacing = MarqueeSpacing(10.dp))
+
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            showBottomSheet = true
+                        }
+                    ) {
+                        Text(
+                            stringResource(id = R.string.PLAN_Button_Zmień),
+                            modifier = Modifier
+                                .basicMarquee(spacing = MarqueeSpacing(10.dp))
+
+                        )
+                    }
 
                     DropdownMenu(
                         expanded = showDropdownMenu,
@@ -1173,35 +1187,37 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                         .padding(vertical = 5.dp)
                                         .fillParentMaxWidth(0.95f)
                                         .layoutId(numerlekcji),
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    } else {
-                                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                                    }
+                                    shape = MaterialTheme.shapes.medium
                                 ) {
                                     Row(
                                         modifier = Modifier
-                                            .fillParentMaxWidth(),
+                                            .fillParentMaxWidth()
+                                            .background(
+                                                if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                    MaterialTheme.colorScheme.surfaceContainerHighest
+                                                } else {
+                                                    MaterialTheme.colorScheme.primaryContainer
+                                                }
+                                            ),
                                         horizontalArrangement = Arrangement.Center
                                     ) {
-                                        Text(text = sala.toString())
+                                        Text(text = sala)
                                     }
                                     Row(
                                         modifier = Modifier
                                             .fillMaxSize()
+                                            .background(
+                                                if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                    MaterialTheme.colorScheme.surfaceContainerHighest
+                                                } else {
+                                                    MaterialTheme.colorScheme.primaryContainer
+                                                }
+                                            )
                                     ) {
                                         Column(
                                             Modifier
                                                 .fillMaxHeight()
-                                                .fillMaxWidth(0.3f)
-                                                .background(
-                                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                                        MaterialTheme.colorScheme.surfaceContainerHighest
-                                                    } else {
-                                                        MaterialTheme.colorScheme.primaryContainer
-                                                    }
-                                                ),
+                                                .fillMaxWidth(0.3f),
                                             verticalArrangement = Arrangement.Center,
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
@@ -1212,22 +1228,37 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                         }
                                         Column(
                                             modifier = Modifier
-                                                .clip(MaterialTheme.shapes.large)
+                                                .background(
+                                                    MaterialTheme.colorScheme.background,
+                                                    MaterialTheme.shapes.medium
+                                                )
                                                 .fillMaxWidth()
-                                                .fillMaxHeight()
-                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                                                .fillMaxHeight(),
                                             verticalArrangement = Arrangement.Center,
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             Text(
-                                                text = "$przedmiot \n $nauczyciel \n $klasa",
+                                                text = przedmiot,
                                                 textAlign = TextAlign.Center,
                                             )
+                                            if (nauczyciel.isNotEmpty()) {
+                                                Text(
+                                                    text = nauczyciel,
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
+                                            if (klasa.isNotEmpty()) {
+                                                Text(
+                                                    text = klasa,
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
                                         }
                                     }
                                 }
 
-                                if (listitems != null && !przedmiot.isEmpty() && dzien == day.ordinal) {
+
+                                if (!listitems.isNullOrEmpty() && !przedmiot.isEmpty() && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
                                         if (przedmiot.contains("religia") && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
                                                 "religia"
@@ -1290,153 +1321,157 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                         }
                     }
                 }
-            }
-        }
 
-        if (showBottomSheet) {
-            val listdata = GetList(selectedChipOption.intValue, context)
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                },
-                sheetState = sheetState,
-                modifier = Modifier
-                    .statusBarsPadding()
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = "Tryb online",
+                if (showBottomSheet) {
+                    val listdata = GetList(selectedChipOption.intValue, context)
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            showBottomSheet = false
+                        },
+                        sheetState = sheetState,
                         modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                            .align(Alignment.CenterVertically)
-                    )
-                    Switch(
-                        checked = online,
-                        onCheckedChange = {
-                            switchvibrate(context)
-                            online = it
+                            .statusBarsPadding()
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = "Tryb online",
+                                modifier = Modifier
+                                    .padding(horizontal = 10.dp)
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Switch(
+                                checked = online,
+                                onCheckedChange = {
+                                    switchvibrate(context)
+                                    online = it
+                                }
+                            )
                         }
-                    )
-                }
 
-                val focusManager = LocalFocusManager.current
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    runBlocking {
-                        planstamptext = accessdatastoremanager.getPlanTimestamp.first().toString()
-                    }
-                    if (planstamptext != "") {
-                        Text(text = "⬇️ Offline: $planstamptext")
-                    } else {
-                        Text(text = "Brak pobranego planu lekcji")
-                    }
-                }
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    items(options) { option ->
-                        FilterChip(
-                            selected = when (selectedChipOption.intValue) {
-                                0 -> option == options[0]
-                                1 -> option == options[1]
-                                2 -> option == options[2]
-                                3 -> option == options[3]
-                                else -> {
-                                    false
-                                }
-                            },
-                            onClick = {
-                                selectedChipOption.intValue = when (option) {
-                                    options[0] -> 0
-                                    options[1] -> 1
-                                    options[2] -> 2
-                                    options[3] -> 3
-                                    else -> {
-                                        0
-                                    }
-                                }
-                            },
-                            label = { Text(option) },
-                            leadingIcon = {
-                                val imageVector = when (option) {
-                                    options[0] -> Icons.Filled.Clear
-                                    options[1] -> Icons.Filled.Star
-                                    options[2] -> Icons.Filled.LocationOn
-                                    options[3] -> Icons.Filled.AccountCircle
-                                    else -> null
-                                }
-                                if (imageVector != null) {
-                                    Icon(imageVector = imageVector, contentDescription = "Option")
-                                }
+                        val focusManager = LocalFocusManager.current
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            runBlocking {
+                                planstamptext =
+                                    accessdatastoremanager.getPlanTimestamp.first().toString()
                             }
-                        )
-                    }
-                }
-
-
-                var searchQuery by remember { mutableStateOf("") }
-                val filteredData = listdata.filter {
-                    it?.imieinazwisko?.contains(
-                        searchQuery,
-                        ignoreCase = true
-                    ) == true
-                }
-
-                TextField(
-                    value = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .align(Alignment.CenterHorizontally)
-                        .padding(bottom = 10.dp),
-                    label = { Text(text = "Wyszukaj") },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            focusManager.clearFocus()
+                            if (planstamptext != "") {
+                                Text(text = "⬇️ Offline: $planstamptext")
+                            } else {
+                                Text(text = "Brak pobranego planu lekcji")
+                            }
                         }
-                    ),
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(
-                                    Icons.Filled.Close,
-                                    contentDescription = "Wyczyść wyszukiwanie"
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            items(options) { option ->
+                                FilterChip(
+                                    selected = when (selectedChipOption.intValue) {
+                                        0 -> option == options[0]
+                                        1 -> option == options[1]
+                                        2 -> option == options[2]
+                                        3 -> option == options[3]
+                                        else -> {
+                                            false
+                                        }
+                                    },
+                                    onClick = {
+                                        selectedChipOption.intValue = when (option) {
+                                            options[0] -> 0
+                                            options[1] -> 1
+                                            options[2] -> 2
+                                            options[3] -> 3
+                                            else -> {
+                                                0
+                                            }
+                                        }
+                                    },
+                                    label = { Text(option) },
+                                    leadingIcon = {
+                                        val imageVector = when (option) {
+                                            options[0] -> Icons.Filled.Clear
+                                            options[1] -> Icons.Filled.Star
+                                            options[2] -> Icons.Filled.LocationOn
+                                            options[3] -> Icons.Filled.AccountCircle
+                                            else -> null
+                                        }
+                                        if (imageVector != null) {
+                                            Icon(
+                                                imageVector = imageVector,
+                                                contentDescription = "Option"
+                                            )
+                                        }
+                                    }
                                 )
                             }
                         }
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    enabled = true
-                )
 
-                LazyColumn(
-                    Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(filteredData) { data ->
-                        Button(
-                            shape = MaterialTheme.shapes.medium,
+
+                        var searchQuery by remember { mutableStateOf("") }
+                        val filteredData = listdata.filter {
+                            it?.imieinazwisko?.contains(
+                                searchQuery,
+                                ignoreCase = true
+                            ) == true
+                        }
+
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                            },
                             modifier = Modifier
-                                .fillParentMaxWidth(0.9f),
-                            onClick = {
-                                selectedData = data?.imieinazwisko
-                                selectedData2 = data?.htmlvalue
-                            }
+                                .fillMaxWidth(0.9f)
+                                .align(Alignment.CenterHorizontally)
+                                .padding(bottom = 10.dp),
+                            label = { Text(text = "Wyszukaj") },
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Search
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    focusManager.clearFocus()
+                                }
+                            ),
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { searchQuery = "" }) {
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = "Wyczyść wyszukiwanie"
+                                        )
+                                    }
+                                }
+                            },
+                            shape = MaterialTheme.shapes.medium,
+                            enabled = true
+                        )
+
+                        LazyColumn(
+                            Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            data?.imieinazwisko?.let { it1 -> Text(it1) }
+                            items(filteredData) { data ->
+                                Button(
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier
+                                        .fillParentMaxWidth(0.9f),
+                                    onClick = {
+                                        selectedData = data?.imieinazwisko
+                                        selectedData2 = data?.htmlvalue
+                                    }
+                                ) {
+                                    data?.imieinazwisko?.let { it1 -> Text(it1) }
+                                }
+                            }
                         }
                     }
                 }

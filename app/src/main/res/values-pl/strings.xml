@@ -48,4 +48,5 @@
     <string name="shortcut_disabled_message1">Ten skrót jest teraz niedostępny</string>
     <string name="WIDGET_Opis">Dodaj plan lekcji do ekranu startowego</string>
     <string name="PLAN_Chip_Wszyscy">Brak Filtru</string>
+    <string name="SETTINGS_Button_Terms">Warunki korzystania z aplikacji</string>
 </resources>
