@@ -1,3 +1,10 @@
+--- 0.52 Beta ---
+- Targetowanie Android 16
+- Poprawa wyglądu karty uprawnień przy pierwszym uruchomieniu aplikacji
+- Dodano przycisk "Uprawnienia" w ustawieniach
+- Zmiana częstotliwości aktualizacji planu offline
+- Aktualizacja modułów
+
 --- 0.51.3.2 Beta ---
 - Aktualizacja modułów
 - Naprawiono zastępstwa (na zawsze)

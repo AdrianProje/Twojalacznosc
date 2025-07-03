@@ -118,7 +118,7 @@ class Datastoremanager(private val context: Context) {
 
     suspend fun storeSchedule(context: Context, userId: String, version: Int, schedule: Schedule) {
         context.dataStore.edit { preferences ->
-            val key = "$SCHEDULE_PREFIX$userId$version" // Corrected key
+            val key = "$SCHEDULE_PREFIX$userId$version"
             preferences[stringPreferencesKey(key)] = serializeSchedule(schedule)
         }
     }

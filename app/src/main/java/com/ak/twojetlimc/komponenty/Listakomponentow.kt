@@ -13,8 +13,15 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.work.OneTimeWorkRequestBuilder
@@ -97,7 +105,7 @@ fun createalarm(context: Context) {
 
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            21600000,
+            7200000,
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
@@ -272,4 +280,42 @@ fun ClickablePhoneNumber(contextText: String, phoneNumber: String) {
         style = MaterialTheme.typography.bodyMedium,
         textAlign = TextAlign.Center
     )
+}
+
+@Preview
+@Composable
+fun Permissionsinfo() {
+    Column {
+        Text(
+            text = "Zalecane uprawnienia",
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center
+        )
+        Row {
+            Icon(
+                imageVector = Icons.Default.Create,
+                contentDescription = "Tworzenie Alarmów i Przypomnień"
+            )
+            Text(text = "Tworzenie Alarmów i Przypomnień - Służy do aktualizowania danych w aplikacji nawet gdy jest zamknięta lub w tle")
+        }
+
+
+        Text(
+            text = "Opcjonalne uprawnienia",
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center
+        )
+        Row {
+            Icon(imageVector = Icons.Default.Notifications, contentDescription = "Powiadomienia")
+            Text(text = "Powiadomienia - Służy do wysyłania powiadomień")
+        }
+
+        Row {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Instalowanie Aplikacji"
+            )
+            Text(text = "Instalowanie Aplikacji - Służy do instalowania aktualizacji tej aplikacji")
+        }
+    }
 }

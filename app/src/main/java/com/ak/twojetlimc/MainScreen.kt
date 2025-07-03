@@ -99,13 +99,13 @@ class MainScreen : AppCompatActivity() {
         notificationManager.createNotificationChannel(mChannel3)
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            val name4 = "Powiadomienie na zywo"
-            val mChannel4 =
-                NotificationChannel("NAZYWO", name4, NotificationManager.IMPORTANCE_MIN)
-            mChannel4.description = "Powiadomienie wysyłane na zywo w trakcie trwania lekcji"
-            notificationManager.createNotificationChannel(mChannel4)
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+//            val name4 = "Powiadomienie na zywo"
+//            val mChannel4 =
+//                NotificationChannel("NAZYWO", name4, NotificationManager.IMPORTANCE_MIN)
+//            mChannel4.description = "Powiadomienie wysyłane na zywo w trakcie trwania lekcji"
+//            notificationManager.createNotificationChannel(mChannel4)
+//        }
 
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =

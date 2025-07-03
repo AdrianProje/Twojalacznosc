@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="Twoja Łączność">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-04-10T12:27:08.621933100Z">
+        <DropdownSelection timestamp="2025-06-17T18:01:21.593910900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=R5CWC4BTSYZ" />

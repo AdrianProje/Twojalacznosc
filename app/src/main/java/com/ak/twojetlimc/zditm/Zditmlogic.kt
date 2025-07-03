@@ -12,7 +12,7 @@ fun getthedeparturesdata(stopnumber: Int): Tablicaodjazow {
         request {
             url = "https://www.zditm.szczecin.pl/api/v1/displays/$stopnumber"
             method = Method.GET
-//            TODO("Dodać oznaczenie w User-Agent o nazwie aplikacji, Ustalić czy scrapeit ma cachecontrol oraz ETag ")
+
         }
 
         response {
@@ -25,3 +25,5 @@ fun getthedeparturesdata(stopnumber: Int): Tablicaodjazow {
     val datatoreturn = Json.decodeFromString<Tablicaodjazow>(jasondata)
     return datatoreturn
 }
+
+//            TODO("Dodać oznaczenie w User-Agent o nazwie aplikacji, Ustalić czy scrapeit ma cachecontrol oraz ETag ")

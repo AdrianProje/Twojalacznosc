@@ -67,6 +67,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.Datastoremanager
+import com.ak.twojetlimc.komponenty.Permissionsinfo
 import com.ak.twojetlimc.komponenty.createalarm
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.planLekcji.GetList
@@ -501,14 +502,15 @@ class OBBE : AppCompatActivity() {
                                         .padding(padding),
                                     verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
-                                    Text(
-                                        text = "Aplikacja korzysta z uprawnień powiadamiania oraz planowania alarmów",
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-                                    Text(
-                                        text = "\n\n- Potrzebujemy twojego zezwolenia na powiadomienia (do powiadamiania o planie lekcji oraz innych ważnych rzeczach)\n\n- Potrzebujemy twojego zezwolenia na ustawianie alarmów, aby aplikacja mogła w tle sprawdzać nadchodzące lekcje i wykonywać odpowiednie czynności związane z nimi\n\n-Potrzebujemy twojego zezwolenia na instalowanie aplikacji na Twoim urządzeniu, aby automatycznie aktualizować aplikację\n\n-Dla lepszego działania, przyznaj możliwość nieograniczonego działania aplikacji w tle (Niograniczone wykorzystywanie baterii)\n\nZezwolenia zawsze możesz wycofać później w ustawieniach systemu",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+//                                    Text(
+//                                        text = "Aplikacja korzysta z uprawnień powiadamiania oraz planowania alarmów",
+//                                        style = MaterialTheme.typography.titleLarge
+//                                    )
+//                                    Text(
+//                                        text = "\n\n- Potrzebujemy twojego zezwolenia na powiadomienia (do powiadamiania o planie lekcji oraz innych ważnych rzeczach)\n\n- Potrzebujemy twojego zezwolenia na ustawianie alarmów, aby aplikacja mogła w tle sprawdzać nadchodzące lekcje i wykonywać odpowiednie czynności związane z nimi\n\n-Potrzebujemy twojego zezwolenia na instalowanie aplikacji na Twoim urządzeniu, aby automatycznie aktualizować aplikację\n\n-Dla lepszego działania, przyznaj możliwość nieograniczonego działania aplikacji w tle (Niograniczone wykorzystywanie baterii)\n\nZezwolenia zawsze możesz wycofać później w ustawieniach systemu",
+//                                        style = MaterialTheme.typography.bodyMedium
+//                                    )
+                                    Permissionsinfo()
                                 }
                             }
                         }

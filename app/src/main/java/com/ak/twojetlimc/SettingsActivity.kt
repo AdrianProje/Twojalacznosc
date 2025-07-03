@@ -81,7 +81,8 @@ import androidx.work.WorkManager
 import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
-import com.ak.twojetlimc.komponenty.LiveNotification
+import com.ak.twojetlimc.komponenty.Permissionsinfo
+//import com.ak.twojetlimc.komponenty.LiveNotification
 import com.ak.twojetlimc.komponenty.PlanCheck
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
@@ -479,6 +480,20 @@ fun NavGraph(
                     }
                 }
 
+                item {
+                    Button(
+                        onClick = { navController.navigate("permissionsinfo") },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(
+                            text = "Uprawnienia",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+
 
                 item {
                     Button(
@@ -620,6 +635,29 @@ fun NavGraph(
             }
         }
 
+        composable(route = "permissionsinfo") {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                contentPadding = paddingvalues,
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Uprawnienia",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                    )
+                }
+                item {
+                    Permissionsinfo()
+                }
+            }
+        }
+
         composable(route = "terms") {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -696,20 +734,20 @@ fun NavGraph(
                     }
                 }
 
-                item {
-                    Button(
-                        onClick = {
-                            WorkManager.getInstance(context)
-                                .beginWith(OneTimeWorkRequestBuilder<LiveNotification>().build())
-                                .enqueue()
-                        },
-                        modifier = Modifier.fillParentMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(text = "DEBUG | Przetestuj powiadomienia na żywo\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie na żywo w odpowiednim miejscu)")
-                    }
-                }
+//                item {
+//                    Button(
+//                        onClick = {
+//                            WorkManager.getInstance(context)
+//                                .beginWith(OneTimeWorkRequestBuilder<LiveNotification>().build())
+//                                .enqueue()
+//                        },
+//                        modifier = Modifier.fillParentMaxWidth(),
+//                        shape = MaterialTheme.shapes.medium,
+//                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+//                    ) {
+//                        Text(text = "DEBUG | Przetestuj powiadomienia na żywo\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie na żywo w odpowiednim miejscu)")
+//                    }
+//                }
 
                 item {
                     Button(
