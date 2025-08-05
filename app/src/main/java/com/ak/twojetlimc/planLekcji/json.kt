@@ -1,15 +1,14 @@
 package com.ak.twojetlimc.planLekcji
 
-import com.google.gson.Gson
-
-val gson = Gson()
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
 
 //Zapisz/odczytaj schedule
 
 fun serializeSchedule(item: Schedule): String {
-    return gson.toJson(item)
+    return Json.encodeToJsonElement(item).toString()
 }
 
 fun deserializeSchedule(json: String): Schedule {
-    return gson.fromJson(json, Schedule::class.java)
+    return Json.decodeFromString(json)
 }

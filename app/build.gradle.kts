@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -20,20 +22,18 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 15
+        versionCode = 16
         vectorDrawables {
             useSupportLibrary = true
         }
         targetSdk = 36
-        versionName = "Ciuty - 0.52"
+        versionName = "Ciuty - 0.52.2"
     }
 
     buildTypes {
         release {
-            isShrinkResources = false
-            isMinifyEnabled = false
-            // Opcje wyłączone ze względu na błędy z biblioteką skrapeit,
-            // rozwiązać później TODO("Naprawić błąd minifyEnabled")
+            isShrinkResources = true
+            isMinifyEnabled = true
             //Funckja zmniejsza rozmiar apk lub bundle
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -50,18 +50,21 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_23
+        targetCompatibility = JavaVersion.VERSION_23
     }
-    kotlinOptions {
-        jvmTarget = "17"
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_23)
+        }
     }
+
     dependenciesInfo {
         includeInBundle = true
         includeInApk = true
     }
     buildToolsVersion = "36.0.0"
-    ndkVersion = "28.1.13356709"
     flavorDimensions += listOf("BaseApp")
     productFlavors {
         create("Galaxy") {
@@ -106,15 +109,14 @@ dependencies {
     implementation(libs.androidx.material)
     implementation(libs.javax.servlet.api)
     implementation(libs.mimedir)
-    implementation(libs.gson)
     implementation(libs.groovy)
+    implementation(libs.jsoup)
+    implementation(libs.xstream) {
+        exclude(group = "xmlpull", module = "xmlpull")
+    }
     debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference)
-    implementation(libs.skrapeit) {
-        exclude(group = "it.skrape", module = "skrapeit-async-fetcher")
-    }
-
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.accompanist.swiperefresh)
     implementation(libs.androidx.annotation)

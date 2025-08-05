@@ -23,7 +23,6 @@ class ClassPullRefresh(appContext: Context, workerParams: WorkerParameters) :
                 launch(Dispatchers.IO) {
                     for (i in 1..30) {
                         webscrapeT(
-                            applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
                             "o$i"
                         )

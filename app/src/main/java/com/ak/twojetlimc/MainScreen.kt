@@ -196,7 +196,6 @@ class MainScreen : AppCompatActivity() {
                                         "Pobierz ręcznie",
                                         "https://www.tlimc.szczecin.pl/Apka/TwojaLacznosc.apk"
                                     )
-
                                 }
                                 Row(
                                     modifier = Modifier

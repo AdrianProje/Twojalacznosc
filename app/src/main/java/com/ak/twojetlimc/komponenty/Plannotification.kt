@@ -36,8 +36,8 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                 "$timestamp/$htmlvalue",
                 1
             )!!.plan.forEach {
-                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && !it.przedmiot.isEmpty()) {
-                    var listitems = mutableListOf<Zastepstwo>()
+                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && it.przedmiot != "") {
+                    val listitems = mutableListOf<Zastepstwo>()
                     try {
                         val datastore = Datastoremanager(applicationContext)
                         val data1 = datastore.getZastepstwo(
@@ -72,15 +72,15 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                     showNotification(
                         applicationContext,
                         notificationManager,
-                        "Następna lekcja: ${it.przedmiot}", if (!it.sala.isEmpty()) {
+                        "Następna lekcja: ${it.przedmiot}", if (it.sala != "") {
                             "Sala: ${it.sala}, "
                         } else {
                             ""
-                        } + if (!it.klasa.isEmpty()) {
+                        } + if (it.klasa != "") {
                             "Klasa: ${it.klasa}, "
                         } else {
                             ""
-                        } + if (!it.nauczyciel.isEmpty()) {
+                        } + if (it.nauczyciel != "") {
                             "Nauczyciel: ${it.nauczyciel}, "
                         } else {
                             ""
@@ -88,7 +88,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                     )
                     Log.d("Plannotification", "Wysyłanie powiadomienia!")
 
-                    if (!listitems.isEmpty()) {
+                    if (!listitems.isNullOrEmpty()) {
 
                         var notificationTextklasa = ""
                         var notificationTextzastepca = ""
@@ -103,7 +103,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                         showNotificationZas(
                             applicationContext,
                             notificationManager,
-                            "Następna lekcja (zastępstwo): ${notificationTextklasa}",
+                            "Następna lekcja (zastępstwo): $notificationTextklasa",
                             notificationTextzastepca + " | " + notificationTextuwagi
                         )
                         Log.d("Plannotification", "Wysyłanie powiadomienia (zastępstwo)!")

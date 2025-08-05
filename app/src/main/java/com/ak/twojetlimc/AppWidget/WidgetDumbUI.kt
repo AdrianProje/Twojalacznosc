@@ -153,7 +153,12 @@ private fun MyContent(
                             .background(GlanceTheme.colors.widgetBackground),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(item.sala)
+                        if (item.sala != "") {
+                            Text(item.sala.toString())
+                        } else {
+                            Text(" - ")
+                        }
+
                     }
                     Row(
                         modifier = GlanceModifier.fillMaxSize()
@@ -187,18 +192,23 @@ private fun MyContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                item.przedmiot,
-                                style = androidx.glance.text.TextStyle(
-                                    textAlign = androidx.glance.text.TextAlign.Center
+                            if (item.przedmiot != "") {
+                                Text(
+                                    item.przedmiot.toString(),
+                                    style = androidx.glance.text.TextStyle(
+                                        textAlign = androidx.glance.text.TextAlign.Center
+                                    )
                                 )
-                            )
-                            Text(
-                                item.nauczyciel,
-                                style = androidx.glance.text.TextStyle(
-                                    textAlign = androidx.glance.text.TextAlign.Center
+                            }
+
+                            if (item.nauczyciel != "") {
+                                Text(
+                                    item.nauczyciel.toString(),
+                                    style = androidx.glance.text.TextStyle(
+                                        textAlign = androidx.glance.text.TextAlign.Center
+                                    )
                                 )
-                            )
+                            }
                         }
 
 

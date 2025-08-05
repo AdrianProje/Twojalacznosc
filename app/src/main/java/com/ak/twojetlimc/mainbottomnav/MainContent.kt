@@ -281,7 +281,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
     var selectedKey by remember { mutableIntStateOf(0) }
     var refreshzditmcount by remember { mutableIntStateOf(0) }
 
-    var listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
+    val listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
 
     val rotationStateloading by animateFloatAsState(
         targetValue = if (isloadingzditm) 360f else 0f,
@@ -592,7 +592,7 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                 )
                                 if (item.message != null) {
                                     Text(
-                                        text = item.message.toString(),
+                                        text = item.message,
                                         modifier = Modifier.basicMarquee()
                                     )
                                 }
@@ -788,7 +788,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
-    var selectedChipOption = remember { mutableIntStateOf(0) }
+    val selectedChipOption = remember { mutableIntStateOf(0) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -829,7 +829,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     suspend fun loadscheduledata(): Schedule? {
         val datastore = Datastoremanager(context)
 
-        var scheduleFromLoad: Schedule? = null
+        var scheduleFromLoad: Schedule?
 
         try {
             val scheduleTimestamp = datastore.getPlanTimestamp.first()
@@ -845,7 +845,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                             "loadscheduledata online (selecteddata not null)"
                         )
                         scheduleFromLoad = webscrapeT(
-                            context,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/$selectedData2.html",
                             selectedData2.toString()
                         )
@@ -875,7 +874,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                 "loadscheduledata online (favschedule not null) $selectedData, $selectedData2"
                             )
                             scheduleFromLoad = webscrapeT(
-                                context,
                                 "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/$selectedData2.html",
                                 selectedData2.toString()
                             )
@@ -1168,7 +1166,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     contentPadding = padding
                 ) {
 
-                    scheduleData!!.plan.forEach {
+                    it1.plan.forEach {
                         val numerlekcji = it.numerLekcji
                         val czas = it.czas
                         val dzien = it.dzien
@@ -1201,7 +1199,11 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                             ),
                                         horizontalArrangement = Arrangement.Center
                                     ) {
-                                        Text(text = sala)
+                                        if (sala != "") {
+                                            Text(text = sala)
+                                        } else {
+                                            Text(text = " - ")
+                                        }
                                     }
                                     Row(
                                         modifier = Modifier
@@ -1237,17 +1239,19 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                             verticalArrangement = Arrangement.Center,
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Text(
-                                                text = przedmiot,
-                                                textAlign = TextAlign.Center,
-                                            )
-                                            if (nauczyciel.isNotEmpty()) {
+                                            if (przedmiot != "") {
+                                                Text(
+                                                    text = przedmiot,
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
+                                            if (nauczyciel != "") {
                                                 Text(
                                                     text = nauczyciel,
                                                     textAlign = TextAlign.Center,
                                                 )
                                             }
-                                            if (klasa.isNotEmpty()) {
+                                            if (klasa != "") {
                                                 Text(
                                                     text = klasa,
                                                     textAlign = TextAlign.Center,
@@ -1258,7 +1262,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                 }
 
 
-                                if (!listitems.isNullOrEmpty() && !przedmiot.isEmpty() && dzien == day.ordinal) {
+                                if (!listitems.isNullOrEmpty() && przedmiot != "" && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
                                         if (przedmiot.contains("religia") && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
                                                 "religia"
@@ -1299,18 +1303,14 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                             text = zastdata2.klasa,
                                                             textAlign = TextAlign.Center
                                                         )
-                                                        if (zastdata2.zastepca.isNotEmpty()) {
-                                                            Text(
-                                                                text = zastdata2.zastepca,
-                                                                textAlign = TextAlign.Center
-                                                            )
-                                                        }
-                                                        if (zastdata2.uwagi.isNotEmpty()) {
-                                                            Text(
-                                                                text = zastdata2.uwagi,
-                                                                textAlign = TextAlign.Center
-                                                            )
-                                                        }
+                                                        Text(
+                                                            text = zastdata2.zastepca,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                        Text(
+                                                            text = zastdata2.uwagi,
+                                                            textAlign = TextAlign.Center
+                                                        )
                                                     }
                                                 }
                                             }

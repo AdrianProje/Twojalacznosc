@@ -70,7 +70,6 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                         )
 
                         val result = webscrapeT(
-                            applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
                             "o$i"
                         )
@@ -88,7 +87,6 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                             notification
                         )
                         val result = webscrapeT(
-                            applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
                             "n$i"
                         )
@@ -108,7 +106,6 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                         )
 
                         val result = webscrapeT(
-                            applicationContext,
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
                             "s$i"
                         )

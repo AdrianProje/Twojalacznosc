@@ -624,7 +624,7 @@ fun NavGraph(
                     )
                 }
                 item {
-                    Text(text = "- Adam Jankowski 4tB\n Betatester aplikacji")
+                    Text(text = "- Adam Jankowski 5tB\n Betatester aplikacji")
                 }
                 item {
                     Text(text = "- Kamil Zagórski (Absolwent)\n Betatester aplikacji")

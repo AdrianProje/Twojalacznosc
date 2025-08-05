@@ -5,38 +5,10 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
+    # For XStream
+    -dontwarn java.awt.**
+    -dontwarn java.beans.**
+    -dontwarn javax.xml.stream.**
 
-#-keep class kotlinx.serialization.** { *; }
-#-keep class kotlinx.serialization.internal.** { *; }
-#-dontwarn edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-#-dontwarn java.awt.font.FontRenderContext
-#-dontwarn java.awt.font.LineBreakMeasurer
-#-dontwarn java.awt.font.TextLayout
-#-dontwarn java.awt.geom.AffineTransform
-#-dontwarn java.beans.BeanDescriptor
-#-dontwarn java.beans.BeanInfo
-#-dontwarn java.beans.IntrospectionException
-#-dontwarn java.beans.Introspector
-#-dontwarn java.beans.PropertyDescriptor
-#-dontwarn javax.imageio.ImageIO
-#-dontwarn javax.imageio.ImageReader
-#-dontwarn javax.imageio.stream.ImageInputStream
-#-dontwarn javax.lang.model.SourceVersion
-#-dontwarn javax.naming.InvalidNameException
-#-dontwarn javax.naming.NamingException
-#-dontwarn javax.naming.directory.Attribute
-#-dontwarn javax.naming.directory.Attributes
-#-dontwarn javax.naming.ldap.LdapName
-#-dontwarn javax.naming.ldap.Rdn
-#-dontwarn org.apache.bsf.BSFManager
-#-dontwarn org.ietf.jgss.GSSContext
-#-dontwarn org.ietf.jgss.GSSCredential
-#-dontwarn org.ietf.jgss.GSSException
-#-dontwarn org.ietf.jgss.GSSManager
-#-dontwarn org.ietf.jgss.GSSName
-#-dontwarn org.ietf.jgss.Oid
+    # For Groovy (if the issue persists related to Groovy)
+    -dontwarn org.apache.ivy.**

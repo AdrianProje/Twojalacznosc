@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import java.io.FileOutputStream
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
+@RequiresApi(Build.VERSION_CODES.P)
 suspend fun isthereanewversion(context: Context): Boolean {
     return withContext(Dispatchers.IO) {
         try {
@@ -40,13 +42,17 @@ suspend fun isthereanewversion(context: Context): Boolean {
                 PackageManager.GET_META_DATA or PackageManager.GET_PERMISSIONS
             )
 
-            packageInfo?.let {
-                return@withContext it.longVersionCode > packageManager.getPackageInfo(
+            if (packageInfo!!.longVersionCode > packageManager.getPackageInfo(
                     context.packageName,
                     0
-                ).longVersionCode
-                        && it.applicationInfo!!.minSdkVersion <= Build.VERSION.SDK_INT
-            } ?: false
+                ).longVersionCode && packageInfo.applicationInfo!!.minSdkVersion <= Build.VERSION.SDK_INT
+            ) {
+                return@withContext true
+            } else {
+                File(context.cacheDir, "TwojaLacznosc.apk").delete()
+                Log.d("isthereanewversion", "Nie ma nowej wersji aplikacji")
+                return@withContext false
+            }
         } catch (e: Exception) {
             Log.e(
                 "isthereanewversion",
@@ -74,5 +80,6 @@ fun instalnewversion(context: Context) {
         }
 
         context.startActivity(intent)
+        File(context.cacheDir, "TwojaLacznosc.apk").delete()
     }
 }

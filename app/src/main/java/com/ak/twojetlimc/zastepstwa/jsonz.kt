@@ -1,15 +1,15 @@
 package com.ak.twojetlimc.zastepstwa
 
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
 
-val gson = Gson()
 
 //Zapisz/odczytaj zastepstwo
 
 fun serializeZastepstwo(item: Zastepstwo): String {
-    return gson.toJson(item)
+    return Json.encodeToJsonElement(item).toString()
 }
 
 fun deserializeZastepstwo(json: String): Zastepstwo {
-    return gson.fromJson(json, Zastepstwo::class.java)
+    return Json.decodeFromString(json)
 }

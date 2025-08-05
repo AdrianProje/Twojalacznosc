@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0"
+agp = "8.12.0"
 commonsLogging = "1.2"
 kotlin = "2.1.10"
 junit = "4.13.2"
@@ -23,6 +23,9 @@ commonsLoggingVersion = "1.3.5"
 groovy = "3.0.24"
 tomcatJuli = "11.0.6"
 juli = "6.0.53"
+jsoup = "1.21.1"
+xstream = "1.4.21"
+xmlpull = "1.1.3.4d_b4_min"
 
 [libraries]
 commons-logging = { module = "commons-logging:commons-logging", version.ref = "commonsLogging" }
@@ -33,31 +36,31 @@ compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.8.3" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.8.3" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.1" }
-androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.06.01" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.07.00" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
 androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.2.0-alpha02" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.0-alpha02" }
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.1" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.2" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.3.0" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.7.0" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.1" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version = "1.10.1" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version = "1.1.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.1" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.1" }
-androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.9.1" }
-androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.9.1" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.2" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.2" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.9.3" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.9.3" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.8" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.3.2" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.1" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.3" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 skrapeit = { group = "it.skrape", name = "skrapeit", version = "1.2.2" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.13.1" }
-androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version = "2.10.2" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version = "2.10.3" }
 accompanist-swiperefresh = { group = "com.google.accompanist", name = "accompanist-swiperefresh", version.ref = "accompanistSwiperefresh" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version = "1.9.1" }
 javax-annotation-api = { group = "javax.annotation", name = "javax.annotation-api", version.ref = "javaxAnnotationApi" }
@@ -72,6 +75,9 @@ commons-logging-commons-logging = { group = "commons-logging", name = "commons-l
 groovy = { group = "org.codehaus.groovy", name = "groovy", version = "3.0.25" }
 tomcat-juli = { group = "org.apache.tomcat", name = "tomcat-juli", version.ref = "tomcatJuli" }
 juli = { group = "org.apache.tomcat", name = "juli", version.ref = "juli" }
+jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+xstream = { group = "com.thoughtworks.xstream", name = "xstream", version.ref = "xstream" }
+xmlpull = { group = "xmlpull", name = "xmlpull", version.ref = "xmlpull" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
