@@ -856,9 +856,10 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                             "PlanScreen",
                             "loadscheduledata offline (selecteddata not null)"
                         )
-                        scheduleFromLoad = datastore.getSchedule(
+                        scheduleFromLoad = datastore.getnewchosenClass(
                             context,
-                            "$scheduleTimestamp/$selectedData2",
+                            scheduleTimestamp.toString(),
+                            selectedData2.toString(),
                             1
                         )
                     }
@@ -885,10 +886,11 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                 "PlanScreen",
                                 "loadscheduledata offline (favschedule not null)"
                             )
-                            scheduleFromLoad = datastore.getSchedule(
-                                context,
-                                "$scheduleTimestamp/$selectedData2",
-                                1
+
+                            Log.d("PlanScreen", " \"$scheduleTimestamp/$selectedData2\"")
+                            scheduleFromLoad = datastore.getnewchosenClass(
+                                context, scheduleTimestamp.toString(),
+                                selectedData2!!, 1
                             )
                         }
                     }

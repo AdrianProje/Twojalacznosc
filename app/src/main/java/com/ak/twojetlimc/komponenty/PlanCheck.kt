@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.ak.twojetlimc.MainScreen
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.planLekcji.Schedule
 import com.ak.twojetlimc.planLekcji.webscrapeT
@@ -117,14 +118,11 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
 
             if (!isStopped) {
                 runBlocking {
+                    datastoremanager.storenewSchedule(timestamp, 1, planlist)
                     datastoremanager.savePlanTimestamp(timestamp)
-                    planlist.forEach { schedule ->
-                        datastoremanager.storeSchedule(
-                            applicationContext,
-                            "$timestamp/${schedule.html}",
-                            1,
-                            schedule
-                        )
+
+                    if (datastoremanager.compareTwoNewestSchedules() == false) {
+                        schedulehaschangednotification(notificationManager)
                     }
                 }
             } else {
@@ -173,5 +171,30 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                 "max" to maxProgress
             )
         )
+    }
+
+    private fun schedulehaschangednotification(
+        notificationManager: NotificationManager
+    ) {
+        val notifyIntent = Intent(applicationContext, MainScreen::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("destination", "plan")
+        }
+
+        val notifyPendingIntent = PendingIntent.getActivity(
+            applicationContext, 0, notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(applicationContext, "ZMIANAPLANU")
+            .setSmallIcon(R.drawable.lacznosc_logo_transparent)
+            .setContentTitle("Plan został zmieniony!")
+            .setContentText("Wejdź do aplikacji aby zobaczyć nowy plan")
+            .setContentIntent(notifyPendingIntent).setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setAutoCancel(true)
+            .clearActions().build()
+
+
+        notificationManager.notify(4, notification)
     }
 }

@@ -98,14 +98,12 @@ class MainScreen : AppCompatActivity() {
         mChannel3.description = "Powiadomienie pokazywane gdy będzie zastępstwo"
         notificationManager.createNotificationChannel(mChannel3)
 
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-//            val name4 = "Powiadomienie na zywo"
-//            val mChannel4 =
-//                NotificationChannel("NAZYWO", name4, NotificationManager.IMPORTANCE_MIN)
-//            mChannel4.description = "Powiadomienie wysyłane na zywo w trakcie trwania lekcji"
-//            notificationManager.createNotificationChannel(mChannel4)
-//        }
+        val name4 = "Powiadomienie o zmianie planu lekcji"
+        val mChannel4 =
+            NotificationChannel("ZMIANAPLANU", name4, NotificationManager.IMPORTANCE_HIGH)
+        mChannel4.enableVibration(true)
+        mChannel4.description = "Powiadomienie pokazywane gdy plan lekcji zostanie zmieniony"
+        notificationManager.createNotificationChannel(mChannel4)
 
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced =

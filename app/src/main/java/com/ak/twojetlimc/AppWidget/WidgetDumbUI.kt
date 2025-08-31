@@ -94,7 +94,7 @@ class WidgetDumbUI : GlanceAppWidget() {
 
             } else {
                 val schedulefromload = runBlocking {
-                    datastore.getSchedule(context, "$plantimestamp/$fafsch", 1)
+                    datastore.getnewchosenClass(context, plantimestamp.toString(), fafsch, 1)
                 }
                 MyContent(schedulefromload, datastore, context)
             }

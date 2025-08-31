@@ -77,7 +77,7 @@ fun createalarm(context: Context) {
         if (alarmManager.canScheduleExactAlarms()) {
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
-                index, // Unique request code for each alarm
+                5, // Unique request code for each alarm
                 Intent(context, BroadcastReceiver::class.java),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
@@ -95,20 +95,28 @@ fun createalarm(context: Context) {
     }
 
 
+
     if (alarmManager.canScheduleExactAlarms()) {
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 12)
+        }
+
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            1000, // Unique request code for each alarm
-            Intent(context, SecondBroadcastReceiver::class.java),
+            20, // Unique request code for each alarm
+            Intent(context, ThirdBrodcastReciver::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            7200000,
+            calendar.timeInMillis,
             AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
+
+        Log.d("createalarm()", "Ustawiono pobieranie o godzinie 12:00")
     } else {
         Log.d("createalarm()", "Nie można utworzyć planu brak uprawnień")
         Toast.makeText(context, "Brak uprawnień", Toast.LENGTH_SHORT).show()
@@ -120,15 +128,26 @@ fun switchvibrate(context: Context) {
     vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 50), -1))
 }
 
+fun downloadonlyschedule(context: Context): WorkRequest {
+    val workRequest =
+        OneTimeWorkRequestBuilder<PlanCheck>().build()
+
+    WorkManager.getInstance(context)
+        .beginWith(workRequest)
+        .enqueue()
+
+    return workRequest
+}
+
 fun downlodonlyzas(context: Context): WorkRequest {
-    val workRequest2 =
+    val workRequest =
         OneTimeWorkRequestBuilder<ZasCheck>().build()
 
     WorkManager.getInstance(context)
-        .beginWith(workRequest2)
+        .beginWith(workRequest)
         .enqueue()
 
-    return workRequest2
+    return workRequest
 }
 
 fun downloadplanandzas(context: Context): WorkRequest {

@@ -688,7 +688,7 @@ fun NavGraph(
             var groupedlist by remember { mutableStateOf(mapOf<String, List<String>>()) }
             LaunchedEffect(key1 = Unit) {
                 scope.launch {
-                    groupedlist = datastoremanager.getAllScheduleKeysGrouped()
+                    groupedlist = datastoremanager.getAllScheduleNamesGroupedByDate()
                 }
             }
 
@@ -734,21 +734,6 @@ fun NavGraph(
                     }
                 }
 
-//                item {
-//                    Button(
-//                        onClick = {
-//                            WorkManager.getInstance(context)
-//                                .beginWith(OneTimeWorkRequestBuilder<LiveNotification>().build())
-//                                .enqueue()
-//                        },
-//                        modifier = Modifier.fillParentMaxWidth(),
-//                        shape = MaterialTheme.shapes.medium,
-//                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
-//                    ) {
-//                        Text(text = "DEBUG | Przetestuj powiadomienia na żywo\n (Ustaw odpowiednią godzinę w smartfonie i sprawdź czy przyjdzie ci powiadomienie na żywo w odpowiednim miejscu)")
-//                    }
-//                }
-
                 item {
                     Button(
                         onClick = {
@@ -778,6 +763,24 @@ fun NavGraph(
                         colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
                     ) {
                         Text(text = "DEBUG | Pobierz plan lekcji")
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                Log.d(
+                                    "debug",
+                                    "${datastoremanager.compareTwoNewestSchedules()}"
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillParentMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text(text = "DEBUG | Porównaj dwa ostatnie plany")
                     }
                 }
 
@@ -825,14 +828,16 @@ fun NavGraph(
                                     Spacer(modifier = Modifier.weight(1f))
                                     Button(onClick = {
                                         scope.launch {
-                                            keys.forEach { key ->
-                                                Log.d("SettingsActivity - Debug", "Usunięto: $key")
-                                                datastoremanager.deleteDataFromStringPreferencesKey(
-                                                    key
-                                                )
-                                            }
+                                            datastoremanager.deleteDataFromStringPreferencesKey(
+                                                "schedule_$groupName"
+                                            )
+                                            Log.d(
+                                                "SettingsActivity - Debug",
+                                                "Usunięto: $groupName"
+                                            )
                                         }
-                                    }) {
+                                    }
+                                    ) {
                                         Text("Usuń wszy.")
                                     }
                                     IconButton(onClick = { expanded2 = !expanded2 }) {
@@ -849,16 +854,6 @@ fun NavGraph(
                                         keys.forEach { key ->
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(text = key)
-                                                Spacer(modifier = Modifier.weight(1f))
-                                                Button(onClick = {
-                                                    scope.launch {
-                                                        datastoremanager.deleteDataFromStringPreferencesKey(
-                                                            key
-                                                        )
-                                                    }
-                                                }) {
-                                                    Text("Usuń")
-                                                }
                                             }
                                         }
                                     }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.2"
 commonsLogging = "1.2"
 kotlin = "2.1.10"
 junit = "4.13.2"
@@ -29,18 +29,18 @@ xmlpull = "1.1.3.4d_b4_min"
 
 [libraries]
 commons-logging = { module = "commons-logging:commons-logging", version.ref = "commonsLogging" }
-compose-ui = { group = "androidx.compose.ui", name = "ui", version = "1.8.3" }
-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version = "1.8.3" }
-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version = "1.8.3" }
-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version = "1.8.3" }
-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.8.3" }
-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.8.3" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version = "1.9.0" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version = "1.9.0" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version = "1.9.0" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version = "1.9.0" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.9.0" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.9.0" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.10.1" }
-androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.07.00" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.16.0" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.08.01" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.17.0" }
 androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.2.0-alpha02" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.0-alpha02" }
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.2" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.9.3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.3.0" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.7.0" }
@@ -50,11 +50,11 @@ androidx-activity = { group = "androidx.activity", name = "activity", version = 
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version = "1.1.0" }
-androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.2" }
-androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.2" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.9.3" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.9.3" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version = "2.9.3" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version = "2.9.3" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.8" }
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version = "1.8.9" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.3.2" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.9.3" }
 androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
@@ -67,7 +67,7 @@ javax-annotation-api = { group = "javax.annotation", name = "javax.annotation-ap
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.9.0" }
 androidx-glance-material = { group = "androidx.glance", name = "glance-material", version.ref = "glanceMaterial" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glanceAppwidget" }
-androidx-material = { group = "androidx.compose.material", name = "material", version = "1.8.3" }
+androidx-material = { group = "androidx.compose.material", name = "material", version = "1.9.0" }
 javax-servlet-api = { group = "javax.servlet", name = "javax.servlet-api", version.ref = "javaxServletApi" }
 mimedir = { group = "org.ietf", name = "mimedir", version.ref = "mimedir" }
 androidx-animation-core = { group = "androidx.compose.animation", name = "animation-core", version.ref = "animationCore" }
@@ -75,7 +75,7 @@ commons-logging-commons-logging = { group = "commons-logging", name = "commons-l
 groovy = { group = "org.codehaus.groovy", name = "groovy", version = "3.0.25" }
 tomcat-juli = { group = "org.apache.tomcat", name = "tomcat-juli", version.ref = "tomcatJuli" }
 juli = { group = "org.apache.tomcat", name = "juli", version.ref = "juli" }
-jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.21.2" }
 xstream = { group = "com.thoughtworks.xstream", name = "xstream", version.ref = "xstream" }
 xmlpull = { group = "xmlpull", name = "xmlpull", version.ref = "xmlpull" }
 

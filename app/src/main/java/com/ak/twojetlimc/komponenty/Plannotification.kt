@@ -31,9 +31,10 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             Log.d("Plannotification", "Wywołanie funkcji $timestamp/$htmlvalue")
-            accessdata.getSchedule(
+            accessdata.getnewchosenClass(
                 applicationContext,
-                "$timestamp/$htmlvalue",
+                timestamp.toString(),
+                htmlvalue,
                 1
             )!!.plan.forEach {
                 if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && it.przedmiot != "") {

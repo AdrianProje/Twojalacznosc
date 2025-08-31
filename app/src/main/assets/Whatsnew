@@ -1,3 +1,8 @@
+--- 0.52.3 Beta ---
+- Zmiana w  sposobie zapisywania planu lekcji (Potrzebne jest jednorazowe manualne pobranie planu lekcji offline/wyczyszczenie danych, aby aplikacja działała poprawnie)
+- Naprawiono automatyczne pobieranie planu lekcji offline
+- Dodano powiadomienia o nowym planie lekcji (wykrywanie zmian w planie)
+
 --- 0.52.2 Beta ---
 - Ulepszenia modułów
 - Zmiana serelizacji planu offline

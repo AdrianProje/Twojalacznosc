@@ -6,7 +6,7 @@ import com.ak.twojetlimc.komponenty.Datastoremanager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
-data class ScheduleData(val imieinazwisko: String, val filePath: String, val htmlvalue: String)
+data class ScheduleData(val imieinazwisko: String, val htmlvalue: String)
 
 fun GetList(typ: Int, context: Context): List<ScheduleData?> {
     val datastore = Datastoremanager(context)
@@ -38,49 +38,20 @@ fun GetList(typ: Int, context: Context): List<ScheduleData?> {
 
 
     runBlocking {
+        val data = datastore.getnewSchedule(context, exampleData.toString(), 1)
         if (litera != "") {
-            for (i in 1..70) {
-                Log.d(
-                    "PlanList - Tworzenie listy",
-                    "$exampleData/$litera$i"
-                )
-                try {
-                    val data1 = datastore.getSchedule(context, "$exampleData/$litera$i", 1)
-                    if (data1 != null) {
-                        list.add(
-                            ScheduleData(
-                                data1.imieinazwisko,
-                                "$exampleData/$litera$i",
-                                "$litera$i"
-                            )
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.d("PlanList -Datastore nie posiada takiego planu", e.message.toString())
+            data!!.forEach { schedule ->
+                if (schedule.html.contains(litera)) {
+                    val scheduledata = ScheduleData(schedule.imieinazwisko, schedule.html)
+                    list.add(scheduledata)
+                    Log.d("PlanList - Tworzenie listy", scheduledata.toString())
                 }
             }
         } else {
-            for (litery in list2) {
-                for (i in 1..70) {
-                    Log.d(
-                        "PlanList - Tworzenie listy",
-                        "$exampleData/$litery$i"
-                    )
-                    try {
-                        val data2 = datastore.getSchedule(context, "$exampleData/$litery$i", 1)
-                        if (data2 != null) {
-                            list.add(
-                                ScheduleData(
-                                    data2.imieinazwisko,
-                                    "$exampleData/$litery$i",
-                                    "$litery$i"
-                                )
-                            )
-                        }
-                    } catch (e: Exception) {
-                        Log.d("PlanList -Datastore nie posiada takiego planu", e.message.toString())
-                    }
-                }
+            data!!.forEach { schedule ->
+                val scheduledata = ScheduleData(schedule.imieinazwisko, schedule.html)
+                list.add(scheduledata)
+                Log.d("PlanList - Tworzenie listy", scheduledata.toString())
             }
         }
     }
