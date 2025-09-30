@@ -68,18 +68,29 @@ fun instalnewversion(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
         val apkFile = File(context.cacheDir, "TwojaLacznosc.apk")
 
+        if (!apkFile.exists()) {
+            Log.d("InstallAPK", "APK file does not exist")
+            return@launch
+        }
+
         val apkUri: Uri = FileProvider.getUriForFile(
             context,
             "${context.packageName}.provider",
             apkFile
         )
 
+        Log.d("InstallAPK", "APK URI: $apkUri")
+
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(apkUri, "application/vnd.android.package-archive")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
         }
 
-        context.startActivity(intent)
-        File(context.cacheDir, "TwojaLacznosc.apk").delete()
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("InstallAPK", "Error installing APK: ${e.message}")
+            return@launch
+        }
     }
 }

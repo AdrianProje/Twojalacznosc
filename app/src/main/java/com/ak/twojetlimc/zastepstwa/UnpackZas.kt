@@ -19,22 +19,22 @@ fun webscrapeZT(context: Context, htmllink: String, dzien: String) {
         zastTrs.forEach { tr ->
             if (tr.getElementsByTag("td").size == 4) {
                 tr.getElementsByTag("td").chunked(4) { chunk ->
-                    val numerlekcji = chunk[0].text().toIntOrNull()
-                    val klasa = chunk[1].text()
-                    val zastepca = chunk[2].text()
-                    val uwagi = chunk[3].text()
+                    val numerlekcji = chunk[0].text().toIntOrNull() ?: 0
+                    val klasa = chunk[1].text() ?: ""
+                    val zastepca = chunk[2].text() ?: ""
+                    val uwagi = chunk[3].text() ?: ""
 
                     val dane = Zastepstwo(
-                        numerlekcji!!,
+                        numerlekcji,
                         klasa,
                         zastepca,
                         uwagi
                     )
 
                     val whatclass =
-                        klasa.split("-")[0].filter { !it.isWhitespace() }
+                        klasa.split("-")[0].filter { !it.isWhitespace() } ?: klasa
 
-                    if (numerlekcji != null) {
+                    if (numerlekcji != 0) {
                         CoroutineScope(Dispatchers.IO).launch {
                             Datastoremanager(context).storeZastepstwo(
                                 context,

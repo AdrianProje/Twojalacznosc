@@ -14,4 +14,10 @@
         <item>@string/PLAN_Chip_Sala</item>
         <item>@string/PLAN_Chip_Nauczyciel</item>
     </string-array>
+
+    <string-array name="prefered_group">
+        <item>@string/Prefered_group_none</item>
+        <item>@string/Prefered_group_first</item>
+        <item>@string/Prefered_group_second</item>
+    </string-array>
 </resources>

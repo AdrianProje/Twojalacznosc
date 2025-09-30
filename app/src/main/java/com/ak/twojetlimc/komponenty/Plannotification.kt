@@ -27,6 +27,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
             val klasa = accessdata.getFavSchedule.first()!!.split(",")[0].substring(0, 3)
             val htmlvalue = accessdata.getFavSchedule.first()!!.split(",")[1]
             val timestamp = accessdata.getPlanTimestamp.first()
+            val preferedgroup = accessdata.getPreferedGroup.first()
             val notificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -36,8 +37,8 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                 timestamp.toString(),
                 htmlvalue,
                 1
-            )!!.plan.forEach {
-                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value && it.przedmiot != "") {
+            ).plan.forEach {
+                if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value) {
                     val listitems = mutableListOf<Zastepstwo>()
                     try {
                         val datastore = Datastoremanager(applicationContext)
@@ -70,22 +71,43 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                         null
                     }
 
+                    var przedmiot = " "
+                    var sala = ""
+                    var nauczyciel = ""
+
+                    if (it.detale.size == 1) {
+                        when (preferedgroup) {
+                            0 -> for (details in it.detale) {
+                                przedmiot += details.przedmiot + " "
+                                sala += details.sala + " "
+                                nauczyciel += details.nauczyciel + " "
+                            }
+
+                            1 -> {
+                                przedmiot += it.detale.first().przedmiot
+                                sala += it.detale.first().sala
+                                nauczyciel += it.detale.first().nauczyciel
+                            }
+
+                            2 -> {
+                                przedmiot += it.detale.last().przedmiot
+                                sala += it.detale.last().sala
+                                nauczyciel += it.detale.last().nauczyciel
+                            }
+                        }
+                    } else {
+                        przedmiot += it.detale.first().przedmiot
+                        sala += it.detale.first().sala
+                        nauczyciel += it.detale.first().nauczyciel
+                    }
+
+                    //przedmiot, sala, nauczyciel, czas
+
                     showNotification(
                         applicationContext,
                         notificationManager,
-                        "Następna lekcja: ${it.przedmiot}", if (it.sala != "") {
-                            "Sala: ${it.sala}, "
-                        } else {
-                            ""
-                        } + if (it.klasa != "") {
-                            "Klasa: ${it.klasa}, "
-                        } else {
-                            ""
-                        } + if (it.nauczyciel != "") {
-                            "Nauczyciel: ${it.nauczyciel}, "
-                        } else {
-                            ""
-                        } + "Godzina: ${it.czas}"
+                        "Następna lekcja: $przedmiot",
+                        " Sala: $sala | Nauczyciel: $nauczyciel | godzina: ${it.czas}"
                     )
                     Log.d("Plannotification", "Wysyłanie powiadomienia!")
 

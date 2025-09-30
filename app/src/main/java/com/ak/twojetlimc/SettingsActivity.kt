@@ -1,5 +1,6 @@
 package com.ak.twojetlimc
 
+//import com.ak.twojetlimc.komponenty.LiveNotification
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -14,10 +15,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,20 +33,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.CorporateFare
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +64,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +72,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,9 +81,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.updateAll
@@ -82,7 +100,6 @@ import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.Permissionsinfo
-//import com.ak.twojetlimc.komponenty.LiveNotification
 import com.ak.twojetlimc.komponenty.PlanCheck
 import com.ak.twojetlimc.komponenty.RefreshWorker
 import com.ak.twojetlimc.komponenty.ZasCheck
@@ -93,7 +110,7 @@ import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @SuppressLint("NewApi")
 @Composable
 fun NavGraph(
@@ -111,9 +128,12 @@ fun NavGraph(
     var cheched3 by remember { mutableStateOf(false) }
     var cheched4 by remember { mutableStateOf(false) }
     var favschedulevalue by remember { mutableStateOf("") }
+    var schedulefullinformation by rememberSaveable { mutableStateOf("") }
+    var preferedgroup by remember { mutableStateOf(0) }
     val pattern = longArrayOf(0, 50)
 
     val options = stringArrayResource(id = R.array.chip_values)
+    val options2 = stringArrayResource(id = R.array.prefered_group)
     var selectedchip by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
@@ -128,6 +148,19 @@ fun NavGraph(
         composable(route = "mainsettings") {
             LaunchedEffect(key1 = Unit) {
                 favschedulevalue = (datastoremanager.getFavSchedule.first() ?: "").split(",")[0]
+                Log.d("SettingsActivity", "favschedulevalue: $favschedulevalue")
+
+                try {
+                    schedulefullinformation = datastoremanager.getFavSchedule.first() ?: ""
+                } catch (e: Exception) {
+                    Log.d(
+                        "SettingsActivity - scheduledetails",
+                        "Błąd pobierania pełnych danych : $e"
+                    )
+                    ""
+                }
+
+                preferedgroup = datastoremanager.getPreferedGroup.first() ?: 0
                 cheched = datastoremanager.getFavScheduleOnOff.first() == true
                 cheched2 = datastoremanager.getParanoia.first() == true
                 cheched3 = datastoremanager.getUserRefresh.first() == true
@@ -208,7 +241,7 @@ fun NavGraph(
                         Button(
                             onClick = {
                                 if (cheched) {
-                                    expanded2 = true
+                                    navController.navigate("scheduledetails")
                                 } else {
                                     Toast.makeText(context, "Włącz funkcję", Toast.LENGTH_SHORT)
                                         .show()
@@ -230,28 +263,14 @@ fun NavGraph(
                                     style = MaterialTheme.typography.titleLarge
                                 )
                                 Text(
-                                    text = stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis) + favschedulevalue,
+                                    text = stringResource(id = R.string.SETTINGS_Button_DomysnyPlan_Opis) + favschedulevalue
+                                            + if (preferedgroup != 0) {
+                                        ": Grupa $preferedgroup"
+                                    } else {
+                                        ""
+                                    },
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                            }
-                            DropdownMenu(
-                                expanded = expanded2,
-                                onDismissRequest = {
-                                    expanded2 = false
-                                }, modifier = Modifier.safeContentPadding()
-                            ) {
-                                scheduleData.forEach { data ->
-                                    DropdownMenuItem(
-                                        text = { Text(text = data!!.imieinazwisko) },
-                                        onClick = {
-                                            expanded2 = false
-                                            scope.launch {
-                                                datastoremanager.saveFavSchedule(data!!.imieinazwisko + "," + data.htmlvalue)
-                                                WidgetDumbUI().updateAll(context)
-                                            }
-                                            favschedulevalue = data!!.imieinazwisko
-                                        })
-                                }
                             }
                         }
 
@@ -271,6 +290,7 @@ fun NavGraph(
                                         cheched = false
                                         datastoremanager.saveFavScheduleOnOff(false)
                                         datastoremanager.saveFavSchedule("")
+                                        datastoremanager.savePreferedGroup(0)
                                         favschedulevalue = ""
                                     }
                                     WidgetDumbUI().updateAll(context)
@@ -534,6 +554,226 @@ fun NavGraph(
                                 text = "Debug",
                                 style = MaterialTheme.typography.titleMedium
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        composable(route = "scheduledetails") {
+            Log.d("SettingsActivity", "schedulefullinformation: $schedulefullinformation")
+
+            var selectedChipOption by remember { mutableStateOf(0) }
+
+            val listdata = GetList(selectedChipOption, context)
+
+            var searchQuery by remember { mutableStateOf("") }
+
+            val filteredData = listdata.filter {
+                it?.imieinazwisko?.contains(
+                    searchQuery,
+                    ignoreCase = true
+                ) == true
+            }
+            val focusManager = LocalFocusManager.current
+
+            LaunchedEffect(schedulefullinformation) {
+                if (!schedulefullinformation.split(",")[1].contains("o")
+                ) {
+                    scope.launch {
+                        datastoremanager.savePreferedGroup(0)
+                    }
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.padding(paddingvalues)
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = "Wybierz domyślny plan:",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    HorizontalDivider(
+                        color = Color.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        items(options) { option ->
+                            FilterChip(
+                                modifier = Modifier.padding(horizontal = 5.dp),
+                                selected = when (selectedChipOption) {
+                                    0 -> option == options[0]
+                                    1 -> option == options[1]
+                                    2 -> option == options[2]
+                                    3 -> option == options[3]
+                                    else -> {
+                                        false
+                                    }
+                                },
+                                onClick = {
+                                    selectedChipOption = when (option) {
+                                        options[0] -> 0
+                                        options[1] -> 1
+                                        options[2] -> 2
+                                        options[3] -> 3
+                                        else -> {
+                                            0
+                                        }
+                                    }
+                                },
+                                label = { Text(option) },
+                                leadingIcon = {
+                                    val imageVector = when (option) {
+                                        options[0] -> Icons.Filled.Clear
+                                        options[1] -> Icons.Filled.Star
+                                        options[2] -> Icons.Rounded.CorporateFare
+                                        options[3] -> Icons.Filled.AccountCircle
+                                        else -> null
+                                    }
+                                    if (imageVector != null) {
+                                        Icon(
+                                            imageVector = imageVector,
+                                            contentDescription = "Option"
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterHorizontally),
+                        label = { Text(text = "Wyszukaj") },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                focusManager.clearFocus()
+                            }
+                        ),
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(
+
+                                        Icons.Filled.Close,
+                                        contentDescription = "Wyczyść wyszukiwanie"
+                                    )
+                                }
+                            }
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        enabled = true
+                    )
+                }
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .fillMaxWidth()
+                ) {
+                    filteredData.forEach { item ->
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp)
+                                    .animateContentSize()
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .border(
+                                        1.dp,
+                                        Color.Black,
+                                        MaterialTheme.shapes.medium
+                                    ),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .clickable(onClick = {
+                                            schedulefullinformation =
+                                                item!!.imieinazwisko + "," + item.htmlvalue
+                                            scope.launch {
+                                                datastoremanager.saveFavSchedule(item.imieinazwisko + "," + item.htmlvalue)
+                                            }
+                                        })
+                                ) {
+                                    Text(
+                                        text = item!!.imieinazwisko,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(5.dp)
+                                            .align(Alignment.CenterVertically)
+                                    )
+                                    Checkbox(
+                                        checked = schedulefullinformation == item.imieinazwisko + "," + item.htmlvalue,
+                                        onCheckedChange = { isChecked ->
+                                            if (isChecked) {
+                                                scope.launch {
+                                                    datastoremanager.saveFavSchedule(
+                                                        item.imieinazwisko + "," + item.htmlvalue
+                                                    )
+                                                }
+                                                schedulefullinformation =
+                                                    item.imieinazwisko + "," + item.htmlvalue
+                                            }
+                                        }
+                                    )
+                                }
+                                if (schedulefullinformation.split(",")[1].contains("o") && schedulefullinformation == item!!.imieinazwisko + "," + item.htmlvalue) {
+                                    LazyRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        items(options2) { option ->
+                                            FilterChip(
+                                                modifier = Modifier.padding(horizontal = 5.dp),
+                                                selected = when (preferedgroup) {
+                                                    0 -> option == options2[0]
+                                                    1 -> option == options2[1]
+                                                    2 -> option == options2[2]
+                                                    else -> {
+                                                        false
+                                                    }
+                                                },
+                                                onClick = {
+                                                    preferedgroup = when (option) {
+                                                        options2[0] -> 0
+                                                        options2[1] -> 1
+                                                        options2[2] -> 2
+                                                        else -> {
+                                                            0
+                                                        }
+                                                    }
+                                                    scope.launch {
+                                                        datastoremanager.savePreferedGroup(
+                                                            preferedgroup
+                                                        )
+                                                    }
+                                                },
+                                                label = { Text(option) }
+                                            )
+                                        }
+                                    }
+
+                                }
+                            }
+
                         }
                     }
                 }

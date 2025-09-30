@@ -49,4 +49,7 @@
     <string name="WIDGET_Opis">Add schedule to your home screen</string>
     <string name="PLAN_Chip_Wszyscy">No Filter</string>
     <string name="SETTINGS_Button_Terms">Terms and conditions</string>
+    <string name="Prefered_group_none">All</string>
+    <string name="Prefered_group_first">First Group</string>
+    <string name="Prefered_group_second">Second Group</string>
 </resources>

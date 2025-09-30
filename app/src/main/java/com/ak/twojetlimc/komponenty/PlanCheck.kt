@@ -36,7 +36,7 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        var planlist = mutableListOf<Schedule>()
+        val planlist = mutableListOf<Schedule>()
 
         val notification = NotificationCompat.Builder(applicationContext, "POBIERANIEPLANU")
             .setSmallIcon(R.drawable.lacznosc_logo_transparent)
@@ -121,7 +121,7 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                     datastoremanager.storenewSchedule(timestamp, 1, planlist)
                     datastoremanager.savePlanTimestamp(timestamp)
 
-                    if (datastoremanager.compareTwoNewestSchedules() == false) {
+                    if (datastoremanager.compareTwoNewestSchedules() == true) {
                         schedulehaschangednotification(notificationManager)
                     }
                 }

@@ -1,3 +1,29 @@
+--- 0.53.2 Beta ---
+- Drobne zmiany
+- Aktualizacja modułów
+
+--- 0.53.1 Beta ---
+- Zmiana wyglądu wyglądu wyboru domyślnego planu lekcji w ustawieniach
+- Dodano możliwość filtrowania planów w ustawieniach domyślnego planu
+- Naprawiono błąd crashowania aplikacji jeśli obrócono smartfon w ustawieniach domyślnego planu
+- Aktualizacja modułów
+
+--- 0.53 Beta ---
+- Dodano możliwość zobaczenia tylko jednej grupy na planie lekcji
+- Dodano możliwość wyboru grupy w ustawieniach
+- Aktualizacja modułów
+- Nowy wygląd niektórych elementów (pół przezroczystość + lekki blur)
+- Zmiana w  sposobie zapisywania planu lekcji (Potrzebne jest jednorazowe manualne pobranie planu lekcji offline/wyczyszczenie danych, aby aplikacja działała poprawnie)
+
+--- 0.52.5 Beta ---
+- Naprawiono instalowanie aktualizacji aplikacji (Wymagane ręczne pobranie i zainstalowanie tej aktualizacji poprzez kody qr wywieszone w szkole, lub pobranie pliku przez link w aplikacji na ekranie pobierania aktualizacji)
+- Aktualizacja modułów
+
+--- 0.52.4 Beta ---
+- Naprawiono Plan Lekcji
+- Naprawiono Zastępstwa
+- Aktualizacja modułów
+
 --- 0.52.3 Beta ---
 - Zmiana w  sposobie zapisywania planu lekcji (Potrzebne jest jednorazowe manualne pobranie planu lekcji offline/wyczyszczenie danych, aby aplikacja działała poprawnie)
 - Naprawiono automatyczne pobieranie planu lekcji offline
@@ -24,7 +50,7 @@
 
 --- 0.51.3.2 Beta ---
 - Aktualizacja modułów
-- Naprawiono zastępstwa (na zawsze)
+- Naprawiono zastępstwa
 - Poprawa widoczności tekstu na kartach na planu lekcji
 
 --- 0.51.3.1 Beta ---

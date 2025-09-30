@@ -56,4 +56,7 @@
     <string name="WIDGET_Opis">Opis widgetu z planem lekcji</string>
     <string name="PLAN_Chip_Wszyscy">Wszyscy</string>
     <string name="SETTINGS_Button_Terms">Tekst na przycisku prowadzący do warunków aplikacji</string>
+    <string name="Prefered_group_none">Wszystkie</string>
+    <string name="Prefered_group_first">Grupa pierwsza</string>
+    <string name="Prefered_group_second">Grupa druga</string>
 </resources>

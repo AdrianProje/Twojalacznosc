@@ -30,6 +30,7 @@ class Datastoremanager(private val context: Context) {
         val PARANOIA = booleanPreferencesKey("paranoia")
         val USER_REFRESH = booleanPreferencesKey("user_refresh")
         val ONLINE_MODE = booleanPreferencesKey("online_mode")
+        val PREFERED_GROUP = intPreferencesKey("prefered_group")
 
         val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
         val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
@@ -79,6 +80,15 @@ class Datastoremanager(private val context: Context) {
             preferences[USER_FAV_SCHEDULE] = value
         }
     }
+
+    val savePreferedGroup: suspend (Int) -> Unit = { value ->
+        context.dataStore.edit { preferences ->
+            preferences[PREFERED_GROUP] = value
+        }
+    }
+
+    val getPreferedGroup: Flow<Int?> =
+        context.dataStore.data.map { preferences -> preferences[PREFERED_GROUP] ?: 0 }
 
     val getFavScheduleOnOff: Flow<Boolean?> =
         context.dataStore.data.map { preferences -> preferences[USER_FAV_SCHEDULE_ONOFF] == true }

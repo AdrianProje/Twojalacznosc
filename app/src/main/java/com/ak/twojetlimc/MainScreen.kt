@@ -15,10 +15,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,6 +45,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -297,7 +301,7 @@ fun BottomNavigationBar(navController: NavHostController) {
         1f to MaterialTheme.colorScheme.primary
     )
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
     ) {
 
         MainNavItems().forEach { navItem ->
@@ -341,14 +345,12 @@ fun BottomNavigationBar(navController: NavHostController) {
             )
         }
     }
-    if (currentRoute != "plan") {
-        HorizontalDivider(
-            color = Color.Black,
-            modifier = Modifier
-                .height(1.dp)
-                .fillMaxWidth()
-        )
-    }
+    HorizontalDivider(
+        color = Color.Black,
+        modifier = Modifier
+            .height(1.dp)
+            .fillMaxWidth()
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -360,34 +362,48 @@ fun NavHostContainer(
     padding: PaddingValues
 ) {
     val context = LocalContext.current
-    NavHost(
+    Box(
         modifier = Modifier
-            .padding(bottom = padding.calculateBottomPadding()),
-        navController = navController,
-        startDestination = destination,
-        enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
-        exitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
-        builder = {
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center // Fill the content area of the BottomAppBar
+    ) { // Blurred Background - Sits at the back of this Box
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .blur(
+                    radius = 95.dp,
+                    edgeTreatment = BlurredEdgeTreatment.Unbounded
+                )
+        )
+        NavHost(
+//        modifier = Modifier
+//            .padding(bottom = padding.calculateBottomPadding()),
+            navController = navController,
+            startDestination = destination,
+            enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
+            builder = {
 
-            // ścierzka pomoc
-            composable("pomoc") {
-                HelpScreen()
+                // ścierzka pomoc
+                composable("pomoc") {
+                    HelpScreen(padding)
 
+                }
+
+                // ścierzka główna
+                composable("home") {
+                    HomeScreen(navController, padding)
+                }
+
+                composable("whatsnew") {
+                    WhatsNew(navController, padding)
+                }
+
+                // ścierzka plan
+                composable("plan") {
+                    PlanScreen(context, vibrator, padding)
+                }
             }
-
-            // ścierzka główna
-            composable("home") {
-                HomeScreen(navController, padding)
-            }
-
-            composable("whatsnew") {
-                WhatsNew(navController)
-            }
-
-            // ścierzka plan
-            composable("plan") {
-                PlanScreen(context, vibrator)
-            }
-        }
-    )
+        )
+    }
 }

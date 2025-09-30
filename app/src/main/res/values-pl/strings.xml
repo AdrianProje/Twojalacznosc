@@ -49,4 +49,7 @@
     <string name="WIDGET_Opis">Dodaj plan lekcji do ekranu startowego</string>
     <string name="PLAN_Chip_Wszyscy">Brak Filtru</string>
     <string name="SETTINGS_Button_Terms">Warunki korzystania z aplikacji</string>
+    <string name="Prefered_group_none">Obie</string>
+    <string name="Prefered_group_first">Grupa Pierwsza</string>
+    <string name="Prefered_group_second">Grupa Druga</string>
 </resources>

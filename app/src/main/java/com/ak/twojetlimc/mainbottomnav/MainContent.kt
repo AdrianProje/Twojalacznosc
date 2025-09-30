@@ -19,8 +19,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -29,6 +31,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +42,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -92,6 +97,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -147,12 +155,13 @@ import java.time.temporal.TemporalAdjusters
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpScreen() {
+fun HelpScreen(padding: PaddingValues) {
     val context = LocalContext.current
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
+                windowInsets = WindowInsets.safeDrawing,
                 title = { Text(stringResource(id = R.string.MAIN_Pomoc)) },
                 actions = {
                     IconButton(onClick = {
@@ -167,17 +176,21 @@ fun HelpScreen() {
             )
         }
     ) { paddingvalues ->
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 10.dp),
+            contentPadding = PaddingValues(
+                top = paddingvalues.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() // Combine if necessary
+            )
+        ) {
             item {
                 FlowRow(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     maxItemsInEachRow = 2,
                     modifier = Modifier
-                        .padding(paddingvalues)
                         .fillMaxSize(),
-
-                    ) {
+                ) {
                     HorizontalDivider(
                         color = Color.Black,
                         modifier = Modifier
@@ -705,12 +718,13 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WhatsNew(navController: NavHostController) {
+fun WhatsNew(navController: NavHostController, padding2: PaddingValues) {
     val context = LocalContext.current
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
+                windowInsets = WindowInsets.safeDrawing,
                 title = {
                     Text("Co nowego?")
                 },
@@ -728,14 +742,21 @@ fun WhatsNew(navController: NavHostController) {
                 }
             )
         }
-    ) { padding ->
+    ) { scaffoldPadding ->
         val assetManager = context.assets
         val inputStream = assetManager.open("Whatsnew")
         val textofwhatsnew = inputStream.bufferedReader().use { it.readText() }
         LazyColumn(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .padding(
+                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()
+                ),
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(horizontal = 10.dp),
-            contentPadding = padding
+            contentPadding = PaddingValues(
+                top = scaffoldPadding.calculateTopPadding(),
+                bottom = padding2.calculateBottomPadding() // Combine if necessary
+            )
         ) {
             item {
                 HorizontalDivider(
@@ -760,7 +781,7 @@ fun WhatsNew(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @ExperimentalComposeUiApi
 @Composable
-fun PlanScreen(context: Context, vibrator: Vibrator) {
+fun PlanScreen(context: Context, vibrator: Vibrator, padding: PaddingValues) {
     val accessdatastoremanager =
         Datastoremanager(context)
     val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
@@ -789,6 +810,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
     var refreshTrigger by remember { mutableIntStateOf(0) }
     var refreshTrigger2 by remember { mutableIntStateOf(0) }
     val selectedChipOption = remember { mutableIntStateOf(0) }
+    var preferedgroup by remember { mutableIntStateOf(0) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -812,6 +834,12 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
             selectedChipOption.intValue = defultplan ?: 0
         }
     } //Domyślny chip na liście ModalBottomSheet przy pierwszym uruchomieniu
+
+    LaunchedEffect(true) {
+        accessdatastoremanager.getPreferedGroup.collect { pref ->
+            preferedgroup = pref ?: 0
+        }
+    }
 
     LaunchedEffect(true, refreshTrigger) {
         Log.d("PlanScreen", connectivityManager!!.activeNetwork.toString())
@@ -1019,90 +1047,101 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier
+                    .padding(10.dp)
+                    .padding(bottom = padding.calculateBottomPadding())
+                    .border(1.dp, Color.Black, MaterialTheme.shapes.medium)
+                    .clip(MaterialTheme.shapes.medium),
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
                 contentPadding = PaddingValues(horizontal = 10.dp),
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        if (selectedData != "") {
-                            Log.d("PLANLOADING", selectedData.toString())
-                            selectedData.toString().substring(0, 5) + "..."
-                        } else {
-                            ""
-                        }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center // Fill the content area of the BottomAppBar
+                ) { // Blurred Background - Sits at the back of this Box
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .blur(
+                                radius = 95.dp,
+                                edgeTreatment = BlurredEdgeTreatment.Unbounded
+                            )
                     )
 
-                    Spacer(Modifier.weight(1f))
-
-                    Button(
-                        onClick = { showDropdownMenu = true },
-                        modifier = Modifier
-                            .onGloballyPositioned {
-                                buttonPosition = it.positionInRoot()
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (selectedData != "") {
+                                Log.d("PLANLOADING", selectedData.toString())
+                                selectedData.toString().substring(0, 5) + "..."
+                            } else {
+                                ""
                             }
-                            .padding(horizontal = 10.dp)
-
-                    ) {
-                        Text(
-                            daytext,
-                            modifier = Modifier
-                                .basicMarquee(spacing = MarqueeSpacing(10.dp))
-
                         )
-                    }
 
-                    Button(
-                        onClick = {
-                            showBottomSheet = true
-                        }
-                    ) {
-                        Text(
-                            stringResource(id = R.string.PLAN_Button_Zmień),
+                        Spacer(Modifier.weight(1f))
+
+                        Button(
+                            onClick = { showDropdownMenu = true },
                             modifier = Modifier
-                                .basicMarquee(spacing = MarqueeSpacing(10.dp))
-
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = showDropdownMenu,
-                        onDismissRequest = {
-                            showDropdownMenu = false
-                        },
-                        offset = DpOffset(x = offsetX, y = offsetY)
-                    ) {
-                        daynames.forEach {
-                            DropdownMenuItem(
-                                text = { Text(text = it) },
-                                onClick = {
-                                    showDropdownMenu = false
-                                    when (it) {
-                                        daynames[0] -> day = DayOfWeek.MONDAY
-                                        daynames[1] -> day = DayOfWeek.TUESDAY
-                                        daynames[2] -> day = DayOfWeek.WEDNESDAY
-                                        daynames[3] -> day = DayOfWeek.THURSDAY
-                                        daynames[4] -> day = DayOfWeek.FRIDAY
-                                    }
-                                    daytext = it
+                                .onGloballyPositioned {
+                                    buttonPosition = it.positionInRoot()
                                 }
+                                .padding(horizontal = 10.dp)
+
+                        ) {
+                            Text(
+                                daytext,
+                                modifier = Modifier
+                                    .basicMarquee(spacing = MarqueeSpacing(10.dp))
+
                             )
+                        }
+
+                        Button(
+                            onClick = {
+                                showBottomSheet = true
+                            }
+                        ) {
+                            Text(
+                                stringResource(id = R.string.PLAN_Button_Zmień),
+                                modifier = Modifier
+                                    .basicMarquee(spacing = MarqueeSpacing(10.dp))
+
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showDropdownMenu,
+                            onDismissRequest = {
+                                showDropdownMenu = false
+                            },
+                            offset = DpOffset(x = offsetX, y = offsetY)
+                        ) {
+                            daynames.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(text = it) },
+                                    onClick = {
+                                        showDropdownMenu = false
+                                        when (it) {
+                                            daynames[0] -> day = DayOfWeek.MONDAY
+                                            daynames[1] -> day = DayOfWeek.TUESDAY
+                                            daynames[2] -> day = DayOfWeek.WEDNESDAY
+                                            daynames[3] -> day = DayOfWeek.THURSDAY
+                                            daynames[4] -> day = DayOfWeek.FRIDAY
+                                        }
+                                        daytext = it
+                                    }
+                                )
+                            }
                         }
                     }
                 }
-
             }
-
-
-            HorizontalDivider(
-                color = Color.Black,
-                modifier = Modifier
-                    .height(1.dp)
-                    .fillMaxWidth()
-            )
         }
     ) { padding ->
         //Wyświetlane ekrany w zależności od opcji
@@ -1168,14 +1207,29 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                     contentPadding = padding
                 ) {
 
+                    if (preferedgroup != 0) item {
+                        OutlinedCard(
+                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                            border = BorderStroke(1.dp, Color.DarkGray),
+                            modifier = Modifier
+                                .fillParentMaxWidth(0.95f)
+                                .wrapContentHeight()
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = "Widzisz aktualnie plan tylko dla grupy: $preferedgroup",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
                     it1.plan.forEach {
                         val numerlekcji = it.numerLekcji
                         val czas = it.czas
                         val dzien = it.dzien
-                        val nauczyciel = it.nauczyciel
                         val klasa = it.klasa
-                        val przedmiot = it.przedmiot
-                        val sala = it.sala
+                        val detale = it.detale
+
 
                         Log.d("PLANLOADING", "Zastępstwo: $listitems")
 
@@ -1191,24 +1245,6 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                 ) {
                                     Row(
                                         modifier = Modifier
-                                            .fillParentMaxWidth()
-                                            .background(
-                                                if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                                    MaterialTheme.colorScheme.surfaceContainerHighest
-                                                } else {
-                                                    MaterialTheme.colorScheme.primaryContainer
-                                                }
-                                            ),
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        if (sala != "") {
-                                            Text(text = sala)
-                                        } else {
-                                            Text(text = " - ")
-                                        }
-                                    }
-                                    Row(
-                                        modifier = Modifier
                                             .fillMaxSize()
                                             .background(
                                                 if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
@@ -1216,7 +1252,8 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                 } else {
                                                     MaterialTheme.colorScheme.primaryContainer
                                                 }
-                                            )
+                                            ),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
                                     ) {
                                         Column(
                                             Modifier
@@ -1230,46 +1267,99 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                 textAlign = TextAlign.Center
                                             )
                                         }
-                                        Column(
-                                            modifier = Modifier
-                                                .background(
-                                                    MaterialTheme.colorScheme.background,
-                                                    MaterialTheme.shapes.medium
-                                                )
-                                                .fillMaxWidth()
-                                                .fillMaxHeight(),
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            if (przedmiot != "") {
-                                                Text(
-                                                    text = przedmiot,
-                                                    textAlign = TextAlign.Center,
-                                                )
+
+                                        Log.d("PLANLOADING", "detale.size: ${detale.size}")
+                                        val filteredDetale = when (preferedgroup) {
+                                            1 -> {
+                                                detale.filter { detail ->
+                                                    // Show if:
+                                                    // 1. Lesson name contains "-1/2" (specifically for group 1)
+                                                    // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                    detail.przedmiot.contains("-1/2") ||
+                                                            (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                "-2/2"
+                                                            ))
+                                                }
                                             }
-                                            if (nauczyciel != "") {
-                                                Text(
-                                                    text = nauczyciel,
-                                                    textAlign = TextAlign.Center,
-                                                )
+
+                                            2 -> {
+                                                detale.filter { detail ->
+                                                    // Show if:
+                                                    // 1. Lesson name contains "-2/2" (specifically for group 2)
+                                                    // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                    detail.przedmiot.contains("-2/2") ||
+                                                            (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                "-2/2"
+                                                            ))
+                                                }
                                             }
-                                            if (klasa != "") {
-                                                Text(
-                                                    text = klasa,
-                                                    textAlign = TextAlign.Center,
-                                                )
+
+                                            else -> { // preferedgroup == 0 or any other value
+                                                // Show all lessons
+                                                detale
                                             }
+                                        }
+
+                                        for (details in filteredDetale) {
+                                            Spacer(modifier = Modifier.width(2.dp))
+                                            Column(
+                                                modifier = Modifier
+                                                    .weight(3f)
+                                                    .fillMaxHeight(),
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(
+                                                            if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                                MaterialTheme.colorScheme.surfaceContainerHighest
+                                                            } else {
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                            }
+                                                        ),
+                                                    horizontalArrangement = Arrangement.Center
+                                                ) {
+                                                    if (details.sala != "") {
+                                                        Text(text = details.sala)
+                                                    }
+                                                }
+
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .fillMaxWidth()
+                                                        .background(
+                                                            MaterialTheme.colorScheme.background,
+                                                            MaterialTheme.shapes.medium
+                                                        ),
+                                                    verticalArrangement = Arrangement.Center,
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    if (details.przedmiot.isNotBlank()) Text(
+                                                        text = details.przedmiot,
+                                                        textAlign = TextAlign.Center
+                                                    )
+
+                                                    if (details.nauczyciel.isNotBlank()) Text(
+                                                        text = details.nauczyciel,
+                                                        textAlign = TextAlign.Center
+                                                    )
+
+                                                    if (klasa.isNotBlank()) Text(
+                                                        text = klasa,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                }
+                                            }
+                                            Spacer(modifier = Modifier.width(2.dp))
                                         }
                                     }
                                 }
 
-
-                                if (!listitems.isNullOrEmpty() && przedmiot != "" && dzien == day.ordinal) {
+                                if (!listitems.isNullOrEmpty() && dzien == day.ordinal) {
                                     listitems!!.forEach { zastdata2 ->
-                                        if (przedmiot.contains("religia") && numerlekcji == zastdata2.numerLekcji && zastdata2.klasa.contains(
-                                                "religia"
-                                            ) || numerlekcji == zastdata2.numerLekcji
-                                        ) {
+                                        if (numerlekcji == zastdata2.numerLekcji) {
                                             OutlinedCard(
                                                 modifier = Modifier
                                                     .padding(vertical = 5.dp)
@@ -1301,15 +1391,17 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                                                             .align(Alignment.CenterVertically)
                                                             .weight(1f)
                                                     ) {
-                                                        Text(
+                                                        if (zastdata2.klasa.isNotEmpty()) Text(
                                                             text = zastdata2.klasa,
                                                             textAlign = TextAlign.Center
                                                         )
-                                                        Text(
+
+                                                        if (zastdata2.zastepca.isNotEmpty()) Text(
                                                             text = zastdata2.zastepca,
                                                             textAlign = TextAlign.Center
                                                         )
-                                                        Text(
+
+                                                        if (zastdata2.uwagi.isNotEmpty()) Text(
                                                             text = zastdata2.uwagi,
                                                             textAlign = TextAlign.Center
                                                         )
@@ -1331,8 +1423,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator) {
                             showBottomSheet = false
                         },
                         sheetState = sheetState,
-                        modifier = Modifier
-                            .statusBarsPadding()
+                        modifier = Modifier.statusBarsPadding()
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.Center,

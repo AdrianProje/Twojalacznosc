@@ -96,7 +96,10 @@ class WidgetDumbUI : GlanceAppWidget() {
                 val schedulefromload = runBlocking {
                     datastore.getnewchosenClass(context, plantimestamp.toString(), fafsch, 1)
                 }
-                MyContent(schedulefromload, datastore, context)
+                val preferedgroup = runBlocking {
+                    datastore.getPreferedGroup.first()!!
+                }
+                MyContent(schedulefromload, preferedgroup)
             }
         }
     }
@@ -123,8 +126,7 @@ class WidgetActionUpdate : AppWidgetProvider() {
 @Composable
 private fun MyContent(
     schedulefromload: Schedule?,
-    datastore: Datastoremanager,
-    context: Context
+    preferedgroup: Int
 ) {
     val currenthour = getcurrenthour()
 //    var listitems = mutableListOf<Zastepstwo>()
@@ -147,14 +149,46 @@ private fun MyContent(
 
             schedulefromload!!.plan.forEach { item ->
                 if (item.dzien + 1 == LocalDate.now().dayOfWeek.value && item.numerLekcji == currenthour) {
+
+                    var przedmiot = " "
+                    var sala = ""
+                    var nauczyciel = ""
+
+                    if (item.detale.size == 1) {
+                        when (preferedgroup) {
+                            0 -> for (details in item.detale) {
+                                przedmiot += details.przedmiot + " "
+                                sala += details.sala + " "
+                                nauczyciel += details.nauczyciel + " "
+                            }
+
+                            1 -> {
+                                przedmiot += item.detale.first().przedmiot
+                                sala += item.detale.first().sala
+                                nauczyciel += item.detale.first().nauczyciel
+                            }
+
+                            2 -> {
+                                przedmiot += item.detale.last().przedmiot
+                                sala += item.detale.last().sala
+                                nauczyciel += item.detale.last().nauczyciel
+                            }
+                        }
+                    } else {
+                        przedmiot += item.detale.first().przedmiot
+                        sala += item.detale.first().sala
+                        nauczyciel += item.detale.first().nauczyciel
+                    }
+
+
                     Log.d("WidgetDumbUi", item.toString())
                     Row(
                         modifier = GlanceModifier.fillMaxWidth()
                             .background(GlanceTheme.colors.widgetBackground),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (item.sala != "") {
-                            Text(item.sala.toString())
+                        if (sala != "") {
+                            Text(sala.toString())
                         } else {
                             Text(" - ")
                         }
@@ -192,18 +226,18 @@ private fun MyContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (item.przedmiot != "") {
+                            if (przedmiot != "") {
                                 Text(
-                                    item.przedmiot.toString(),
+                                    przedmiot,
                                     style = androidx.glance.text.TextStyle(
                                         textAlign = androidx.glance.text.TextAlign.Center
                                     )
                                 )
                             }
 
-                            if (item.nauczyciel != "") {
+                            if (nauczyciel != "") {
                                 Text(
-                                    item.nauczyciel.toString(),
+                                    nauczyciel,
                                     style = androidx.glance.text.TextStyle(
                                         textAlign = androidx.glance.text.TextAlign.Center
                                     )
