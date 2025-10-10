@@ -22,12 +22,12 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 22
+        versionCode = 23
         vectorDrawables {
             useSupportLibrary = true
         }
         targetSdk = 36
-        versionName = "Ciuty - 0.53.2"
+        versionName = "Ciuty - 0.53.3"
     }
 
     buildTypes {
@@ -115,6 +115,8 @@ dependencies {
         exclude(group = "xmlpull", module = "xmlpull")
     }
     implementation(libs.androidx.compose.material.icons.extended.android)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.preference)
@@ -143,4 +145,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    debugImplementation(libs.compose.ui.tooling)
 }

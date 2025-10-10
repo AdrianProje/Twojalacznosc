@@ -59,4 +59,5 @@
     <string name="Prefered_group_none">Wszystkie</string>
     <string name="Prefered_group_first">Grupa pierwsza</string>
     <string name="Prefered_group_second">Grupa druga</string>
+    <string name="title_activity_zditmlinkhandeler">ZDITMlinkhandeler</string>
 </resources>

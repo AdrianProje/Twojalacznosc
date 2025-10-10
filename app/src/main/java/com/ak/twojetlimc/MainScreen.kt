@@ -47,7 +47,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -76,7 +75,7 @@ import kotlinx.coroutines.flow.first
 class MainScreen : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val accessdata = Datastoremanager(this)
+        val datastoremanager = Datastoremanager(this)
         val vibrator = applicationContext.getSystemService(Vibrator::class.java)
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
@@ -120,10 +119,12 @@ class MainScreen : AppCompatActivity() {
                 val contextu = LocalContext.current
 
                 var updateready by remember { mutableStateOf(false) }
+                var zditmdata by remember { mutableStateOf(listOf<Int>()) }
 
-                LaunchedEffect(key1 = accessdata) {
-                    val value = accessdata.getUPObbe.first()
-                    val paranoia = accessdata.getParanoia.first()
+
+                LaunchedEffect(key1 = datastoremanager) {
+                    val value = datastoremanager.getUPObbe.first()
+                    val paranoia = datastoremanager.getParanoia.first()
                     if (value == false) {
                         Log.d(
                             "Main_Screen",
@@ -149,6 +150,12 @@ class MainScreen : AppCompatActivity() {
                         updateready = isthereanewversion(contextu)
                     }
                 } //Sprawdzanie czy jest nowa wersja aplikacji
+
+                LaunchedEffect(key1 = Unit) {
+
+                    zditmdata = datastoremanager.getzditmList().first()
+                    Log.d("Main_Screen", "Zditmdata $zditmdata")
+                }
 
                 val destination = when (intent.getStringExtra("destination")) {
                     "plan" -> {
@@ -280,6 +287,8 @@ class MainScreen : AppCompatActivity() {
                         navController = navController,
                         destination,
                         vibrator,
+                        datastoremanager,
+                        zditmdata,
                         innerPadding
                     )
                 }
@@ -296,10 +305,6 @@ fun BottomNavigationBar(navController: NavHostController) {
     // observe current route to change the icon
     // color,label color when navigated
     val currentRoute = navBackStackEntry?.destination?.route
-    val gradient = Brush.verticalGradient(
-        0f to MaterialTheme.colorScheme.primaryContainer,
-        1f to MaterialTheme.colorScheme.primary
-    )
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
     ) {
@@ -359,6 +364,8 @@ fun NavHostContainer(
     navController: NavHostController,
     destination: String,
     vibrator: Vibrator,
+    datastoremanager: Datastoremanager,
+    zditmdata: List<Int>,
     padding: PaddingValues
 ) {
     val context = LocalContext.current
@@ -392,7 +399,7 @@ fun NavHostContainer(
 
                 // ścierzka główna
                 composable("home") {
-                    HomeScreen(navController, padding)
+                    HomeScreen(navController, zditmdata, datastoremanager, padding, context)
                 }
 
                 composable("whatsnew") {
@@ -401,7 +408,7 @@ fun NavHostContainer(
 
                 // ścierzka plan
                 composable("plan") {
-                    PlanScreen(context, vibrator, padding)
+                    PlanScreen(context, datastoremanager, vibrator, padding)
                 }
             }
         )

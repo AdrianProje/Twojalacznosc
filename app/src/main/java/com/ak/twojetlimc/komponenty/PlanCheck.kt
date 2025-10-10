@@ -13,10 +13,13 @@ import com.ak.twojetlimc.MainScreen
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.planLekcji.Schedule
 import com.ak.twojetlimc.planLekcji.webscrapeT
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.util.concurrent.atomic.AtomicInteger
 
 class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
@@ -48,7 +51,7 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
 
         notificationManager.notify(3, notification.build())
 
-        return try {
+        try {
             Log.d("PlanCheck", "Pobieranie danych planu lekcji")
 
             //Wykonywanie działania
@@ -56,64 +59,71 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
 
             val timestamp = LocalDate.now().toString()
 
-            var currentProgress = 0;
+            var currentProgress = AtomicInteger(0);
             var maxProgress = 150;
 
-            runBlocking {
-                withContext(Dispatchers.IO) {
-                    for (i in 1..30) {
-                        ++currentProgress
-                        updateProgress(
-                            currentProgress,
-                            maxProgress,
-                            notificationManager,
-                            notification
-                        )
+            runBlocking(Dispatchers.IO) {
+                val deferredO = mutableListOf<Deferred<Schedule?>>()
+                val deferredN = mutableListOf<Deferred<Schedule?>>()
+                val deferredS = mutableListOf<Deferred<Schedule?>>()
 
+                for (i in 1..30) {
+                    deferredO.add(async {
                         val result = webscrapeT(
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/o$i.html",
                             "o$i"
                         )
-                        if (result != null) planlist.add(result)
-                    }
-                }
-
-                withContext(Dispatchers.IO) {
-                    for (i in 1..70) {
-                        ++currentProgress
                         updateProgress(
-                            currentProgress,
+                            currentProgress.incrementAndGet(),
                             maxProgress,
                             notificationManager,
                             notification
                         )
+                        result
+                    })
+                }
+
+                for (i in 1..70) {
+                    deferredN.add(async {
+
                         val result = webscrapeT(
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/n$i.html",
                             "n$i"
                         )
-
-                        if (result != null) planlist.add(result)
-                    }
-                }
-
-                withContext(Dispatchers.IO) {
-                    for (i in 1..50) {
-                        ++currentProgress
                         updateProgress(
-                            currentProgress,
+                            currentProgress.incrementAndGet(),
                             maxProgress,
                             notificationManager,
                             notification
                         )
+                        result
+                    })
+                }
 
+                for (i in 1..50) {
+                    deferredS.add(async {
                         val result = webscrapeT(
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/s$i.html",
                             "s$i"
                         )
-
-                        if (result != null) planlist.add(result)
-                    }
+                        updateProgress(
+                            currentProgress.incrementAndGet(),
+                            maxProgress,
+                            notificationManager,
+                            notification
+                        )
+                        result
+                    })
                 }
+
+                val resultsO = deferredO.awaitAll().filterNotNull().sortedBy { it.imieinazwisko }
+                planlist.addAll(resultsO)
+
+                val resultsN = deferredN.awaitAll().filterNotNull().sortedBy { it.html }
+                planlist.addAll(resultsN)
+
+                val resultsS = deferredS.awaitAll().filterNotNull().sortedBy { it.imieinazwisko }
+                planlist.addAll(resultsS)
             }
 
             if (!isStopped) {

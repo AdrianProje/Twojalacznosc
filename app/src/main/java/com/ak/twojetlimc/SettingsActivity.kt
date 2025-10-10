@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -563,6 +564,8 @@ fun NavGraph(
         composable(route = "scheduledetails") {
             Log.d("SettingsActivity", "schedulefullinformation: $schedulefullinformation")
 
+            val listState = rememberLazyListState()
+
             var selectedChipOption by remember { mutableStateOf(0) }
 
             val listdata = GetList(selectedChipOption, context)
@@ -578,6 +581,21 @@ fun NavGraph(
             val focusManager = LocalFocusManager.current
 
             LaunchedEffect(schedulefullinformation) {
+
+                val indexToScroll = filteredData.indexOfFirst { item ->
+                    // This condition should match how you identify your items.
+                    (item!!.imieinazwisko + "," + item.htmlvalue) == schedulefullinformation
+                }
+
+                // Check if the item was found in the list (index is not -1).
+                if (indexToScroll != -1) {
+                    scope.launch {
+                        // Animate the scroll to the found index.
+                        // You can adjust the scrollOffset as needed.
+                        listState.animateScrollToItem(index = indexToScroll, scrollOffset = -600)
+                    }
+                }
+
                 if (!schedulefullinformation.split(",")[1].contains("o")
                 ) {
                     scope.launch {
@@ -683,6 +701,7 @@ fun NavGraph(
                 }
 
                 LazyColumn(
+                    state = listState,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .padding(horizontal = 10.dp)

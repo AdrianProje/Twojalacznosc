@@ -11,5 +11,4 @@ fun getthedeparturesdata(stopnumber: Int): Tablicaodjazow {
     val datatoreturn = Json.decodeFromString<Tablicaodjazow>(jasondata)
     return datatoreturn
 }
-
 //            TODO("Dodać oznaczenie w User-Agent o nazwie aplikacji, Ustalić czyJsoup ma cachecontrol oraz ETag ")

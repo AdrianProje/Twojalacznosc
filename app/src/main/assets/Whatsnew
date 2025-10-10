@@ -1,3 +1,7 @@
+--- 0.53.3 Beta ---
+- Dodano możliwość usuwania i dodawania własnych przystanków do aplikacji poprzez wpisanie kodu przystanku
+- Znacznie przyśpieszono pobieranie planu lekcji
+
 --- 0.53.2 Beta ---
 - Drobne zmiany
 - Aktualizacja modułów

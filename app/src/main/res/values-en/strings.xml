@@ -52,4 +52,5 @@
     <string name="Prefered_group_none">All</string>
     <string name="Prefered_group_first">First Group</string>
     <string name="Prefered_group_second">Second Group</string>
+    <string name="title_activity_zditmlinkhandeler">Add ZDITM stop</string>
 </resources>

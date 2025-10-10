@@ -16,6 +16,7 @@ import com.ak.twojetlimc.zastepstwa.Zastepstwo
 import com.ak.twojetlimc.zastepstwa.deserializeZastepstwo
 import com.ak.twojetlimc.zastepstwa.serializeZastepstwo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 
@@ -23,15 +24,19 @@ import kotlinx.coroutines.flow.map
 class Datastoremanager(private val context: Context) {
     companion object DataStoreKeys {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("userSettings")
-        val USER_DEFAULT_CHIP = intPreferencesKey("user_default_plan")
+
 
         val USER_PASS_OBBE = booleanPreferencesKey("user_pass_obbe")
         val USER_FAV_SCHEDULE_ONOFF = booleanPreferencesKey("user_fav_schedule_onoff")
         val PARANOIA = booleanPreferencesKey("paranoia")
         val USER_REFRESH = booleanPreferencesKey("user_refresh")
         val ONLINE_MODE = booleanPreferencesKey("online_mode")
-        val PREFERED_GROUP = intPreferencesKey("prefered_group")
 
+
+        val PREFERED_GROUP = intPreferencesKey("prefered_group")
+        val USER_DEFAULT_CHIP = intPreferencesKey("user_default_plan")
+
+        val DEFAULT_ZDITM_STOPS = stringPreferencesKey("default_zditm_stops")
         val PLAN_DATESTAMP = stringPreferencesKey("plan_data")
         val USER_FAV_SCHEDULE = stringPreferencesKey("user_fav_schedule")
         val SCHEDULE_PREFIX = stringPreferencesKey("schedule_")
@@ -109,6 +114,42 @@ class Datastoremanager(private val context: Context) {
 
     suspend fun saveOnlineMode(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[ONLINE_MODE] = value }
+    }
+
+    suspend fun savezditmList(intList: List<Int>) {
+        val currentlist = getzditmList().first()
+        val newList = (currentlist + intList).joinToString(",")
+        context.dataStore.edit { preferences ->
+            preferences[DEFAULT_ZDITM_STOPS] = newList
+        }
+    }
+
+    suspend fun deleteZditmStop(stopNumberToDelete: Int) {
+        val currentList = getzditmList().first().toMutableList()
+        if (currentList.remove(stopNumberToDelete)) {
+            val newListString = currentList.joinToString(",")
+            context.dataStore.edit { preferences ->
+                preferences[DEFAULT_ZDITM_STOPS] = newListString
+            }
+        }
+    }
+
+    fun getzditmList(defaultList: List<Int> = listOf(20632, 20622, 20611, 26212)): Flow<List<Int>> {
+        return context.dataStore.data.map { preferences ->
+            val serializedList = preferences[DEFAULT_ZDITM_STOPS]
+            // If the resulting string is empty (e.g., default was emptyList()), return an empty list.
+            if (serializedList.isNullOrEmpty()) {
+                defaultList
+            } else {
+                // Split the string by commas and convert each part back to an Int.
+                try {
+                    serializedList.split(',').map { it.toInt() }
+                } catch (e: NumberFormatException) {
+                    Log.e("DatastoreManager", "Failed to parse Int list, returning default.", e)
+                    defaultList
+                }
+            }
+        }
     }
 
     suspend fun storenewSchedule(date: String, version: Int, listofschedules: List<Schedule>) {

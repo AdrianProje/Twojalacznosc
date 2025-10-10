@@ -13,7 +13,11 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.MarqueeSpacing
@@ -54,14 +58,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.CorporateFare
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -112,6 +118,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -125,6 +132,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.SettingsActivity
+import com.ak.twojetlimc.ZDITMlinkhandeler
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.ClickablePhoneNumber
 import com.ak.twojetlimc.komponenty.Datastoremanager
@@ -285,10 +293,20 @@ fun HelpScreen(padding: PaddingValues) {
 
 //------------------------------------Główna-----------------------------------------
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 @Composable
-fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
+fun HomeScreen(
+    navController: NavHostController,
+    zditmdata: List<Int>,
+    datastoremanager: Datastoremanager,
+    padding: PaddingValues,
+    context: Context
+) {
     var showdialog by remember { mutableStateOf(false) }
+    var showdialog2 by remember { mutableStateOf(false) }
     var isloadingzditm by remember { mutableStateOf(false) }
 
     var selectedKey by remember { mutableIntStateOf(0) }
@@ -296,9 +314,15 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 
     val listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
 
-    val rotationStateloading by animateFloatAsState(
+
+    val infiniteTransition = rememberInfiniteTransition(label = "infinite rotation")
+    val rotationStateloading by infiniteTransition.animateFloat(
+        initialValue = 0f,
         targetValue = if (isloadingzditm) 360f else 0f,
-        label = "rotation"
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ), label = "rotation"
     )
 
     val listState = rememberLazyListState()
@@ -312,24 +336,23 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
         }
     } //Przewijanie losowych tekstów na pasku
 
-    LaunchedEffect(Unit, refreshzditmcount) {
+    LaunchedEffect(Unit, refreshzditmcount, zditmdata) {
         while (true) {
-            launch(Dispatchers.IO) {
-                isloadingzditm = true
+            isloadingzditm = true
+            val job = launch(Dispatchers.IO) {
                 try {
-                    val KM3220632 = getthedeparturesdata(20632)
-                    val KM2220622 = getthedeparturesdata(20622)
-                    val KM1120611 = getthedeparturesdata(20611)
-                    val P1226212 = getthedeparturesdata(26212)
-
+                    val temporarylist = mutableListOf<Tablicaodjazow>()
+                    zditmdata.forEach { number ->
+                        temporarylist.add(getthedeparturesdata(number))
+                    }
                     listofzditm.clear()
-                    listofzditm.addAll(listOf(KM3220632, KM2220622, KM1120611, P1226212))
-
+                    listofzditm.addAll(temporarylist)
                 } catch (e: Exception) {
                     println("Error fetching data: ${e.message}")
                 }
-                isloadingzditm = false
             }
+            job.join()
+            isloadingzditm = false
             delay(10000)
         }
     } //Pobieranie danych z ZDiTM
@@ -344,7 +367,8 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
 //    )
 
     if (showdialog) {
-        Dialog(onDismissRequest = { showdialog = false }) {
+        Dialog(
+            onDismissRequest = { showdialog = false }) {
             Card(
                 colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 border = BorderStroke(1.dp, Color.Black),
@@ -383,6 +407,76 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("Super!")
+                    }
+                }
+            }
+        }
+    }
+
+    if (showdialog2) {
+        Dialog(
+            onDismissRequest = { showdialog2 = false }) {
+            Card(
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                border = BorderStroke(1.dp, Color.Black),
+                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(10.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                var texfieldvalue = rememberSaveable { mutableStateOf("") }
+                Column(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .weight(0.8f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Dodaj przystanek\n",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(text = "Aby dodać przystanek do tego ekranu wpisz kod przystanku poniżej")
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextField(
+                        value = texfieldvalue.value,
+                        onValueChange = { texfieldvalue.value = it },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Button(
+                        onClick = { showdialog2 = false },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Anuluj")
+                    }
+                    Button(
+                        enabled = if (texfieldvalue.value.length == 5) true else false,
+                        onClick = {
+                            val intent = Intent(context, ZDITMlinkhandeler::class.java)
+                            intent.putExtra("zditmvalue", texfieldvalue.value)
+
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Potwierdź")
                     }
                 }
             }
@@ -510,6 +604,20 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                         "ZDiTM Szczecin",
                         modifier = Modifier.weight(1f)
                     )
+
+                    IconButton(
+                        onClick = {
+                            showdialog2 = true
+                        },
+                        modifier = Modifier
+                            .weight(0.2f)
+                            .size(20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Info"
+                        )
+                    }
 
                     IconButton(
                         onClick = {
@@ -664,6 +772,64 @@ fun HomeScreen(navController: NavHostController, padding: PaddingValues) {
                                             )
                                         }
                                     }
+                                Spacer(Modifier.weight(1f))
+                                val openAlertDialog = rememberSaveable { mutableStateOf(false) }
+                                Button(
+                                    onClick = {
+                                        openAlertDialog.value = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(text = "Usuń przystanek ${item.stop_number}")
+                                }
+                                when {
+                                    openAlertDialog.value -> {
+                                        AlertDialog(
+                                            icon = {
+                                                Icon(
+                                                    Icons.Default.Clear,
+                                                    contentDescription = "Ikonka usuwania"
+                                                )
+                                            },
+                                            title = {
+                                                Text(text = "Czy chcesz usunąć przystanek: ${item.stop_number} ?")
+                                            },
+                                            text = {
+                                                Text(text = "Nie będzie można tej akcji cofnąć\nZmiany będą widoczne po restarcie aplikacji!")
+                                            },
+                                            onDismissRequest = {
+                                                openAlertDialog.value = false
+                                            },
+                                            confirmButton = {
+                                                Button(
+                                                    onClick = {
+                                                        runBlocking {
+                                                            datastoremanager.deleteZditmStop(item.stop_number.toInt())
+                                                            openAlertDialog.value = false
+                                                            refreshzditmcount++
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Usunięto przystanek - ${item.stop_number}, uruchom ponownie aplikacje...",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                    }
+                                                ) {
+                                                    Text("Usuń")
+                                                }
+                                            },
+                                            dismissButton = {
+                                                Button(
+                                                    onClick = {
+                                                        openAlertDialog.value = false
+                                                    }
+                                                ) {
+                                                    Text("Anuluj")
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -781,7 +947,12 @@ fun WhatsNew(navController: NavHostController, padding2: PaddingValues) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @ExperimentalComposeUiApi
 @Composable
-fun PlanScreen(context: Context, vibrator: Vibrator, padding: PaddingValues) {
+fun PlanScreen(
+    context: Context,
+    datastoremanager: Datastoremanager,
+    vibrator: Vibrator,
+    padding: PaddingValues
+) {
     val accessdatastoremanager =
         Datastoremanager(context)
     val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
@@ -1492,7 +1663,7 @@ fun PlanScreen(context: Context, vibrator: Vibrator, padding: PaddingValues) {
                                         val imageVector = when (option) {
                                             options[0] -> Icons.Filled.Clear
                                             options[1] -> Icons.Filled.Star
-                                            options[2] -> Icons.Filled.LocationOn
+                                            options[2] -> Icons.Rounded.CorporateFare
                                             options[3] -> Icons.Filled.AccountCircle
                                             else -> null
                                         }
