@@ -414,3 +414,30 @@ fun NavHostContainer(
         )
     }
 }
+
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun BottomNavigationBarPreview() {
+    val navController = rememberNavController()
+    BottomNavigationBar(navController)
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun NavHostContainerPreview() {
+    val navController = rememberNavController()
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Vibrator::class.java)
+    val datastoremanager = Datastoremanager(context)
+    val zditmdata = listOf<Int>()
+    val padding = PaddingValues(0.dp)
+    NavHostContainer(
+        navController = navController,
+        destination = "home",
+        vibrator = vibrator,
+        datastoremanager = datastoremanager,
+        zditmdata = zditmdata,
+        padding = padding
+    )
+}

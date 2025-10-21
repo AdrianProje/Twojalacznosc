@@ -1,3 +1,9 @@
+--- 0.53.4.1 Beta ---
+- Naprawiono błąd crashowania aplikacji na planie lekcji w trakcie porannych godzin
+
+--- 0.53.4 Beta ---
+- Dodano pozostały czas trwania danej lekcji/przerwy na planie lekcji
+
 --- 0.53.3 Beta ---
 - Dodano możliwość usuwania i dodawania własnych przystanków do aplikacji poprzez wpisanie kodu przystanku
 - Znacznie przyśpieszono pobieranie planu lekcji
@@ -29,7 +35,7 @@
 - Aktualizacja modułów
 
 --- 0.52.3 Beta ---
-- Zmiana w  sposobie zapisywania planu lekcji (Potrzebne jest jednorazowe manualne pobranie planu lekcji offline/wyczyszczenie danych, aby aplikacja działała poprawnie)
+- Zmiana w sposobie zapisywania planu lekcji (Potrzebne jest jednorazowe manualne pobranie planu lekcji offline/wyczyszczenie danych, aby aplikacja działała poprawnie)
 - Naprawiono automatyczne pobieranie planu lekcji offline
 - Dodano powiadomienia o nowym planie lekcji (wykrywanie zmian w planie)
 

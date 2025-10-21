@@ -12,6 +12,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -94,6 +96,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -157,6 +160,9 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 //-------------------------------Pomoc-------------------------------------------
@@ -289,6 +295,12 @@ fun HelpScreen(padding: PaddingValues) {
             }
         }
     }
+}
+
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun HelpScreenPreview() {
+    HelpScreen(padding = PaddingValues(0.dp))
 }
 
 //------------------------------------Główna-----------------------------------------
@@ -878,6 +890,20 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun HomeScreenPreview() {
+    val context = LocalContext.current
+    HomeScreen(
+        navController = NavHostController(context),
+        zditmdata = emptyList(),
+        datastoremanager = Datastoremanager(context),
+        padding = PaddingValues(0.dp),
+        context = context
+    )
+}
+
 
 //-----------------------------CO NOWEGO-----------------------------------------
 
@@ -940,21 +966,31 @@ fun WhatsNew(navController: NavHostController, padding2: PaddingValues) {
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun WhatsNewPreview() {
+    val context = LocalContext.current
+    WhatsNew(navController = NavHostController(context), padding2 = PaddingValues(0.dp))
+}
+
 //-----------------------------PLAN-----------------------------------------
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
+@SuppressLint(
+    "UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType",
+    "AutoboxingStateCreation"
+)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @ExperimentalComposeUiApi
 @Composable
 fun PlanScreen(
     context: Context,
-    datastoremanager: Datastoremanager,
+    accessdatastoremanager: Datastoremanager,
     vibrator: Vibrator,
     padding: PaddingValues
 ) {
-    val accessdatastoremanager =
-        Datastoremanager(context)
     val connectivityManager = getSystemService(context, ConnectivityManager::class.java)
     //Zmień na jeden datastore dla całej aktywności
 
@@ -1318,6 +1354,8 @@ fun PlanScreen(
         //Wyświetlane ekrany w zależności od opcji
 
         PullToRefreshBox(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
             state = pullrefreshstate,
             isRefreshing = isrefresing,
             onRefresh = {
@@ -1408,15 +1446,17 @@ fun PlanScreen(
                             item {
                                 OutlinedCard(
                                     modifier = Modifier
-                                        .height(130.dp)
+                                        .heightIn(min = 130.dp)
                                         .padding(vertical = 5.dp)
                                         .fillParentMaxWidth(0.95f)
-                                        .layoutId(numerlekcji),
+                                        .layoutId(numerlekcji)
+                                        .animateContentSize(),
                                     shape = MaterialTheme.shapes.medium
                                 ) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxSize()
+                                            .weight(1f)
                                             .background(
                                                 if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
                                                     MaterialTheme.colorScheme.surfaceContainerHighest
@@ -1439,7 +1479,6 @@ fun PlanScreen(
                                             )
                                         }
 
-                                        Log.d("PLANLOADING", "detale.size: ${detale.size}")
                                         val filteredDetale = when (preferedgroup) {
                                             1 -> {
                                                 detale.filter { detail ->
@@ -1524,6 +1563,47 @@ fun PlanScreen(
                                                 }
                                             }
                                             Spacer(modifier = Modifier.width(2.dp))
+                                        }
+                                    }
+                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                        val endingtime = LocalTime.parse(
+                                            czas.split("-")[1].filter { !it.isWhitespace() },
+                                            DateTimeFormatter.ofPattern("H:mm")
+                                        )
+                                        var minutesLeft by remember { mutableLongStateOf(0L) }
+
+                                        LaunchedEffect(key1 = endingtime) {
+                                            while (LocalTime.now().isBefore(endingtime)) {
+                                                minutesLeft = ChronoUnit.MINUTES.between(
+                                                    LocalTime.now(),
+                                                    endingtime
+                                                ) + 1
+                                                delay(1000) // Wait for 1 second
+                                            }
+                                            // Once the lesson is over, you might want to set minutes to 0
+                                            minutesLeft = 0
+                                        }
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(
+                                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                        MaterialTheme.colorScheme.surfaceContainerHighest
+                                                    } else {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    }
+                                                ),
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+
+                                            if (minutesLeft < 45) {
+                                                Text(text = "Pozostało $minutesLeft min. lekcji")
+                                            } else if (minutesLeft == 0L) {
+                                                Text(text = "Lekcja się skończyła")
+                                            } else {
+                                                Text(text = "Pozostało ${minutesLeft - 45} min. przerwy")
+                                            }
                                         }
                                     }
                                 }
@@ -1742,4 +1822,19 @@ fun PlanScreen(
             }
         }
     }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@ExperimentalComposeUiApi
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun PlanScreenPreview() {
+    val context = LocalContext.current
+    PlanScreen(
+        context = context,
+        accessdatastoremanager = Datastoremanager(context),
+        vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator,
+        padding = PaddingValues(0.dp)
+    )
 }

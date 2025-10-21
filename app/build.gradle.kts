@@ -22,12 +22,12 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 23
+        versionCode = 25
         vectorDrawables {
             useSupportLibrary = true
         }
         targetSdk = 36
-        versionName = "Ciuty - 0.53.3"
+        versionName = "Ciuty - 0.53.4.1"
     }
 
     buildTypes {
@@ -50,13 +50,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_23
-        targetCompatibility = JavaVersion.VERSION_23
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_23)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -64,7 +64,7 @@ android {
         includeInBundle = true
         includeInApk = true
     }
-    buildToolsVersion = "36.0.0"
+    buildToolsVersion = "36.1.0"
     flavorDimensions += listOf("BaseApp")
     productFlavors {
         create("Galaxy") {

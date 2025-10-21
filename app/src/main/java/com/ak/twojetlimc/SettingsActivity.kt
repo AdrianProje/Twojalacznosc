@@ -1138,6 +1138,25 @@ fun NavGraph(
     }
 }
 
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun NavGraphPreview() {
+    val navController = rememberNavController()
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    val datastoremanager = Datastoremanager(context)
+    val paddingvalues = PaddingValues(0.dp)
+    AppTheme {
+        NavGraph(
+            navController = navController,
+            context = context,
+            vibrator = vibrator,
+            datastoremanager = datastoremanager,
+            paddingvalues = paddingvalues
+        )
+    }
+}
+
 class SettingsActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     @OptIn(ExperimentalMaterial3Api::class)

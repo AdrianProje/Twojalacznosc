@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -34,6 +35,8 @@ import com.ak.twojetlimc.SettingsActivity
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.getcurrenthour
 import com.ak.twojetlimc.planLekcji.Schedule
+import com.ak.twojetlimc.planLekcji.ScheduleItem
+import com.ak.twojetlimc.planLekcji.ScheduleItemDetails
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -103,6 +106,32 @@ class WidgetDumbUI : GlanceAppWidget() {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun MyContentPreview() {
+    val schedulefromload = Schedule(
+        imieinazwisko = "Jan Kowalski",
+        html = "",
+        plan = listOf(
+            ScheduleItem(
+                numerLekcji = 3,
+                czas = "09:50-10:35",
+                dzien = LocalDate.now().dayOfWeek.value - 1,
+                klasa = "3TP",
+                detale = listOf(
+                    ScheduleItemDetails(
+                        nauczyciel = "A. Nowak",
+                        przedmiot = "Matematyka",
+                        sala = "21"
+                    )
+                )
+            )
+        )
+    )
+    val preferedgroup = 1
+    MyContent(schedulefromload, preferedgroup)
 }
 
 class WidgetActionUpdate : AppWidgetProvider() {
