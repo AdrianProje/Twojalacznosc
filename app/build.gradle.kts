@@ -22,12 +22,12 @@ android {
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         applicationId = "com.ak.twojetlimc"
-        versionCode = 25
+        versionCode = 26
         vectorDrawables {
             useSupportLibrary = true
         }
         targetSdk = 36
-        versionName = "Ciuty - 0.53.4.1"
+        versionName = "Ciuty - 0.53.4.2"
     }
 
     buildTypes {

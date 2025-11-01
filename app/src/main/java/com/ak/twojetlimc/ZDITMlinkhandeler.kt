@@ -249,7 +249,7 @@ class ZDITMlinkhandeler : ComponentActivity() {
 
                                         Spacer(Modifier.weight(1f))
                                         Column(modifier = Modifier.padding(10.dp)) {
-                                            zditmdatatoshow.departures.take(5)
+                                            zditmdatatoshow.departures.take(5).drop(1)
                                                 .forEach { departure ->
                                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                                         Text(
@@ -292,31 +292,35 @@ class ZDITMlinkhandeler : ComponentActivity() {
                                     }
                                 }
                             }
-                        }
-                        Row {
-                            Button(
-                                enabled = !isalreadysaved,
-                                onClick = {
-                                    runBlocking {
-                                        datastoremanager.savezditmList(listOf(number!!))
-                                        context.startActivity(
-                                            Intent(
-                                                context,
-                                                MainScreen::class.java
-                                            )
-                                        )
-                                        finishAfterTransition()
+                            item {
+                                Row {
+                                    Button(
+                                        modifier = Modifier.weight(0.5f),
+                                        enabled = !isalreadysaved,
+                                        onClick = {
+                                            runBlocking {
+                                                datastoremanager.savezditmList(listOf(number!!))
+                                                context.startActivity(
+                                                    Intent(
+                                                        context,
+                                                        MainScreen::class.java
+                                                    )
+                                                )
+                                                finishAfterTransition()
+                                            }
+                                        }
+                                    ) {
+                                        Text("Zapisz i przejdź do aplikacji")
+                                    }
+                                    Button(
+                                        modifier = Modifier.weight(0.5f),
+                                        onClick = {
+                                            finish()
+                                        }
+                                    ) {
+                                        Text("Anuluj i wyjdź")
                                     }
                                 }
-                            ) {
-                                Text("Zapisz i przejdź do aplikacji")
-                            }
-                            Button(
-                                onClick = {
-                                    finish()
-                                }
-                            ) {
-                                Text("Anuluj i wyjdź")
                             }
                         }
                     }

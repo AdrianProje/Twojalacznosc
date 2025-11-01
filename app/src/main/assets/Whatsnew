@@ -1,3 +1,8 @@
+--- 0.53.4.2 Beta ---
+- Poprawiony wygląd podglądu dodania przystanku zditm na ekranach z większym powiększeniem
+- Naprawiono duplikowanie się informacji na przystanku na podglądzie dodawania przystanku zditm
+- Poprawiono wygląd "Kontakt z szkołą" na karcie pomocy na ekranach z więszym powiększeniem
+
 --- 0.53.4.1 Beta ---
 - Naprawiono błąd crashowania aplikacji na planie lekcji w trakcie porannych godzin
 

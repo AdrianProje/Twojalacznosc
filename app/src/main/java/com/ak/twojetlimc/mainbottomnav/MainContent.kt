@@ -214,7 +214,9 @@ fun HelpScreen(padding: PaddingValues) {
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                         border = BorderStroke(1.dp, Color.Black),
-                        modifier = Modifier.size(390.dp, 200.dp)
+                        modifier = Modifier
+                            .width(390.dp)
+                            .heightIn(min = 200.dp)
                     ) {
                         Column(
                             modifier = Modifier.fillMaxSize(),
