@@ -59,7 +59,7 @@
             android:name=".ZDITMlinkhandeler"
             android:exported="false"
             android:label="@string/title_activity_zditmlinkhandeler"
-            android:theme="@style/Theme.TwojaŁączność"></activity>
+            android:theme="@style/Theme.TwojaŁączność" />
 
         <receiver
             android:name=".komponenty.StopNotification"

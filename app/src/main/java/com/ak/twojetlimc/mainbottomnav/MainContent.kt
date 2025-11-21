@@ -851,10 +851,6 @@ fun HomeScreen(
             }
         }
 
-        item {
-            Text(text = "Więcej funkcji już wkrótce")
-        }
-
 //        item {
 //            OutlinedCard(
 //                onClick = { /*TODO*/ },

@@ -217,7 +217,7 @@ private fun MyContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         if (sala != "") {
-                            Text(sala.toString())
+                            Text(sala)
                         } else {
                             Text(" - ")
                         }

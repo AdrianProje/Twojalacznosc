@@ -127,7 +127,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                             applicationContext,
                             notificationManager,
                             "Następna lekcja (zastępstwo): $notificationTextklasa",
-                            notificationTextzastepca + " | " + notificationTextuwagi
+                            "$notificationTextzastepca | $notificationTextuwagi"
                         )
                         Log.d("Plannotification", "Wysyłanie powiadomienia (zastępstwo)!")
                     } else {

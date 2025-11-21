@@ -1,3 +1,15 @@
+--- 0.53.4.3 Beta ---
+Końcowy etap zakończania prac nad aplikacją
+Planowane naprawy oraz dodatkowe funkcje:
+- Bezpośrednie przechodzenie między planami przez linki
+- Naprawa problemów z niepełnością niektórych planów nauczycieli i sal
+- Naprawa działania widgetu
+- Naprawa automatycznego pobierania planu gdy jest pusty
+Dziękuję za feedback, tworzenie tej aplikacji przez 4 lata był niesamowitym procesem podczas którego
+sporo nauczyłem się na temat programowania na platformach mobilnych
+
+- Aktualizacja modułów
+
 --- 0.53.4.2 Beta ---
 - Poprawiony wygląd podglądu dodania przystanku zditm na ekranach z większym powiększeniem
 - Naprawiono duplikowanie się informacji na przystanku na podglądzie dodawania przystanku zditm

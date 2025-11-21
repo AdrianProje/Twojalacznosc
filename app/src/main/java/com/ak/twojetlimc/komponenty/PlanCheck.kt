@@ -59,8 +59,8 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
 
             val timestamp = LocalDate.now().toString()
 
-            var currentProgress = AtomicInteger(0);
-            var maxProgress = 150;
+            val currentProgress = AtomicInteger(0);
+            val maxProgress = 150;
 
             runBlocking(Dispatchers.IO) {
                 val deferredO = mutableListOf<Deferred<Schedule?>>()
