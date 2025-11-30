@@ -37,7 +37,7 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                 timestamp.toString(),
                 htmlvalue,
                 1
-            ).plan.forEach {
+            )?.plan?.forEach {
                 if (itemId == it.numerLekcji && it.dzien + 1 == LocalDate.now().dayOfWeek.value) {
                     val listitems = mutableListOf<Zastepstwo>()
                     try {

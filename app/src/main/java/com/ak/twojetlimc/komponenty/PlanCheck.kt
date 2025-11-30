@@ -131,7 +131,7 @@ class PlanCheck(appContext: Context, workerParams: WorkerParameters) :
                     datastoremanager.storenewSchedule(timestamp, 1, planlist)
                     datastoremanager.savePlanTimestamp(timestamp)
 
-                    if (datastoremanager.compareTwoNewestSchedules() == true) {
+                    if (datastoremanager.compareTwoNewestSchedules() == false) {
                         schedulehaschangednotification(notificationManager)
                     }
                 }

@@ -1128,7 +1128,17 @@ fun PlanScreen(
                         }
                     }
                 } else {
-                    scheduleFromLoad = null
+                    online = false
+                    Log.d(
+                        "PlanScreen",
+                        "loadscheduledata offline (selecteddata not null)"
+                    )
+                    scheduleFromLoad = datastore.getnewSchedule(
+                        context,
+                        scheduleTimestamp.toString(),
+                        1
+                    )?.first()
+                    selectedData = scheduleFromLoad?.imieinazwisko ?: ""
                 }
             }
         } catch (e: Exception) {
@@ -1248,6 +1258,55 @@ fun PlanScreen(
         }
     } //Aktualizacja aktualnej godziny lekcyjnej do scrolowania
 
+    val startRefresh: () -> Unit = {
+        isrefresing = true
+        coroutineScope.launch {
+            Log.d("PLANLOADING", "Refresh")
+            if (!isLoading) {
+                try {
+                    if (onlysubstitute) {
+                        val workrequest = downlodonlyzas(context)
+                        WorkManager.getInstance(context)
+                            .getWorkInfoByIdLiveData(workrequest.id)
+                            .observe(
+                                lifecycleOwner, Observer { status ->
+                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                        isrefresing = false
+                                        refreshTrigger++
+                                        Toast.makeText(
+                                            context,
+                                            "Odświeżono",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        Log.d("PLANLOADING", "$refreshTrigger")
+                                    }
+                                })
+                    } else {
+                        Log.d("PLANLOADING", "else")
+                        val workrequest = downloadplanandzas(context)
+                        WorkManager.getInstance(context)
+                            .getWorkInfoByIdLiveData(workrequest.id)
+                            .observe(
+                                lifecycleOwner, Observer { status ->
+                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                        isrefresing = false
+                                        refreshTrigger++
+                                        Toast.makeText(
+                                            context,
+                                            "Odświeżono",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        Log.d("PLANLOADING", "$refreshTrigger")
+                                    }
+                                })
+                    }
+                } catch (e: Exception) {
+                    Log.d("PLANLOADING", "$e")
+                }
+            }
+        }
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
@@ -1357,234 +1416,61 @@ fun PlanScreen(
             state = pullrefreshstate,
             isRefreshing = isrefresing,
             onRefresh = {
-                isrefresing = true
                 vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
-                coroutineScope.launch {
-                    if (!isLoading) {
-                        try {
-                            if (onlysubstitute) {
-                                val workrequest = downlodonlyzas(context)
-                                WorkManager.getInstance(context)
-                                    .getWorkInfoByIdLiveData(workrequest.id)
-                                    .observe(
-                                        lifecycleOwner, Observer { status ->
-                                            if (status!!.state == WorkInfo.State.SUCCEEDED) {
-                                                isrefresing = false
-                                                refreshTrigger++
-                                                Toast.makeText(
-                                                    context,
-                                                    "Odświeżono",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                Log.d("PLANLOADING", "$refreshTrigger")
-                                            }
-                                        })
-                            } else {
-                                val workrequest = downloadplanandzas(context)
-                                WorkManager.getInstance(context)
-                                    .getWorkInfoByIdLiveData(workrequest.id)
-                                    .observe(
-                                        lifecycleOwner, Observer { status ->
-                                            if (status!!.state == WorkInfo.State.SUCCEEDED) {
-                                                isrefresing = false
-                                                refreshTrigger++
-                                                Toast.makeText(
-                                                    context,
-                                                    "Odświeżono",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                Log.d("PLANLOADING", "$refreshTrigger")
-                                            }
-                                        })
-                            }
-                        } catch (e: Exception) {
-                            Log.d("PLANLOADING", "$e")
-                        }
-                    }
-                }
+                startRefresh()
             }
         ) {
+            if (scheduleData != null) {
+                scheduleData?.let { it1 ->
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        state = listState,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        contentPadding = padding
+                    ) {
 
-            scheduleData?.let { it1 ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    state = listState,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    contentPadding = padding
-                ) {
-
-                    if (preferedgroup != 0) item {
-                        OutlinedCard(
-                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
-                            border = BorderStroke(1.dp, Color.DarkGray),
-                            modifier = Modifier
-                                .fillParentMaxWidth(0.95f)
-                                .wrapContentHeight()
-                        ) {
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = "Widzisz aktualnie plan tylko dla grupy: $preferedgroup",
-                                textAlign = TextAlign.Center
-                            )
+                        if (preferedgroup != 0) item {
+                            OutlinedCard(
+                                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                                border = BorderStroke(1.dp, Color.DarkGray),
+                                modifier = Modifier
+                                    .fillParentMaxWidth(0.95f)
+                                    .wrapContentHeight()
+                            ) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "Widzisz aktualnie plan tylko dla grupy: $preferedgroup",
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
-                    }
 
-                    it1.plan.forEach {
-                        val numerlekcji = it.numerLekcji
-                        val czas = it.czas
-                        val dzien = it.dzien
-                        val klasa = it.klasa
-                        val detale = it.detale
+                        it1.plan.forEach {
+                            val numerlekcji = it.numerLekcji
+                            val czas = it.czas
+                            val dzien = it.dzien
+                            val klasa = it.klasa
+                            val detale = it.detale
 
 
-                        Log.d("PLANLOADING", "Zastępstwo: $listitems")
+                            Log.d("PLANLOADING", "Zastępstwo: $listitems")
 
-                        if (dzien == day.ordinal) {
-                            item {
-                                OutlinedCard(
-                                    modifier = Modifier
-                                        .heightIn(min = 130.dp)
-                                        .padding(vertical = 5.dp)
-                                        .fillParentMaxWidth(0.95f)
-                                        .layoutId(numerlekcji)
-                                        .animateContentSize(),
-                                    shape = MaterialTheme.shapes.medium
-                                ) {
-                                    Row(
+                            if (dzien == day.ordinal) {
+                                item {
+                                    OutlinedCard(
                                         modifier = Modifier
-                                            .fillMaxSize()
-                                            .weight(1f)
-                                            .background(
-                                                if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                                    MaterialTheme.colorScheme.surfaceContainerHighest
-                                                } else {
-                                                    MaterialTheme.colorScheme.primaryContainer
-                                                }
-                                            ),
-                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                            .heightIn(min = 130.dp)
+                                            .padding(vertical = 5.dp)
+                                            .fillParentMaxWidth(0.95f)
+                                            .layoutId(numerlekcji)
+                                            .animateContentSize(),
+                                        shape = MaterialTheme.shapes.medium
                                     ) {
-                                        Column(
-                                            Modifier
-                                                .fillMaxHeight()
-                                                .fillMaxWidth(0.3f),
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = "$numerlekcji \n-\n $czas",
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-
-                                        val filteredDetale = when (preferedgroup) {
-                                            1 -> {
-                                                detale.filter { detail ->
-                                                    // Show if:
-                                                    // 1. Lesson name contains "-1/2" (specifically for group 1)
-                                                    // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
-                                                    detail.przedmiot.contains("-1/2") ||
-                                                            (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
-                                                                "-2/2"
-                                                            ))
-                                                }
-                                            }
-
-                                            2 -> {
-                                                detale.filter { detail ->
-                                                    // Show if:
-                                                    // 1. Lesson name contains "-2/2" (specifically for group 2)
-                                                    // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
-                                                    detail.przedmiot.contains("-2/2") ||
-                                                            (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
-                                                                "-2/2"
-                                                            ))
-                                                }
-                                            }
-
-                                            else -> { // preferedgroup == 0 or any other value
-                                                // Show all lessons
-                                                detale
-                                            }
-                                        }
-
-                                        for (details in filteredDetale) {
-                                            Spacer(modifier = Modifier.width(2.dp))
-                                            Column(
-                                                modifier = Modifier
-                                                    .weight(3f)
-                                                    .fillMaxHeight(),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .background(
-                                                            if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                                                MaterialTheme.colorScheme.surfaceContainerHighest
-                                                            } else {
-                                                                MaterialTheme.colorScheme.primaryContainer
-                                                            }
-                                                        ),
-                                                    horizontalArrangement = Arrangement.Center
-                                                ) {
-                                                    if (details.sala != "") {
-                                                        Text(text = details.sala)
-                                                    }
-                                                }
-
-                                                Column(
-                                                    modifier = Modifier
-                                                        .fillMaxHeight()
-                                                        .fillMaxWidth()
-                                                        .background(
-                                                            MaterialTheme.colorScheme.background,
-                                                            MaterialTheme.shapes.medium
-                                                        ),
-                                                    verticalArrangement = Arrangement.Center,
-                                                    horizontalAlignment = Alignment.CenterHorizontally
-                                                ) {
-                                                    if (details.przedmiot.isNotBlank()) Text(
-                                                        text = details.przedmiot,
-                                                        textAlign = TextAlign.Center
-                                                    )
-
-                                                    if (details.nauczyciel.isNotBlank()) Text(
-                                                        text = details.nauczyciel,
-                                                        textAlign = TextAlign.Center
-                                                    )
-
-                                                    if (klasa.isNotBlank()) Text(
-                                                        text = klasa,
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                }
-                                            }
-                                            Spacer(modifier = Modifier.width(2.dp))
-                                        }
-                                    }
-                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                        val endingtime = LocalTime.parse(
-                                            czas.split("-")[1].filter { !it.isWhitespace() },
-                                            DateTimeFormatter.ofPattern("H:mm")
-                                        )
-                                        var minutesLeft by remember { mutableLongStateOf(0L) }
-
-                                        LaunchedEffect(key1 = endingtime) {
-                                            while (LocalTime.now().isBefore(endingtime)) {
-                                                minutesLeft = ChronoUnit.MINUTES.between(
-                                                    LocalTime.now(),
-                                                    endingtime
-                                                ) + 1
-                                                delay(1000) // Wait for 1 second
-                                            }
-                                            // Once the lesson is over, you might want to set minutes to 0
-                                            minutesLeft = 0
-                                        }
-
                                         Row(
                                             modifier = Modifier
-                                                .fillMaxWidth()
+                                                .fillMaxSize()
+                                                .weight(1f)
                                                 .background(
                                                     if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
                                                         MaterialTheme.colorScheme.surfaceContainerHighest
@@ -1592,68 +1478,199 @@ fun PlanScreen(
                                                         MaterialTheme.colorScheme.primaryContainer
                                                     }
                                                 ),
-                                            horizontalArrangement = Arrangement.Center
+                                            horizontalArrangement = Arrangement.SpaceEvenly
                                         ) {
+                                            Column(
+                                                Modifier
+                                                    .fillMaxHeight()
+                                                    .fillMaxWidth(0.3f),
+                                                verticalArrangement = Arrangement.Center,
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                Text(
+                                                    text = "$numerlekcji \n-\n $czas",
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
 
-                                            if (minutesLeft < 45) {
-                                                Text(text = "Pozostało $minutesLeft min. lekcji")
-                                            } else if (minutesLeft == 0L) {
-                                                Text(text = "Lekcja się skończyła")
-                                            } else {
-                                                Text(text = "Pozostało ${minutesLeft - 45} min. przerwy")
+                                            val filteredDetale = when (preferedgroup) {
+                                                1 -> {
+                                                    detale.filter { detail ->
+                                                        // Show if:
+                                                        // 1. Lesson name contains "-1/2" (specifically for group 1)
+                                                        // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                        detail.przedmiot.contains("-1/2") ||
+                                                                (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                    "-2/2"
+                                                                ))
+                                                    }
+                                                }
+
+                                                2 -> {
+                                                    detale.filter { detail ->
+                                                        // Show if:
+                                                        // 1. Lesson name contains "-2/2" (specifically for group 2)
+                                                        // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                        detail.przedmiot.contains("-2/2") ||
+                                                                (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                    "-2/2"
+                                                                ))
+                                                    }
+                                                }
+
+                                                else -> { // preferedgroup == 0 or any other value
+                                                    // Show all lessons
+                                                    detale
+                                                }
+                                            }
+
+                                            for (details in filteredDetale) {
+                                                Spacer(modifier = Modifier.width(2.dp))
+                                                Column(
+                                                    modifier = Modifier
+                                                        .weight(3f)
+                                                        .fillMaxHeight(),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .background(
+                                                                if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                                    MaterialTheme.colorScheme.surfaceContainerHighest
+                                                                } else {
+                                                                    MaterialTheme.colorScheme.primaryContainer
+                                                                }
+                                                            ),
+                                                        horizontalArrangement = Arrangement.Center
+                                                    ) {
+                                                        if (details.sala != "") {
+                                                            Text(text = details.sala)
+                                                        }
+                                                    }
+
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .fillMaxHeight()
+                                                            .fillMaxWidth()
+                                                            .background(
+                                                                MaterialTheme.colorScheme.background,
+                                                                MaterialTheme.shapes.medium
+                                                            ),
+                                                        verticalArrangement = Arrangement.Center,
+                                                        horizontalAlignment = Alignment.CenterHorizontally
+                                                    ) {
+                                                        if (details.przedmiot.isNotBlank()) Text(
+                                                            text = details.przedmiot,
+                                                            textAlign = TextAlign.Center
+                                                        )
+
+                                                        if (details.nauczyciel.isNotBlank()) Text(
+                                                            text = details.nauczyciel,
+                                                            textAlign = TextAlign.Center
+                                                        )
+
+                                                        if (klasa.isNotBlank()) Text(
+                                                            text = klasa,
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                    }
+                                                }
+                                                Spacer(modifier = Modifier.width(2.dp))
+                                            }
+                                        }
+                                        if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                            val endingtime = LocalTime.parse(
+                                                czas.split("-")[1].filter { !it.isWhitespace() },
+                                                DateTimeFormatter.ofPattern("H:mm")
+                                            )
+                                            var minutesLeft by remember { mutableLongStateOf(0L) }
+
+                                            LaunchedEffect(key1 = endingtime) {
+                                                while (LocalTime.now().isBefore(endingtime)) {
+                                                    minutesLeft = ChronoUnit.MINUTES.between(
+                                                        LocalTime.now(),
+                                                        endingtime
+                                                    ) + 1
+                                                    delay(1000) // Wait for 1 second
+                                                }
+                                                // Once the lesson is over, you might want to set minutes to 0
+                                                minutesLeft = 0
+                                            }
+
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(
+                                                        if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                                            MaterialTheme.colorScheme.surfaceContainerHighest
+                                                        } else {
+                                                            MaterialTheme.colorScheme.primaryContainer
+                                                        }
+                                                    ),
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+
+                                                if (minutesLeft < 45) {
+                                                    Text(text = "Pozostało $minutesLeft min. lekcji")
+                                                } else if (minutesLeft == 0L) {
+                                                    Text(text = "Lekcja się skończyła")
+                                                } else {
+                                                    Text(text = "Pozostało ${minutesLeft - 45} min. przerwy")
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                if (!listitems.isNullOrEmpty() && dzien == day.ordinal) {
-                                    listitems!!.forEach { zastdata2 ->
-                                        if (numerlekcji == zastdata2.numerLekcji) {
-                                            OutlinedCard(
-                                                modifier = Modifier
-                                                    .padding(vertical = 5.dp)
-                                                    .height(65.dp)
-                                                    .fillParentMaxWidth(0.95f),
-                                                shape = MaterialTheme.shapes.medium,
-                                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
-                                            ) {
-                                                Row(
-                                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    if (!listitems.isNullOrEmpty() && dzien == day.ordinal) {
+                                        listitems!!.forEach { zastdata2 ->
+                                            if (numerlekcji == zastdata2.numerLekcji) {
+                                                OutlinedCard(
                                                     modifier = Modifier
-                                                        .align(Alignment.CenterHorizontally)
-                                                        .fillMaxSize()
+                                                        .padding(vertical = 5.dp)
+                                                        .height(65.dp)
+                                                        .fillParentMaxWidth(0.95f),
+                                                    shape = MaterialTheme.shapes.medium,
+                                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
                                                 ) {
-                                                    Column(
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.SpaceEvenly,
                                                         modifier = Modifier
-                                                            .align(Alignment.CenterVertically)
-                                                            .weight(0.43f)
+                                                            .align(Alignment.CenterHorizontally)
+                                                            .fillMaxSize()
                                                     ) {
-                                                        Text(
-                                                            text = "⬆️",
-                                                            textAlign = TextAlign.Center,
-                                                        )
-                                                    }
-                                                    Column(
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        modifier = Modifier
-                                                            .align(Alignment.CenterVertically)
-                                                            .weight(1f)
-                                                    ) {
-                                                        if (zastdata2.klasa.isNotEmpty()) Text(
-                                                            text = zastdata2.klasa,
-                                                            textAlign = TextAlign.Center
-                                                        )
+                                                        Column(
+                                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                                            modifier = Modifier
+                                                                .align(Alignment.CenterVertically)
+                                                                .weight(0.43f)
+                                                        ) {
+                                                            Text(
+                                                                text = "⬆️",
+                                                                textAlign = TextAlign.Center,
+                                                            )
+                                                        }
+                                                        Column(
+                                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                                            modifier = Modifier
+                                                                .align(Alignment.CenterVertically)
+                                                                .weight(1f)
+                                                        ) {
+                                                            if (zastdata2.klasa.isNotEmpty()) Text(
+                                                                text = zastdata2.klasa,
+                                                                textAlign = TextAlign.Center
+                                                            )
 
-                                                        if (zastdata2.zastepca.isNotEmpty()) Text(
-                                                            text = zastdata2.zastepca,
-                                                            textAlign = TextAlign.Center
-                                                        )
+                                                            if (zastdata2.zastepca.isNotEmpty()) Text(
+                                                                text = zastdata2.zastepca,
+                                                                textAlign = TextAlign.Center
+                                                            )
 
-                                                        if (zastdata2.uwagi.isNotEmpty()) Text(
-                                                            text = zastdata2.uwagi,
-                                                            textAlign = TextAlign.Center
-                                                        )
+                                                            if (zastdata2.uwagi.isNotEmpty()) Text(
+                                                                text = zastdata2.uwagi,
+                                                                textAlign = TextAlign.Center
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1663,158 +1680,175 @@ fun PlanScreen(
                             }
                         }
                     }
-                }
 
-                if (showBottomSheet) {
-                    val listdata = GetList(selectedChipOption.intValue, context)
-                    ModalBottomSheet(
-                        onDismissRequest = {
-                            showBottomSheet = false
-                        },
-                        sheetState = sheetState,
-                        modifier = Modifier.statusBarsPadding()
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth(),
+                    if (showBottomSheet) {
+                        val listdata = GetList(selectedChipOption.intValue, context)
+                        ModalBottomSheet(
+                            onDismissRequest = {
+                                showBottomSheet = false
+                            },
+                            sheetState = sheetState,
+                            modifier = Modifier.statusBarsPadding()
                         ) {
-                            Text(
-                                text = "Tryb online",
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                            Switch(
-                                checked = online,
-                                onCheckedChange = {
-                                    switchvibrate(context)
-                                    online = it
-                                }
-                            )
-                        }
-
-                        val focusManager = LocalFocusManager.current
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            runBlocking {
-                                planstamptext =
-                                    accessdatastoremanager.getPlanTimestamp.first().toString()
-                            }
-                            if (planstamptext != "") {
-                                Text(text = "⬇️ Offline: $planstamptext")
-                            } else {
-                                Text(text = "Brak pobranego planu lekcji")
-                            }
-                        }
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(horizontal = 20.dp),
-                            modifier = Modifier
-                                .align(Alignment.CenterHorizontally)
-                        ) {
-                            items(options) { option ->
-                                FilterChip(
-                                    selected = when (selectedChipOption.intValue) {
-                                        0 -> option == options[0]
-                                        1 -> option == options[1]
-                                        2 -> option == options[2]
-                                        3 -> option == options[3]
-                                        else -> {
-                                            false
-                                        }
-                                    },
-                                    onClick = {
-                                        selectedChipOption.intValue = when (option) {
-                                            options[0] -> 0
-                                            options[1] -> 1
-                                            options[2] -> 2
-                                            options[3] -> 3
-                                            else -> {
-                                                0
-                                            }
-                                        }
-                                    },
-                                    label = { Text(option) },
-                                    leadingIcon = {
-                                        val imageVector = when (option) {
-                                            options[0] -> Icons.Filled.Clear
-                                            options[1] -> Icons.Filled.Star
-                                            options[2] -> Icons.Rounded.CorporateFare
-                                            options[3] -> Icons.Filled.AccountCircle
-                                            else -> null
-                                        }
-                                        if (imageVector != null) {
-                                            Icon(
-                                                imageVector = imageVector,
-                                                contentDescription = "Option"
-                                            )
-                                        }
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text(
+                                    text = "Tryb online",
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp)
+                                        .align(Alignment.CenterVertically)
+                                )
+                                Switch(
+                                    checked = online,
+                                    onCheckedChange = {
+                                        switchvibrate(context)
+                                        online = it
                                     }
                                 )
                             }
-                        }
 
-
-                        var searchQuery by remember { mutableStateOf("") }
-                        val filteredData = listdata.filter {
-                            it?.imieinazwisko?.contains(
-                                searchQuery,
-                                ignoreCase = true
-                            ) == true
-                        }
-
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = {
-                                searchQuery = it
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .align(Alignment.CenterHorizontally)
-                                .padding(bottom = 10.dp),
-                            label = { Text(text = "Wyszukaj") },
-                            keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Search
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onSearch = {
-                                    focusManager.clearFocus()
+                            val focusManager = LocalFocusManager.current
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                runBlocking {
+                                    planstamptext =
+                                        accessdatastoremanager.getPlanTimestamp.first().toString()
                                 }
-                            ),
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { searchQuery = "" }) {
-                                        Icon(
-                                            Icons.Filled.Close,
-                                            contentDescription = "Wyczyść wyszukiwanie"
-                                        )
-                                    }
+                                if (planstamptext != "") {
+                                    Text(text = "⬇️ Offline: $planstamptext")
+                                } else {
+                                    Text(text = "Brak pobranego planu lekcji")
                                 }
-                            },
-                            shape = MaterialTheme.shapes.medium,
-                            enabled = true
-                        )
+                            }
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(horizontal = 20.dp),
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                            ) {
+                                items(options) { option ->
+                                    FilterChip(
+                                        selected = when (selectedChipOption.intValue) {
+                                            0 -> option == options[0]
+                                            1 -> option == options[1]
+                                            2 -> option == options[2]
+                                            3 -> option == options[3]
+                                            else -> {
+                                                false
+                                            }
+                                        },
+                                        onClick = {
+                                            selectedChipOption.intValue = when (option) {
+                                                options[0] -> 0
+                                                options[1] -> 1
+                                                options[2] -> 2
+                                                options[3] -> 3
+                                                else -> {
+                                                    0
+                                                }
+                                            }
+                                        },
+                                        label = { Text(option) },
+                                        leadingIcon = {
+                                            val imageVector = when (option) {
+                                                options[0] -> Icons.Filled.Clear
+                                                options[1] -> Icons.Filled.Star
+                                                options[2] -> Icons.Rounded.CorporateFare
+                                                options[3] -> Icons.Filled.AccountCircle
+                                                else -> null
+                                            }
+                                            if (imageVector != null) {
+                                                Icon(
+                                                    imageVector = imageVector,
+                                                    contentDescription = "Option"
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
 
-                        LazyColumn(
-                            Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            items(filteredData) { data ->
-                                Button(
-                                    shape = MaterialTheme.shapes.medium,
-                                    modifier = Modifier
-                                        .fillParentMaxWidth(0.9f),
-                                    onClick = {
-                                        selectedData = data?.imieinazwisko
-                                        selectedData2 = data?.htmlvalue
+
+                            var searchQuery by remember { mutableStateOf("") }
+                            val filteredData = listdata.filter {
+                                it?.imieinazwisko?.contains(
+                                    searchQuery,
+                                    ignoreCase = true
+                                ) == true
+                            }
+
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = {
+                                    searchQuery = it
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(bottom = 10.dp),
+                                label = { Text(text = "Wyszukaj") },
+                                keyboardOptions = KeyboardOptions(
+                                    imeAction = ImeAction.Search
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSearch = {
+                                        focusManager.clearFocus()
                                     }
-                                ) {
-                                    data?.imieinazwisko?.let { it1 -> Text(it1) }
+                                ),
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { searchQuery = "" }) {
+                                            Icon(
+                                                Icons.Filled.Close,
+                                                contentDescription = "Wyczyść wyszukiwanie"
+                                            )
+                                        }
+                                    }
+                                },
+                                shape = MaterialTheme.shapes.medium,
+                                enabled = true
+                            )
+
+                            LazyColumn(
+                                Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                items(filteredData) { data ->
+                                    Button(
+                                        shape = MaterialTheme.shapes.medium,
+                                        modifier = Modifier
+                                            .fillParentMaxWidth(0.9f),
+                                        onClick = {
+                                            selectedData = data?.imieinazwisko
+                                            selectedData2 = data?.htmlvalue
+                                        }
+                                    ) {
+                                        data?.imieinazwisko?.let { it1 -> Text(it1) }
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+            } else {
+                online = false
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Brak pobranego planu lekcji")
+                    Button(
+                        onClick = {
+                            onlysubstitute = false
+                            startRefresh()
+                        }
+                    ) {
+                        Text("Spróbuj pobrać plan")
                     }
                 }
             }

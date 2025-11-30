@@ -1061,6 +1061,20 @@ fun NavGraph(
                 item {
                     Column {
                         Text("Debug | Zarządzanie zapisanymi planami")
+                        Button(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                scope.launch {
+                                    datastoremanager.savePlanTimestamp("")
+                                }
+                                Log.d(
+                                    "SettingsActivity - Debug",
+                                    "Ustawiono pustą datę Timestamp"
+                                )
+                            }
+                        ) {
+                            Text("Ustaw pustą datę")
+                        }
                         groupedlist.entries.reversed().forEach { (groupName, keys) ->
                             var expanded2 by remember { mutableStateOf(false) }
                             val rotationState by animateFloatAsState(

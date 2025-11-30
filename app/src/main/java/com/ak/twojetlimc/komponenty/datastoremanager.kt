@@ -103,7 +103,9 @@ class Datastoremanager(private val context: Context) {
     }
 
     val getPlanTimestamp: Flow<String?> =
-        context.dataStore.data.map { preferences -> preferences[PLAN_DATESTAMP] ?: "" }
+        context.dataStore.data.map { preferences ->
+            preferences[PLAN_DATESTAMP] ?: ""
+        }
 
     suspend fun savePlanTimestamp(value: String) {
         context.dataStore.edit { preferences -> preferences[PLAN_DATESTAMP] = value }
@@ -176,9 +178,13 @@ class Datastoremanager(private val context: Context) {
         date: String,
         html: String,
         version: Int
-    ): Schedule {
+    ): Schedule? {
         val wholeschedule = getnewSchedule(context, date, version)
-        return wholeschedule!!.first { it.html == html }
+        if (wholeschedule!!.first { it.html == html } != null) {
+            return wholeschedule.first { it.html == html }
+        } else {
+            return null
+        }
     }
 
 
