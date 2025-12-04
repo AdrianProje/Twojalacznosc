@@ -1001,7 +1001,7 @@ fun PlanScreen(
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var showDropdownMenu by remember { mutableStateOf(false) }
-    var online by remember { mutableStateOf(false) }
+    var online by remember { mutableStateOf(true) }
     var onlysubstitute by remember { mutableStateOf(false) }
     var isrefresing by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -1011,11 +1011,13 @@ fun PlanScreen(
     var selectedData by rememberSaveable { mutableStateOf<String?>("") }
     var selectedData2 by rememberSaveable { mutableStateOf<String?>("") }
     var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
+    val options = stringArrayResource(R.array.chip_values)
+    val daynames = stringArrayResource(R.array.days)
 
     var refreshTrigger by remember { mutableIntStateOf(0) }
-    var refreshTrigger2 by remember { mutableIntStateOf(0) }
     val selectedChipOption = remember { mutableIntStateOf(0) }
     var preferedgroup by remember { mutableIntStateOf(0) }
+    var refreshTrigger2 by remember { mutableIntStateOf(0) }
     var currenthour by remember { mutableIntStateOf(getcurrenthour()) }
 
     var buttonPosition by remember { mutableStateOf<Offset?>(null) }
@@ -1023,6 +1025,7 @@ fun PlanScreen(
 
     var listitems by remember { mutableStateOf<List<Zastepstwo>?>(null) }
 
+    val pattern = longArrayOf(0, 50)
 
     var day by remember {
         mutableStateOf(
@@ -1034,6 +1037,10 @@ fun PlanScreen(
         )
     }
 
+    LaunchedEffect(true, refreshTrigger) {
+        online = accessdatastoremanager.getOnlineMode.first() == true
+    } //Czy online  przy pierwszym uruchomieniu
+
     LaunchedEffect(true) {
         accessdatastoremanager.getDefaultPlan.collect { defultplan ->
             selectedChipOption.intValue = defultplan ?: 0
@@ -1044,20 +1051,94 @@ fun PlanScreen(
         accessdatastoremanager.getPreferedGroup.collect { pref ->
             preferedgroup = pref ?: 0
         }
+    }//Preferowana grupa na planie lekcji
+
+    LaunchedEffect(true) {
+        while (true) {
+            currenthour = getcurrenthour()
+            delay(60000)
+        }
+    } //Aktualizacja aktualnej godziny lekcyjnej do scrolowania
+
+    LaunchedEffect(key1 = currenthour) {
+        try {
+            if (day == LocalDate.now().dayOfWeek) {
+                listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
+            }
+        } catch (e: Exception) {
+            Log.d("PlanScreen", "Błąd animacji $e")
+        }
+    } //Scrollowanie na karcie planu lekcji
+
+    LaunchedEffect(refreshTrigger2) {
+        sheetState.hide()
+        showBottomSheet = false
+    } //Schowaj BottomSheet
+
+    when (day.value) {
+        1 -> daytext = daynames[0]
+        2 -> daytext = daynames[1]
+        3 -> daytext = daynames[2]
+        4 -> daytext = daynames[3]
+        5 -> daytext = daynames[4]
     }
 
-    LaunchedEffect(true, refreshTrigger) {
-        Log.d("PlanScreen", connectivityManager!!.activeNetwork.toString())
-        if (connectivityManager.activeNetwork == null) {
-            online = false
-        } else {
-            accessdatastoremanager.getOnlineMode.collect { onlinemode ->
-                online = onlinemode == true
+    val density = LocalDensity.current
+    val offsetX = with(density) { buttonPosition?.x?.toDp() ?: 0.dp }
+    val offsetY = with(density) { buttonPosition?.y?.toDp() ?: 0.dp }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    //lista opcji do wybrania po otworzeniu BottomAppBar
+
+    val startRefresh: () -> Unit = {
+        isrefresing = true
+        coroutineScope.launch {
+            Log.d("PLANLOADING", "Refresh")
+            if (!isLoading) {
+                try {
+                    if (onlysubstitute) {
+                        val workrequest = downlodonlyzas(context)
+                        WorkManager.getInstance(context)
+                            .getWorkInfoByIdLiveData(workrequest.id)
+                            .observe(
+                                lifecycleOwner, Observer { status ->
+                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                        isrefresing = false
+                                        refreshTrigger++
+                                        Toast.makeText(
+                                            context,
+                                            "Odświeżono",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        Log.d("PLANLOADING", "$refreshTrigger")
+                                    }
+                                })
+                    } else {
+                        Log.d("PLANLOADING", "else")
+                        val workrequest = downloadplanandzas(context)
+                        WorkManager.getInstance(context)
+                            .getWorkInfoByIdLiveData(workrequest.id)
+                            .observe(
+                                lifecycleOwner, Observer { status ->
+                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
+                                        isrefresing = false
+                                        refreshTrigger++
+                                        Toast.makeText(
+                                            context,
+                                            "Odświeżono",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        Log.d("PLANLOADING", "$refreshTrigger")
+                                    }
+                                })
+                    }
+                } catch (e: Exception) {
+                    Log.d("PLANLOADING", "$e")
+                }
             }
         }
-
-    } //Czy online  przy pierwszym uruchomieniu
-
+    }
 
     suspend fun loadscheduledata(): Schedule? {
         val datastore = Datastoremanager(context)
@@ -1068,6 +1149,7 @@ fun PlanScreen(
             val scheduleTimestamp = datastore.getPlanTimestamp.first()
             val favSchedule = datastore.getFavSchedule.first()
             onlysubstitute = datastore.getUserRefresh.first() == true
+
 
             if (selectedData2!!.isNotEmpty()) {
                 klasa2 = selectedData!!.substring(0, 3)
@@ -1128,11 +1210,11 @@ fun PlanScreen(
                         }
                     }
                 } else {
-                    online = false
                     Log.d(
                         "PlanScreen",
                         "loadscheduledata offline (selecteddata not null)"
                     )
+                    online = false
                     scheduleFromLoad = datastore.getnewSchedule(
                         context,
                         scheduleTimestamp.toString(),
@@ -1145,8 +1227,6 @@ fun PlanScreen(
             Log.e("PlanScreen", "Error loading schedule: ${e.message}")
             scheduleFromLoad = null
         }
-
-
 
         Log.d("PlanScreen", "Result: $scheduleFromLoad")
         return scheduleFromLoad
@@ -1191,121 +1271,17 @@ fun PlanScreen(
         return substitutelist
     }
 
-    val pattern = longArrayOf(0, 50)
-
-    val options = stringArrayResource(R.array.chip_values)
-
-    val daynames = stringArrayResource(R.array.days)
-
-    LaunchedEffect(key1 = currenthour) {
-        try {
-            if (day == LocalDate.now().dayOfWeek) {
-                listState.animateScrollToItem(index = currenthour, scrollOffset = -600)
-            }
-        } catch (e: Exception) {
-            Log.d("PlanScreen", "Błąd animacji $e")
-        }
-    } //Scrollowanie na karcie planu lekcji
-
-    LaunchedEffect(refreshTrigger2) {
-        sheetState.hide()
-        showBottomSheet = false
-    } //Schowaj BottomSheet
-
-
-    when (day.value) {
-        1 -> daytext = daynames[0]
-        2 -> daytext = daynames[1]
-        3 -> daytext = daynames[2]
-        4 -> daytext = daynames[3]
-        5 -> daytext = daynames[4]
-    }
-
-
-    val density = LocalDensity.current
-    val offsetX = with(density) { buttonPosition?.x?.toDp() ?: 0.dp }
-    val offsetY = with(density) { buttonPosition?.y?.toDp() ?: 0.dp }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    //lista opcji do wybrania po otworzeniu BottomAppBar
-
-    LaunchedEffect(selectedData, refreshTrigger, online) {
+    LaunchedEffect(selectedData, refreshTrigger, online, day) {
         refreshTrigger2++
         isLoading = true
         isrefresing = true
         coroutineScope.launch(Dispatchers.IO) {
             scheduleData = loadscheduledata()
-            isLoading = false
-            isrefresing = false
-        }
-    } //Odświerzanie planu po zmienieniu jednej z zmiennej
-
-    LaunchedEffect(selectedData, refreshTrigger, day) {
-        isLoading = true
-        isrefresing = true
-        coroutineScope.launch(Dispatchers.IO) {
             listitems = loadsubstitue()
             isLoading = false
             isrefresing = false
         }
-    } //Odświerzanie zastępstw po zmienieniu jednej z zmiennej
-
-    LaunchedEffect(true) {
-        while (true) {
-            currenthour = getcurrenthour()
-            delay(60000)
-        }
-    } //Aktualizacja aktualnej godziny lekcyjnej do scrolowania
-
-    val startRefresh: () -> Unit = {
-        isrefresing = true
-        coroutineScope.launch {
-            Log.d("PLANLOADING", "Refresh")
-            if (!isLoading) {
-                try {
-                    if (onlysubstitute) {
-                        val workrequest = downlodonlyzas(context)
-                        WorkManager.getInstance(context)
-                            .getWorkInfoByIdLiveData(workrequest.id)
-                            .observe(
-                                lifecycleOwner, Observer { status ->
-                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
-                                        isrefresing = false
-                                        refreshTrigger++
-                                        Toast.makeText(
-                                            context,
-                                            "Odświeżono",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        Log.d("PLANLOADING", "$refreshTrigger")
-                                    }
-                                })
-                    } else {
-                        Log.d("PLANLOADING", "else")
-                        val workrequest = downloadplanandzas(context)
-                        WorkManager.getInstance(context)
-                            .getWorkInfoByIdLiveData(workrequest.id)
-                            .observe(
-                                lifecycleOwner, Observer { status ->
-                                    if (status!!.state == WorkInfo.State.SUCCEEDED) {
-                                        isrefresing = false
-                                        refreshTrigger++
-                                        Toast.makeText(
-                                            context,
-                                            "Odświeżono",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        Log.d("PLANLOADING", "$refreshTrigger")
-                                    }
-                                })
-                    }
-                } catch (e: Exception) {
-                    Log.d("PLANLOADING", "$e")
-                }
-            }
-        }
-    }
+    } //Odświerzanie planu po zmienieniu jednej z zmiennej
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -1579,44 +1555,55 @@ fun PlanScreen(
                                                 Spacer(modifier = Modifier.width(2.dp))
                                             }
                                         }
-                                        if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                            val endingtime = LocalTime.parse(
-                                                czas.split("-")[1].filter { !it.isWhitespace() },
-                                                DateTimeFormatter.ofPattern("H:mm")
-                                            )
-                                            var minutesLeft by remember { mutableLongStateOf(0L) }
 
-                                            LaunchedEffect(key1 = endingtime) {
-                                                while (LocalTime.now().isBefore(endingtime)) {
-                                                    minutesLeft = ChronoUnit.MINUTES.between(
-                                                        LocalTime.now(),
-                                                        endingtime
-                                                    ) + 1
-                                                    delay(1000) // Wait for 1 second
-                                                }
-                                                // Once the lesson is over, you might want to set minutes to 0
-                                                minutesLeft = 0
+                                    }
+
+                                    if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
+                                        val endingtime = LocalTime.parse(
+                                            czas.split("-")[1].filter { !it.isWhitespace() },
+                                            DateTimeFormatter.ofPattern("H:mm")
+                                        )
+                                        var minutesLeft by remember { mutableLongStateOf(0L) }
+
+                                        LaunchedEffect(key1 = endingtime) {
+                                            while (LocalTime.now().isBefore(endingtime)) {
+                                                minutesLeft = ChronoUnit.MINUTES.between(
+                                                    LocalTime.now(),
+                                                    endingtime
+                                                ) + 1
+                                                delay(1000) // Wait for 1 second
                                             }
+                                            // Once the lesson is over, you might want to set minutes to 0
+                                            minutesLeft = 0
+                                        }
 
+                                        OutlinedCard(
+                                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+                                            border = BorderStroke(1.dp, Color.DarkGray),
+                                            modifier = Modifier
+                                                .fillParentMaxWidth(0.95f)
+                                                .wrapContentHeight()
+                                        ) {
                                             Row(
+                                                horizontalArrangement = Arrangement.Center,
                                                 modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .background(
-                                                        if (numerlekcji == currenthour && day == LocalDate.now().dayOfWeek) {
-                                                            MaterialTheme.colorScheme.surfaceContainerHighest
-                                                        } else {
-                                                            MaterialTheme.colorScheme.primaryContainer
-                                                        }
-                                                    ),
-                                                horizontalArrangement = Arrangement.Center
+                                                    .fillMaxSize()
                                             ) {
-
                                                 if (minutesLeft < 45) {
-                                                    Text(text = "Pozostało $minutesLeft min. lekcji")
+                                                    Text(
+                                                        text = "Pozostało $minutesLeft min. lekcji",
+                                                        textAlign = TextAlign.Center
+                                                    )
                                                 } else if (minutesLeft == 0L) {
-                                                    Text(text = "Lekcja się skończyła")
+                                                    Text(
+                                                        text = "Lekcja się skończyła",
+                                                        textAlign = TextAlign.Center
+                                                    )
                                                 } else {
-                                                    Text(text = "Pozostało ${minutesLeft - 45} min. przerwy")
+                                                    Text(
+                                                        text = "Pozostało ${minutesLeft - 45} min. przerwy",
+                                                        textAlign = TextAlign.Center
+                                                    )
                                                 }
                                             }
                                         }
@@ -1835,7 +1822,6 @@ fun PlanScreen(
                     }
                 }
             } else {
-                online = false
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -1844,6 +1830,7 @@ fun PlanScreen(
                     Text(text = "Brak pobranego planu lekcji")
                     Button(
                         onClick = {
+                            online = false
                             onlysubstitute = false
                             startRefresh()
                         }

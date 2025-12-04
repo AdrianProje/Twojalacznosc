@@ -9,4 +9,3 @@ class ThirdBrodcastReciver : android.content.BroadcastReceiver() {
         downloadonlyschedule(context)
     }
 }
-

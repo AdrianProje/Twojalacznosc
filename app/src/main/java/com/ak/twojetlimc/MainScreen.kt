@@ -157,6 +157,31 @@ class MainScreen : AppCompatActivity() {
                     Log.d("Main_Screen", "Zditmdata $zditmdata")
                 }
 
+                LaunchedEffect(key1 = Unit) {
+                    Log.d("Main_Screen", "Wejscie do launchedeffect")
+                    try {
+                        val data = datastoremanager.getnewchosenClass(
+                            contextu,
+                            datastoremanager.getPlanTimestamp.first().toString(),
+                            "o1",
+                            1
+                        )
+                        if (data == null
+                        ) {
+                            Log.d("Main_Screen", "Pobieranie danych")
+                            downloadplanandzas(contextu)
+                        } else {
+                            Log.d("Main_Screen", data.toString())
+                            Log.d("Main_Screen", "Dane poprawnie odczytane")
+                        }
+                    } catch (
+                        e: Exception
+                    ) {
+                        Log.d("Main_Screen", "Error: $e")
+                        downloadplanandzas(contextu)
+                    }
+                }
+
                 val destination = when (intent.getStringExtra("destination")) {
                     "plan" -> {
                         "plan"

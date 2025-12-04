@@ -112,7 +112,7 @@ class Datastoremanager(private val context: Context) {
     }
 
     val getOnlineMode: Flow<Boolean?> =
-        context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] != false }
+        context.dataStore.data.map { preferences -> preferences[ONLINE_MODE] == true }
 
     suspend fun saveOnlineMode(value: Boolean) {
         context.dataStore.edit { preferences -> preferences[ONLINE_MODE] = value }
@@ -192,6 +192,7 @@ class Datastoremanager(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences.remove(stringPreferencesKey(key))
         }
+        Log.d("datastoremanager", "deleted $key")
     }
 
     suspend fun compareTwoNewestSchedules(): Boolean? {

@@ -1,3 +1,10 @@
+--- 0.54 Bata ---
+- Dodano feature automatycznej próby pobierania planu przy starcie aplikacji kiedy jest on uszkodzony lub pusty
+- Naprawiono błędne pokazywane się planu w trybie offline
+- Czas pozostałej przerwy/lekcji jest pokazywany pod kartą aktualnej lekcji
+- Aktualizacja modułów
+- Wsparcie dla Androida 16 QPR2 (SDK 36.1)
+
 --- 0.53.4.4 Beta ---
 - W przypadku braku planu offline, można pobrać go za pomocą przycisku na karcie planu lekcji
 
@@ -7,7 +14,7 @@ Planowane naprawy oraz dodatkowe funkcje:
 - Bezpośrednie przechodzenie między planami przez linki
 - Naprawa problemów z niepełnością niektórych planów nauczycieli i sal
 - Naprawa działania widgetu
-- Naprawa automatycznego pobierania planu gdy jest pusty
+- Naprawa automatycznego pobierania planu gdy jest pusty ✅
 Dziękuję za feedback, tworzenie tej aplikacji przez 4 lata był niesamowitym procesem podczas którego
 sporo nauczyłem się na temat programowania na platformach mobilnych
 
