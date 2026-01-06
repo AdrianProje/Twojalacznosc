@@ -58,14 +58,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.glance.appwidget.updateAll
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.Permissionsinfo
 import com.ak.twojetlimc.komponenty.createalarm
@@ -367,7 +365,6 @@ class OBBE : AppCompatActivity() {
                                         serviceScope.launch {
                                             accessdatastoremanager.saveFavSchedule(checkedoption)
                                             accessdatastoremanager.saveFavScheduleOnOff(true)
-                                            WidgetDumbUI().updateAll(contextu)
                                         }
                                     }
                                     navController.navigate("OBBE_Permissions")

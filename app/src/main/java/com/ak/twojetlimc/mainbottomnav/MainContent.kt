@@ -11,7 +11,6 @@ import android.os.Vibrator
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -37,6 +36,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,7 +70,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.CorporateFare
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -124,7 +124,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat.getSystemService
@@ -156,6 +158,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.DayOfWeek
@@ -165,18 +168,195 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
-//-------------------------------Pomoc-------------------------------------------
+//------------------------------------Główna-----------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpScreen(padding: PaddingValues) {
+fun HomeScreen(
+    padding: PaddingValues,
+    zditmdata: List<Int>,
+    navController: NavHostController,
+    datastoremanager: Datastoremanager
+) {
     val context = LocalContext.current
+
+
+    var showdialog by remember { mutableStateOf(false) }
+    var showdialog2 by remember { mutableStateOf(false) }
+    var showdialog3 by remember { mutableStateOf(false) }
+    var isloadingzditm by remember { mutableStateOf(false) }
+
+    var selectedKey by remember { mutableIntStateOf(0) }
+    var refreshzditmcount by remember { mutableIntStateOf(0) }
+
+    val listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
+
+
+    val infiniteTransition = rememberInfiniteTransition(label = "infinite rotation")
+    val rotationStateloading by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = if (isloadingzditm) 360f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ), label = "rotation"
+    )
+
+    val listState = rememberLazyListState()
+
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000)
+            selectedKey = (selectedKey + 1) % 4
+            listState.animateScrollToItem(index = selectedKey)
+        }
+    } //Przewijanie losowych tekstów na pasku
+
+    LaunchedEffect(Unit, refreshzditmcount, zditmdata) {
+        while (true) {
+            isloadingzditm = true
+            val job = launch(Dispatchers.IO) {
+                try {
+                    val temporarylist = mutableListOf<Tablicaodjazow>()
+                    zditmdata.forEach { number ->
+                        temporarylist.add(getthedeparturesdata(number))
+                    }
+                    listofzditm.clear()
+                    listofzditm.addAll(temporarylist)
+                } catch (e: Exception) {
+                    println("Error fetching data: ${e.message}")
+                }
+            }
+            job.join()
+            isloadingzditm = false
+            delay(10000)
+        }
+    } //Pobieranie danych z ZDiTM
+
+    if (showdialog) {
+        Dialog(
+            onDismissRequest = { showdialog = false }) {
+            Card(
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                border = BorderStroke(1.dp, Color.Black),
+                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(10.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .weight(0.8f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Ta sekcja jest możliwa dzięki ZDiTM Szczecin\n",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(text = "Zostało wykorzystane poniższe API:")
+                    WebsiteLink(
+                        "API - tablice odjazdów",
+                        "https://www.zditm.szczecin.pl/pl/zditm/dla-programistow/api-tablice-odjazdow"
+                    )
+
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Button(
+                        onClick = { showdialog = false },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Super!")
+                    }
+                }
+            }
+        }
+    }
+
+    if (showdialog2) {
+        Dialog(
+            onDismissRequest = { showdialog2 = false }) {
+            Card(
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                border = BorderStroke(1.dp, Color.Black),
+                elevation = CardDefaults.elevatedCardElevation(10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 300.dp, max = 400.dp)
+                    .padding(10.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                var texfieldvalue = rememberSaveable { mutableStateOf("") }
+                Column(
+                    modifier = Modifier
+                        .padding(15.dp)
+                        .weight(0.8f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Dodaj przystanek\n",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(text = "Aby dodać przystanek do tego ekranu wpisz kod przystanku poniżej")
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextField(
+                        value = texfieldvalue.value,
+                        onValueChange = { if (it.length <= 5) texfieldvalue.value = it },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        )
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.2f),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Button(
+                        onClick = { showdialog2 = false },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Anuluj")
+                    }
+                    Button(
+                        enabled = if (texfieldvalue.value.length == 5) true else false,
+                        onClick = {
+                            val intent = Intent(context, ZDITMlinkhandeler::class.java)
+                            intent.putExtra("zditmvalue", texfieldvalue.value)
+
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Potwierdź")
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
                 windowInsets = WindowInsets.safeDrawing,
-                title = { Text(stringResource(id = R.string.MAIN_Pomoc)) },
+                title = { Text(stringResource(id = R.string.MAIN_Dom)) },
                 actions = {
                     IconButton(onClick = {
                         context.startActivity(Intent(context, SettingsActivity::class.java))
@@ -194,23 +374,394 @@ fun HelpScreen(padding: PaddingValues) {
             modifier = Modifier.padding(horizontal = 10.dp),
             contentPadding = PaddingValues(
                 top = paddingvalues.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding() // Combine if necessary
+                bottom = padding.calculateBottomPadding(),
+                start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                end = padding.calculateEndPadding(LayoutDirection.Ltr)// Combine if necessary
             )
         ) {
+            item {
+                HorizontalDivider(
+                    color = Color.Black,
+                    modifier = Modifier
+                        .height(1.dp)
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+            item {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp),
+                    state = listState,
+                    contentPadding = PaddingValues(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val assetManager = context.assets
+                    val inputStream = assetManager.open("Tipsu")
+                    val tips =
+                        BufferedReader(InputStreamReader(inputStream)).readLines()
+                    inputStream.close()
+
+
+                    items(5, key = { it }) {
+                        val tip by remember { mutableStateOf(tips.random()) }
+                        val scrollstate = rememberScrollState(0)
+                        LaunchedEffect(tip) {
+                            if (scrollstate.maxValue > 0) {
+                                while (true) {
+                                    scrollstate.animateScrollTo(
+                                        value = scrollstate.maxValue,
+                                        animationSpec = tween(
+                                            durationMillis = 10000,
+                                            easing = LinearEasing
+                                        )
+                                    )
+                                    scrollstate.scrollTo(0)
+                                }
+                            }
+                        }
+
+                        OutlinedCard(
+                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                            border = BorderStroke(1.dp, Color.DarkGray),
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .wrapContentHeight()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(vertical = 10.dp)
+                                    .fillMaxWidth(1f)
+                                    .fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = tip,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterHorizontally)
+                                        .basicMarquee(),
+                                    overflow = TextOverflow.Clip
+                                )
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            if (SDK_INT <= Build.VERSION_CODES.S_V2) {
+                item {
+                    OutlinedCard(
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        border = BorderStroke(1.dp, Color.Black),
+                        elevation = CardDefaults.elevatedCardElevation(10.dp),
+                        modifier = Modifier
+                            .wrapContentHeight()
+                    ) {
+                        Column(modifier = Modifier.padding(10.dp)) {
+                            Text(
+                                text = "Ta wersja Androida jest niebezpieczna!",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(text = "Android ${Build.VERSION.RELEASE} nie jest już wspierany przez Google i AOSP")
+                        }
+                    }
+                }
+            }
+
             item {
                 FlowRow(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     maxItemsInEachRow = 2,
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
                 ) {
-                    HorizontalDivider(
-                        color = Color.Black,
-                        modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth()
-                    )
+
+                    OutlinedCard(
+                        onClick = { navController.navigate("whatsnew") },
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary),
+                        border = BorderStroke(1.dp, Color.Black)
+                    ) {
+                        Text(
+                            text = "Co nowego? \n Zobacz co się zmieniło w aplikacji",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .fillMaxSize()
+                        )
+                    }
+
+                    Card(
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        border = BorderStroke(1.dp, Color.Black)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(10.dp)
+                        ) {
+                            Text(
+                                "ZDiTM Szczecin",
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    showdialog2 = true
+                                },
+                                modifier = Modifier
+                                    .weight(0.2f)
+                                    .size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Info"
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    showdialog = true
+                                },
+                                modifier = Modifier
+                                    .weight(0.2f)
+                                    .size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Info,
+                                    contentDescription = "Info"
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    ++refreshzditmcount
+                                },
+                                modifier = Modifier
+                                    .weight(0.2f)
+                                    .size(20.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Refresh,
+                                    contentDescription = "Refresh",
+                                    modifier = Modifier.rotate(rotationStateloading)
+                                )
+                            }
+                        }
+
+
+                        for (item in listofzditm) {
+                            if (!item.departures.isEmpty()) {
+                                var expanded by remember { mutableStateOf(false) }
+                                val rotationState by animateFloatAsState(
+                                    targetValue = if (expanded) 180f else 0f,
+                                    label = "rotation"
+                                )
+
+                                val realtime = item.departures.first().time_real
+
+                                val odjazd = when (realtime) {
+                                    0 -> {
+                                        "Na przystanku"
+                                    }
+
+                                    null -> {
+                                        item.departures.first().time_scheduled.toString()
+                                    }
+
+                                    else -> {
+                                        "Za: $realtime min."
+                                    }
+                                }
+
+
+                                Row(
+                                    modifier = Modifier
+                                        .clickable { expanded = !expanded }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                        .fillMaxHeight()
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .weight(1f)
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "(${item.stop_number}) ${item.stop_name}",
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .basicMarquee(spacing = MarqueeSpacing(10.dp))
+                                                    .weight(1f)
+                                            )
+                                            Text(
+                                                "| $odjazd",
+                                                modifier = Modifier
+                                                    .padding(horizontal = 5.dp)
+                                                    .basicMarquee(spacing = MarqueeSpacing(10.dp))
+                                                    .weight(0.5f),
+                                                textAlign = TextAlign.Right
+                                            )
+                                        }
+
+                                        Text(
+                                            text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction})",
+                                            modifier = Modifier.basicMarquee(
+                                                spacing = MarqueeSpacing(
+                                                    10.dp
+                                                )
+                                            )
+                                        )
+                                        if (item.message != null) {
+                                            Text(
+                                                text = item.message,
+                                                modifier = Modifier.basicMarquee()
+                                            )
+                                        }
+                                    }
+
+                                    IconButton(
+                                        onClick = { expanded = !expanded }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            contentDescription = "Rozwiń/Zwiń",
+                                            modifier = Modifier.rotate(rotationState)
+                                        )
+                                    }
+                                }
+
+                                AnimatedVisibility(visible = expanded) {
+                                    Spacer(Modifier.weight(1f))
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        item.departures.subList(
+                                            1,
+                                            item.departures.size.coerceAtMost(5)
+                                        )
+                                            .forEach { departure ->
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(
+                                                        text = departure.line_number.toString(),
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .weight(1f)
+                                                    )
+                                                    Text(
+                                                        text = departure.direction.toString(),
+                                                        textAlign = TextAlign.Center,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .weight(1f)
+                                                            .basicMarquee()
+                                                    )
+                                                    val timetext = when (departure.time_real) {
+                                                        0 -> {
+                                                            "Na przystanku"
+                                                        }
+
+                                                        null -> {
+                                                            "${departure.time_scheduled}"
+                                                        }
+
+                                                        else -> {
+                                                            "${departure.time_real} min."
+                                                        }
+                                                    }
+                                                    Text(
+                                                        text = timetext,
+                                                        textAlign = TextAlign.Center,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .weight(1f)
+                                                    )
+                                                }
+                                            }
+                                        Spacer(Modifier.weight(1f))
+                                        val openAlertDialog =
+                                            rememberSaveable { mutableStateOf(false) }
+                                        Button(
+                                            onClick = {
+                                                showdialog3 = true
+                                            },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(text = "Usuń przystanek ${item.stop_number}")
+                                        }
+                                        if (showdialog3) {
+                                            Dialog(
+                                                onDismissRequest = { showdialog3 = false }) {
+                                                Card(
+                                                    colors = CardDefaults.outlinedCardColors(
+                                                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                                    ),
+                                                    border = BorderStroke(1.dp, Color.Black),
+                                                    elevation = CardDefaults.elevatedCardElevation(
+                                                        10.dp
+                                                    ),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .heightIn(min = 300.dp, max = 400.dp)
+                                                        .padding(10.dp),
+                                                    shape = MaterialTheme.shapes.medium
+                                                ) {
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .padding(15.dp)
+                                                            .weight(0.8f),
+                                                        horizontalAlignment = Alignment.CenterHorizontally
+                                                    ) {
+                                                        Text(
+                                                            text = "Czy chcesz usunąć przystanek: ${item.stop_number} ?\n",
+                                                            textAlign = TextAlign.Center
+                                                        )
+                                                        Text(text = "Nie będzie można tej akcji cofnąć\nZmiany będą widoczne po restarcie aplikacji")
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .weight(0.2f),
+                                                        horizontalArrangement = Arrangement.Center,
+                                                    ) {
+                                                        Button(
+                                                            onClick = { showdialog3 = false },
+                                                            modifier = Modifier.padding(8.dp),
+                                                        ) {
+                                                            Text("Anuluj")
+                                                        }
+                                                        Button(
+                                                            onClick = {
+                                                                runBlocking {
+                                                                    datastoremanager.deleteZditmStop(
+                                                                        item.stop_number.toInt()
+                                                                    )
+                                                                    showdialog3 = false
+                                                                    refreshzditmcount++
+                                                                    Toast.makeText(
+                                                                        context,
+                                                                        "Usunięto przystanek - ${item.stop_number}, uruchom ponownie aplikacje...",
+                                                                        Toast.LENGTH_SHORT
+                                                                    ).show()
+                                                                }
+                                                            },
+                                                            modifier = Modifier.padding(8.dp),
+                                                        ) {
+                                                            Text("Usuń")
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     OutlinedCard(
                         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                         border = BorderStroke(1.dp, Color.Black),
@@ -280,8 +831,8 @@ fun HelpScreen(padding: PaddingValues) {
                                 link = "https://portal.librus.pl/rodzina"
                             )
                             ImageLinkButton(
-                                iconId = R.drawable.x,
-                                link = "https://twitter.com/ZSLwSzczecinie"
+                                iconId = R.drawable.githubimage,
+                                link = "https://github.com/AdrianProje/Twojalacznosc"
                             )
                             ImageLinkButton(
                                 iconId = R.drawable.facebook,
@@ -299,608 +850,11 @@ fun HelpScreen(padding: PaddingValues) {
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview
-@Composable
-fun HelpScreenPreview() {
-    HelpScreen(padding = PaddingValues(0.dp))
-}
-
-//------------------------------------Główna-----------------------------------------
-
-@OptIn(
-    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
-)
-@Composable
-fun HomeScreen(
-    navController: NavHostController,
-    zditmdata: List<Int>,
-    datastoremanager: Datastoremanager,
-    padding: PaddingValues,
-    context: Context
-) {
-    var showdialog by remember { mutableStateOf(false) }
-    var showdialog2 by remember { mutableStateOf(false) }
-    var isloadingzditm by remember { mutableStateOf(false) }
-
-    var selectedKey by remember { mutableIntStateOf(0) }
-    var refreshzditmcount by remember { mutableIntStateOf(0) }
-
-    val listofzditm = remember { mutableStateListOf<Tablicaodjazow>() }
-
-
-    val infiniteTransition = rememberInfiniteTransition(label = "infinite rotation")
-    val rotationStateloading by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = if (isloadingzditm) 360f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ), label = "rotation"
-    )
-
-    val listState = rememberLazyListState()
-
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(3000)
-            selectedKey = (selectedKey + 1) % 4
-            listState.animateScrollToItem(index = selectedKey)
-        }
-    } //Przewijanie losowych tekstów na pasku
-
-    LaunchedEffect(Unit, refreshzditmcount, zditmdata) {
-        while (true) {
-            isloadingzditm = true
-            val job = launch(Dispatchers.IO) {
-                try {
-                    val temporarylist = mutableListOf<Tablicaodjazow>()
-                    zditmdata.forEach { number ->
-                        temporarylist.add(getthedeparturesdata(number))
-                    }
-                    listofzditm.clear()
-                    listofzditm.addAll(temporarylist)
-                } catch (e: Exception) {
-                    println("Error fetching data: ${e.message}")
-                }
-            }
-            job.join()
-            isloadingzditm = false
-            delay(10000)
-        }
-    } //Pobieranie danych z ZDiTM
-
-//TODO("Dodać tło do HomeScreen")
-//    Image(
-//        painter = painterResource(id = R.drawable.lacznosc_logo_full_ia),
-//        contentDescription = null,
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color.LightGray) // Optional: Fallback color
-//    )
-
-    if (showdialog) {
-        Dialog(
-            onDismissRequest = { showdialog = false }) {
-            Card(
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                border = BorderStroke(1.dp, Color.Black),
-                elevation = CardDefaults.elevatedCardElevation(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(10.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(15.dp)
-                        .weight(0.8f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Ta sekcja jest możliwa dzięki ZDiTM Szczecin\n",
-                        textAlign = TextAlign.Center
-                    )
-                    Text(text = "Zostało wykorzystane poniższe API:")
-                    WebsiteLink(
-                        "API - tablice odjazdów",
-                        "https://www.zditm.szczecin.pl/pl/zditm/dla-programistow/api-tablice-odjazdow"
-                    )
-
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.2f),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Button(
-                        onClick = { showdialog = false },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("Super!")
-                    }
-                }
-            }
-        }
-    }
-
-    if (showdialog2) {
-        Dialog(
-            onDismissRequest = { showdialog2 = false }) {
-            Card(
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                border = BorderStroke(1.dp, Color.Black),
-                elevation = CardDefaults.elevatedCardElevation(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(10.dp),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                var texfieldvalue = rememberSaveable { mutableStateOf("") }
-                Column(
-                    modifier = Modifier
-                        .padding(15.dp)
-                        .weight(0.8f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Dodaj przystanek\n",
-                        textAlign = TextAlign.Center
-                    )
-                    Text(text = "Aby dodać przystanek do tego ekranu wpisz kod przystanku poniżej")
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.2f),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    TextField(
-                        value = texfieldvalue.value,
-                        onValueChange = { texfieldvalue.value = it },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        )
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.2f),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Button(
-                        onClick = { showdialog2 = false },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("Anuluj")
-                    }
-                    Button(
-                        enabled = if (texfieldvalue.value.length == 5) true else false,
-                        onClick = {
-                            val intent = Intent(context, ZDITMlinkhandeler::class.java)
-                            intent.putExtra("zditmvalue", texfieldvalue.value)
-
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text("Potwierdź")
-                    }
-                }
-            }
-        }
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        contentPadding = padding
-    ) {
-
-        item {
-            val context = LocalContext.current
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                state = listState,
-                contentPadding = PaddingValues(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                val assetManager = context.assets
-                val inputStream = assetManager.open("Tipsu")
-                val tips =
-                    BufferedReader(InputStreamReader(inputStream)).readLines()
-                inputStream.close()
-
-
-                items(5, key = { it }) {
-                    val tip by remember { mutableStateOf(tips.random()) }
-                    val scrollstate = rememberScrollState(0)
-                    LaunchedEffect(tip) {
-                        if (scrollstate.maxValue > 0) {
-                            while (true) {
-                                scrollstate.animateScrollTo(
-                                    value = scrollstate.maxValue,
-                                    animationSpec = tween(
-                                        durationMillis = 10000,
-                                        easing = LinearEasing
-                                    )
-                                )
-                                scrollstate.scrollTo(0)
-                            }
-                        }
-                    }
-
-                    OutlinedCard(
-                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                        border = BorderStroke(1.dp, Color.DarkGray),
-                        modifier = Modifier
-                            .fillParentMaxWidth(1f)
-                            .wrapContentHeight()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Text(
-                                text = tip,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .basicMarquee(),
-                                overflow = TextOverflow.Clip
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        if (SDK_INT <= Build.VERSION_CODES.S_V2) {
-            item {
-                OutlinedCard(
-                    colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    border = BorderStroke(1.dp, Color.Black),
-                    elevation = CardDefaults.elevatedCardElevation(10.dp),
-                    modifier = Modifier
-                        .fillParentMaxWidth(0.95f)
-                        .wrapContentHeight()
-                ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
-                        Text(
-                            text = "Ta wersja Androida jest niebezpieczna!",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(text = "Android ${Build.VERSION.RELEASE} nie jest już wspierany przez Google i AOSP")
-                    }
-                }
-            }
-        }
-
-        item {
-            OutlinedCard(
-                onClick = { navController.navigate("whatsnew") },
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primary),
-                border = BorderStroke(1.dp, Color.Black),
-                modifier = Modifier.fillParentMaxWidth(0.95f)
-            ) {
-                Text(
-                    text = "Co nowego? \n Zobacz co się zmieniło w aplikacji",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxSize()
-                )
-            }
-        }
-
-        item {
-            Card(
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                border = BorderStroke(1.dp, Color.Black),
-                modifier = Modifier.fillParentMaxWidth(0.95f)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        "ZDiTM Szczecin",
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    IconButton(
-                        onClick = {
-                            showdialog2 = true
-                        },
-                        modifier = Modifier
-                            .weight(0.2f)
-                            .size(20.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Info"
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            showdialog = true
-                        },
-                        modifier = Modifier
-                            .weight(0.2f)
-                            .size(20.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Info,
-                            contentDescription = "Info"
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            ++refreshzditmcount
-                        },
-                        modifier = Modifier
-                            .weight(0.2f)
-                            .size(20.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = "Refresh",
-                            modifier = Modifier.rotate(rotationStateloading)
-                        )
-                    }
-                }
-
-
-                for (item in listofzditm) {
-                    if (!item.departures.isEmpty()) {
-                        var expanded by remember { mutableStateOf(false) }
-                        val rotationState by animateFloatAsState(
-                            targetValue = if (expanded) 180f else 0f,
-                            label = "rotation"
-                        )
-
-                        val realtime = item.departures.first().time_real
-
-                        val odjazd = when (realtime) {
-                            0 -> {
-                                "Na przystanku"
-                            }
-
-                            null -> {
-                                item.departures.first().time_scheduled.toString()
-                            }
-
-                            else -> {
-                                "Za: $realtime min."
-                            }
-                        }
-
-
-                        Row(
-                            modifier = Modifier
-                                .clickable { expanded = !expanded }
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                                .fillMaxHeight()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .weight(1f)
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "(${item.stop_number}) ${item.stop_name}",
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .basicMarquee(spacing = MarqueeSpacing(10.dp))
-                                            .weight(1f)
-                                    )
-                                    Text(
-                                        "| $odjazd",
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                            .basicMarquee(spacing = MarqueeSpacing(10.dp))
-                                            .weight(0.5f),
-                                        textAlign = TextAlign.Right
-                                    )
-                                }
-
-                                Text(
-                                    text = "Linia: " + item.departures.first().line_number + " (${item.departures.first().direction})",
-                                    modifier = Modifier.basicMarquee(spacing = MarqueeSpacing(10.dp))
-                                )
-                                if (item.message != null) {
-                                    Text(
-                                        text = item.message,
-                                        modifier = Modifier.basicMarquee()
-                                    )
-                                }
-                            }
-
-                            IconButton(
-                                onClick = { expanded = !expanded }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Rozwiń/Zwiń",
-                                    modifier = Modifier.rotate(rotationState)
-                                )
-                            }
-                        }
-
-                        AnimatedVisibility(visible = expanded) {
-                            Spacer(Modifier.weight(1f))
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                item.departures.subList(1, item.departures.size.coerceAtMost(5))
-                                    .forEach { departure ->
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Text(
-                                                text = departure.line_number.toString(),
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .weight(1f)
-                                            )
-                                            Text(
-                                                text = departure.direction.toString(),
-                                                textAlign = TextAlign.Center,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .weight(1f)
-                                                    .basicMarquee()
-                                            )
-                                            val timetext = when (departure.time_real) {
-                                                0 -> {
-                                                    "Na przystanku"
-                                                }
-
-                                                null -> {
-                                                    "${departure.time_scheduled}"
-                                                }
-
-                                                else -> {
-                                                    "${departure.time_real} min."
-                                                }
-                                            }
-                                            Text(
-                                                text = timetext,
-                                                textAlign = TextAlign.Center,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .weight(1f)
-                                            )
-                                        }
-                                    }
-                                Spacer(Modifier.weight(1f))
-                                val openAlertDialog = rememberSaveable { mutableStateOf(false) }
-                                Button(
-                                    onClick = {
-                                        openAlertDialog.value = true
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(text = "Usuń przystanek ${item.stop_number}")
-                                }
-                                when {
-                                    openAlertDialog.value -> {
-                                        AlertDialog(
-                                            icon = {
-                                                Icon(
-                                                    Icons.Default.Clear,
-                                                    contentDescription = "Ikonka usuwania"
-                                                )
-                                            },
-                                            title = {
-                                                Text(text = "Czy chcesz usunąć przystanek: ${item.stop_number} ?")
-                                            },
-                                            text = {
-                                                Text(text = "Nie będzie można tej akcji cofnąć\nZmiany będą widoczne po restarcie aplikacji!")
-                                            },
-                                            onDismissRequest = {
-                                                openAlertDialog.value = false
-                                            },
-                                            confirmButton = {
-                                                Button(
-                                                    onClick = {
-                                                        runBlocking {
-                                                            datastoremanager.deleteZditmStop(item.stop_number.toInt())
-                                                            openAlertDialog.value = false
-                                                            refreshzditmcount++
-                                                            Toast.makeText(
-                                                                context,
-                                                                "Usunięto przystanek - ${item.stop_number}, uruchom ponownie aplikacje...",
-                                                                Toast.LENGTH_SHORT
-                                                            ).show()
-                                                        }
-                                                    }
-                                                ) {
-                                                    Text("Usuń")
-                                                }
-                                            },
-                                            dismissButton = {
-                                                Button(
-                                                    onClick = {
-                                                        openAlertDialog.value = false
-                                                    }
-                                                ) {
-                                                    Text("Anuluj")
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-//        item {
-//            OutlinedCard(
-//                onClick = { /*TODO*/ },
-//                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-//                border = BorderStroke(1.dp, Color.Black),
-//                modifier = Modifier.size(390.dp, 200.dp)
-//            ) {
-//                Text(text = "Radio")
-//            }
-//        }
-//
-//        item {
-//            OutlinedCard(
-//                onClick = { /*TODO*/ },
-//                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-//                border = BorderStroke(1.dp, Color.Black),
-//                modifier = Modifier.size(390.dp, 200.dp)
-//            ) {
-//
-//                Text(text = "Kalendarz")
-//            }
-//        }
-//
-//        item {
-//            OutlinedCard(
-//                onClick = { /*TODO*/ },
-//                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-//                border = BorderStroke(1.dp, Color.Black),
-//                modifier = Modifier.size(390.dp, 200.dp)
-//            ) {
-//
-//                Text(text = "Galeria")
-//            }
-//        }
-    }
-}
-
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
-@androidx.compose.ui.tooling.preview.Preview
-@Composable
-fun HomeScreenPreview() {
-    val context = LocalContext.current
-    HomeScreen(
-        navController = NavHostController(context),
-        zditmdata = emptyList(),
-        datastoremanager = Datastoremanager(context),
-        padding = PaddingValues(0.dp),
-        context = context
-    )
-}
+//@androidx.compose.ui.tooling.preview.Preview
+//@Composable
+//fun HomeScreenPreview() {
+//    HomeScreen(padding = PaddingValues(0.dp))
+//}
 
 
 //-----------------------------CO NOWEGO-----------------------------------------
@@ -966,7 +920,7 @@ fun WhatsNew(navController: NavHostController, padding2: PaddingValues) {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
-@androidx.compose.ui.tooling.preview.Preview
+@Preview
 @Composable
 fun WhatsNewPreview() {
     val context = LocalContext.current
@@ -1011,6 +965,7 @@ fun PlanScreen(
     var selectedData by rememberSaveable { mutableStateOf<String?>("") }
     var selectedData2 by rememberSaveable { mutableStateOf<String?>("") }
     var klasa2 by rememberSaveable { mutableStateOf<String?>("") }
+    var favoriteschedule by rememberSaveable { mutableStateOf<String?>("") }
     val options = stringArrayResource(R.array.chip_values)
     val daynames = stringArrayResource(R.array.days)
 
@@ -1037,7 +992,7 @@ fun PlanScreen(
         )
     }
 
-    LaunchedEffect(true, refreshTrigger) {
+    LaunchedEffect(true) {
         online = accessdatastoremanager.getOnlineMode.first() == true
     } //Czy online  przy pierwszym uruchomieniu
 
@@ -1150,9 +1105,9 @@ fun PlanScreen(
             val favSchedule = datastore.getFavSchedule.first()
             onlysubstitute = datastore.getUserRefresh.first() == true
 
+            Log.d("PlanScreen", "favedata: $favSchedule")
 
             if (selectedData2!!.isNotEmpty()) {
-                klasa2 = selectedData!!.substring(0, 3)
                 when (online && connectivityManager!!.activeNetwork != null) {
                     true -> {
                         Log.d(
@@ -1163,6 +1118,7 @@ fun PlanScreen(
                             "https://www.tlimc.szczecin.pl/dzialy/plan_lekcji/_aktualny/plany/$selectedData2.html",
                             selectedData2.toString()
                         )
+                        selectedData = scheduleFromLoad?.imieinazwisko ?: ""
                     }
 
                     false -> {
@@ -1177,12 +1133,14 @@ fun PlanScreen(
                             selectedData2.toString(),
                             1
                         )
+                        selectedData = scheduleFromLoad?.imieinazwisko ?: ""
                     }
                 }
             } else {
                 if (favSchedule!!.isNotEmpty()) {
                     selectedData = favSchedule.split(",")[0]
                     selectedData2 = favSchedule.split(",")[1]
+                    favoriteschedule = favSchedule.split(",")[1]
                     when (online && connectivityManager!!.activeNetwork != null) {
                         true -> {
                             Log.d(
@@ -1226,6 +1184,12 @@ fun PlanScreen(
         } catch (e: Exception) {
             Log.e("PlanScreen", "Error loading schedule: ${e.message}")
             scheduleFromLoad = null
+        }
+
+        try {
+            klasa2 = selectedData!!.substring(0, 3)
+        } catch (e: Exception) {
+            Log.d("PlanScreen", "Nie przypisano klasy: ${e.message}")
         }
 
         Log.d("PlanScreen", "Result: $scheduleFromLoad")
@@ -1275,12 +1239,16 @@ fun PlanScreen(
         refreshTrigger2++
         isLoading = true
         isrefresing = true
-        coroutineScope.launch(Dispatchers.IO) {
-            scheduleData = loadscheduledata()
-            listitems = loadsubstitue()
-            isLoading = false
-            isrefresing = false
+        val result = withContext(Dispatchers.IO) {
+            loadscheduledata()
         }
+        val subs = withContext(Dispatchers.IO) {
+            loadsubstitue()
+        }
+        scheduleData = result
+        listitems = subs
+        isLoading = false
+        isrefresing = false
     } //Odświerzanie planu po zmienieniu jednej z zmiennej
 
     Scaffold(
@@ -1288,7 +1256,7 @@ fun PlanScreen(
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier
-                    .padding(10.dp)
+                    .padding(vertical = 5.dp, horizontal = 5.dp)
                     .padding(bottom = padding.calculateBottomPadding())
                     .border(1.dp, Color.Black, MaterialTheme.shapes.medium)
                     .clip(MaterialTheme.shapes.medium),
@@ -1406,10 +1374,9 @@ fun PlanScreen(
                         contentPadding = padding
                     ) {
 
-                        if (preferedgroup != 0) item {
+                        if (preferedgroup != 0 && it1.html.contains("o") && it1.html == favoriteschedule) item {
                             OutlinedCard(
                                 colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
-                                border = BorderStroke(1.dp, Color.DarkGray),
                                 modifier = Modifier
                                     .fillParentMaxWidth(0.95f)
                                     .wrapContentHeight()
@@ -1469,36 +1436,38 @@ fun PlanScreen(
                                                 )
                                             }
 
-                                            val filteredDetale = when (preferedgroup) {
-                                                1 -> {
-                                                    detale.filter { detail ->
-                                                        // Show if:
-                                                        // 1. Lesson name contains "-1/2" (specifically for group 1)
-                                                        // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
-                                                        detail.przedmiot.contains("-1/2") ||
-                                                                (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
-                                                                    "-2/2"
-                                                                ))
-                                                    }
-                                                }
 
-                                                2 -> {
-                                                    detale.filter { detail ->
-                                                        // Show if:
-                                                        // 1. Lesson name contains "-2/2" (specifically for group 2)
-                                                        // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
-                                                        detail.przedmiot.contains("-2/2") ||
-                                                                (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
-                                                                    "-2/2"
-                                                                ))
+                                            val filteredDetale =
+                                                if (preferedgroup != 0 && it1.html == favoriteschedule) when (preferedgroup) {
+                                                    1 -> {
+                                                        detale.filter { detail ->
+                                                            // Show if:
+                                                            // 1. Lesson name contains "-1/2" (specifically for group 1)
+                                                            // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                            detail.przedmiot.contains("-1/2") ||
+                                                                    (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                        "-2/2"
+                                                                    ))
+                                                        }
                                                     }
-                                                }
 
-                                                else -> { // preferedgroup == 0 or any other value
-                                                    // Show all lessons
-                                                    detale
-                                                }
-                                            }
+                                                    2 -> {
+                                                        detale.filter { detail ->
+                                                            // Show if:
+                                                            // 1. Lesson name contains "-2/2" (specifically for group 2)
+                                                            // 2. Lesson name does NOT contain "-1/2" AND does NOT contain "-2/2" (for both groups)
+                                                            detail.przedmiot.contains("-2/2") ||
+                                                                    (!detail.przedmiot.contains("-1/2") && !detail.przedmiot.contains(
+                                                                        "-2/2"
+                                                                    ))
+                                                        }
+                                                    }
+
+                                                    else -> { // preferedgroup == 0 or any other value
+                                                        // Show all lessons
+                                                        detale
+                                                    }
+                                                } else detale
 
                                             for (details in filteredDetale) {
                                                 Spacer(modifier = Modifier.width(2.dp))
@@ -1521,7 +1490,16 @@ fun PlanScreen(
                                                         horizontalArrangement = Arrangement.Center
                                                     ) {
                                                         if (details.sala != "") {
-                                                            Text(text = details.sala)
+                                                            Text(
+                                                                details.sala,
+                                                                modifier = Modifier.clickable(
+                                                                    enabled = if (!details.salalink.isBlank()) true else false,
+                                                                    onClick = {
+                                                                        selectedData2 =
+                                                                            details.salalink
+                                                                        refreshTrigger++
+                                                                    }
+                                                                ))
                                                         }
                                                     }
 
@@ -1536,18 +1514,34 @@ fun PlanScreen(
                                                         verticalArrangement = Arrangement.Center,
                                                         horizontalAlignment = Alignment.CenterHorizontally
                                                     ) {
+
+
                                                         if (details.przedmiot.isNotBlank()) Text(
                                                             text = details.przedmiot,
                                                             textAlign = TextAlign.Center
                                                         )
 
                                                         if (details.nauczyciel.isNotBlank()) Text(
-                                                            text = details.nauczyciel,
+                                                            details.nauczyciel,
+                                                            modifier = Modifier.clickable(
+                                                                enabled = if (!details.nauczyciellink.isBlank()) true else false,
+                                                                onClick = {
+                                                                    selectedData2 =
+                                                                        details.nauczyciellink
+                                                                    refreshTrigger++
+                                                                }),
                                                             textAlign = TextAlign.Center
                                                         )
 
                                                         if (klasa.isNotBlank()) Text(
-                                                            text = klasa,
+                                                            klasa,
+                                                            modifier = Modifier.clickable(
+                                                                enabled = if (!details.klasalink.isBlank()) true else false,
+                                                                onClick = {
+                                                                    selectedData2 =
+                                                                        details.klasalink
+                                                                    refreshTrigger++
+                                                                }),
                                                             textAlign = TextAlign.Center
                                                         )
                                                     }
@@ -1579,7 +1573,6 @@ fun PlanScreen(
 
                                         OutlinedCard(
                                             colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
-                                            border = BorderStroke(1.dp, Color.DarkGray),
                                             modifier = Modifier
                                                 .fillParentMaxWidth(0.95f)
                                                 .wrapContentHeight()
@@ -1592,11 +1585,6 @@ fun PlanScreen(
                                                 if (minutesLeft < 45) {
                                                     Text(
                                                         text = "Pozostało $minutesLeft min. lekcji",
-                                                        textAlign = TextAlign.Center
-                                                    )
-                                                } else if (minutesLeft == 0L) {
-                                                    Text(
-                                                        text = "Lekcja się skończyła",
                                                         textAlign = TextAlign.Center
                                                     )
                                                 } else {
@@ -1846,7 +1834,7 @@ fun PlanScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @ExperimentalComposeUiApi
-@androidx.compose.ui.tooling.preview.Preview
+@Preview
 @Composable
 fun PlanScreenPreview() {
     val context = LocalContext.current

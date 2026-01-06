@@ -229,7 +229,8 @@ fun ImageLinkButton(modifier: Modifier = Modifier, iconId: Int, link: String) {
     ) {
         Image(
             painter = painterResource(id = iconId),
-            contentDescription = null
+            contentDescription = null,
+            contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
         )
     }
 }

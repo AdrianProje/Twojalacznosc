@@ -1,7 +1,6 @@
 package com.ak.twojetlimc.planLekcji
 
 import android.content.Context
-import android.util.Log
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -44,14 +43,12 @@ fun GetList(typ: Int, context: Context): List<ScheduleData?> {
                 if (schedule.html.contains(litera)) {
                     val scheduledata = ScheduleData(schedule.imieinazwisko, schedule.html)
                     list.add(scheduledata)
-                    Log.d("PlanList - Tworzenie listy", scheduledata.toString())
                 }
             }
         } else {
             data!!.forEach { schedule ->
                 val scheduledata = ScheduleData(schedule.imieinazwisko, schedule.html)
                 list.add(scheduledata)
-                Log.d("PlanList - Tworzenie listy", scheduledata.toString())
             }
         }
     }

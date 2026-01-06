@@ -35,7 +35,7 @@ fun webscrapeT(
                 listitem.addAll(elements)
             }
 
-            val nr: Int = tr.getElementsByClass("nr").first()!!.wholeText().toInt() ?: 0
+            val nr: Int = tr.getElementsByClass("nr").firstOrNull()?.wholeText()?.toInt() ?: 0
 
             val g = tr.getElementsByClass("g").first()?.wholeText().toString() ?: ""
 
@@ -44,35 +44,52 @@ fun webscrapeT(
                     i = 0
                 }
 
+                val nauczyciel = mutableListOf<String>()
+                val nauczyciellink = mutableListOf<String>()
                 val przedmiot = mutableListOf<String>()
                 val sala = mutableListOf<String>()
-                val nauczyciel = mutableListOf<String>()
+                val salalink = mutableListOf<String>()
+
 
                 val detailsList = mutableListOf<ScheduleItemDetails>()
 
                 val klasa = if (!valueofhtml.contains("o")) {
-                    item.getElementsByClass("o").first()?.wholeText() ?: ""
-                } else {
-                    " "
+                    item.getElementsByClass("o").firstOrNull()?.wholeText() ?: ""
+                } else " "
+
+
+                val klasalink = if (!valueofhtml.contains("o")) {
+                    item.getElementsByClass("o").firstOrNull()?.attribute("href")?.value?.replace(
+                        ".html",
+                        ""
+                    ) ?: ""
+                } else " "
+
+
+                item.getElementsByClass("p").forEach { item ->
+                    przedmiot.add(item.wholeText() ?: " ")
                 }
 
-
-                item.getElementsByClass("p")?.forEach { item ->
-                    przedmiot.add(item.wholeText() ?: " ")
-                } ?: " "
-
                 if (!valueofhtml.contains("s")) {
-                    item.getElementsByClass("s")?.forEach { item ->
+                    item.getElementsByClass("s").forEach { item ->
                         sala.add(item.wholeText() ?: " ")
-                    } ?: " "
-                } else {
-                    sala.add(" ")
+
+                        salalink.add(
+                            (item.firstOrNull()?.attribute("href")?.value?.replace(".html", "")
+                                ?: "")
+                        )
+                    }
                 }
 
                 if (!valueofhtml.contains("n")) {
-                    item.getElementsByClass("n")?.forEach { item ->
+                    item.getElementsByClass("n").forEach { item ->
                         nauczyciel.add(item.wholeText() ?: " ")
-                    } ?: ""
+
+                        nauczyciellink.add(
+                            (item.firstOrNull()?.attribute("href")?.value?.replace(".html", "")
+                                ?: "")
+                        )
+                    }
                 } else {
                     nauczyciel.add(" ")
                 }
@@ -81,8 +98,11 @@ fun webscrapeT(
                     detailsList.add(
                         ScheduleItemDetails(
                             nauczyciel.getOrElse(i) { " " },
+                            nauczyciellink.getOrElse(i) { " " },
                             przedmiot.getOrElse(i) { " " },
-                            sala.getOrElse(i) { " " }
+                            klasalink,
+                            sala.getOrElse(i) { " " },
+                            salalink.getOrElse(i) { " " }
                         )
                     )
                 }

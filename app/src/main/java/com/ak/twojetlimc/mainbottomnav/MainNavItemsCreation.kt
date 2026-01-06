@@ -11,13 +11,7 @@ import com.ak.twojetlimc.R
 
 @Composable
 fun MainNavItems(): List<MainNavItem> {
-    val customIconPainter = painterResource(id = R.drawable.logo_awka_zegar_bez_kropek)
     val items = listOf(
-        MainNavItem(
-            label = stringResource(id = R.string.MAIN_Pomoc),
-            icon = Icons.Filled.Info,
-            route = "pomoc"
-        ),
         MainNavItem(
             label = stringResource(id = R.string.MAIN_Dom),
             icon = Icons.Filled.Home,

@@ -1,6 +1,7 @@
 package com.ak.twojetlimc
 
 //import com.ak.twojetlimc.komponenty.LiveNotification
+
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -89,7 +90,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.glance.appwidget.updateAll
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -97,7 +97,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.komponenty.ClickableEmail
 import com.ak.twojetlimc.komponenty.Datastoremanager
 import com.ak.twojetlimc.komponenty.Permissionsinfo
@@ -284,7 +283,7 @@ fun NavGraph(
                                         cheched = true
                                         datastoremanager.saveFavScheduleOnOff(true)
                                         datastoremanager.saveFavSchedule(scheduleData.first()!!.imieinazwisko + "," + scheduleData.first()!!.htmlvalue)
-                                        WidgetDumbUI().updateAll(context)
+
                                         favschedulevalue = scheduleData.first()!!.imieinazwisko
 
                                     } else {
@@ -294,7 +293,7 @@ fun NavGraph(
                                         datastoremanager.savePreferedGroup(0)
                                         favschedulevalue = ""
                                     }
-                                    WidgetDumbUI().updateAll(context)
+
                                 }
                             }
                         )
@@ -534,7 +533,7 @@ fun NavGraph(
                     val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                     val version = pInfo.versionName
                     Text(
-                        text = stringResource(id = R.string.SETTINGS_Wersja) + "$version - (Beta)"
+                        text = stringResource(id = R.string.SETTINGS_Wersja) + "$version"
                     )
                     ClickableEmail("developer.adriank@gmail.com")
                 }
@@ -883,13 +882,16 @@ fun NavGraph(
                     )
                 }
                 item {
-                    Text(text = "- Adam Jankowski 5tB\n Betatester aplikacji")
+                    Text(text = "- Adam Jankowski\n Betatester aplikacji")
                 }
                 item {
-                    Text(text = "- Kamil Zagórski (Absolwent)\n Betatester aplikacji")
+                    Text(text = "- Kamil Zagórski\n Betatester aplikacji")
                 }
                 item {
-                    Text(text = "- Julka Januszek (Absolwentka)\n Ikony do aplikacji")
+                    Text(text = "- Julka Januszek\n Ikony do aplikacji")
+                }
+                item {
+                    Text(text = "- Tobie\n Za używanie aplikacji")
                 }
             }
         }

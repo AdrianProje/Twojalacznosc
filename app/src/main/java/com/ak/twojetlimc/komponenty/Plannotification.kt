@@ -6,10 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.ak.twojetlimc.AppWidget.WidgetDumbUI
 import com.ak.twojetlimc.MainScreen
 import com.ak.twojetlimc.R
 import com.ak.twojetlimc.zastepstwa.Zastepstwo
@@ -137,7 +135,6 @@ class RefreshWorker(appContext: Context, workerParams: WorkerParameters) :
                     Log.d("Plannotification", "Dane lekcji się nie zgadzają z porównywanymi danymi")
                 }
             }
-            WidgetDumbUI().updateAll(applicationContext)
         }
         return Result.success()
     }

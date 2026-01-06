@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,12 +24,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -47,6 +48,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -64,13 +66,13 @@ import com.ak.twojetlimc.komponenty.WebsiteLink
 import com.ak.twojetlimc.komponenty.downloadplanandzas
 import com.ak.twojetlimc.komponenty.instalnewversion
 import com.ak.twojetlimc.komponenty.isthereanewversion
-import com.ak.twojetlimc.mainbottomnav.HelpScreen
 import com.ak.twojetlimc.mainbottomnav.HomeScreen
 import com.ak.twojetlimc.mainbottomnav.MainNavItems
 import com.ak.twojetlimc.mainbottomnav.PlanScreen
 import com.ak.twojetlimc.mainbottomnav.WhatsNew
 import com.ak.twojetlimc.theme.AppTheme
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 
 class MainScreen : AppCompatActivity() {
 
@@ -126,6 +128,7 @@ class MainScreen : AppCompatActivity() {
                     val value = datastoremanager.getUPObbe.first()
                     val paranoia = datastoremanager.getParanoia.first()
                     if (value == false) {
+                        datastoremanager.saveOnlineMode(true)
                         Log.d(
                             "Main_Screen",
                             "Datastore odczytany - START AKTYWNOŚCI / Pobieranie danych"
@@ -153,7 +156,7 @@ class MainScreen : AppCompatActivity() {
 
                 LaunchedEffect(key1 = Unit) {
 
-                    zditmdata = datastoremanager.getzditmList().first()
+                    zditmdata = datastoremanager.getzditmList().firstOrNull() ?: emptyList()
                     Log.d("Main_Screen", "Zditmdata $zditmdata")
                 }
 
@@ -332,6 +335,11 @@ fun BottomNavigationBar(navController: NavHostController) {
     val currentRoute = navBackStackEntry?.destination?.route
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+        modifier = Modifier
+            .padding(vertical = 5.dp, horizontal = 5.dp)
+            .navigationBarsPadding()
+            .border(1.dp, Color.Black, MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
     ) {
 
         MainNavItems().forEach { navItem ->
@@ -375,12 +383,6 @@ fun BottomNavigationBar(navController: NavHostController) {
             )
         }
     }
-    HorizontalDivider(
-        color = Color.Black,
-        modifier = Modifier
-            .height(1.dp)
-            .fillMaxWidth()
-    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -415,16 +417,9 @@ fun NavHostContainer(
             enterTransition = { slideInHorizontally(initialOffsetX = { -it }) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { it }) },
             builder = {
-
-                // ścierzka pomoc
-                composable("pomoc") {
-                    HelpScreen(padding)
-
-                }
-
                 // ścierzka główna
                 composable("home") {
-                    HomeScreen(navController, zditmdata, datastoremanager, padding, context)
+                    HomeScreen(padding, zditmdata, navController, datastoremanager)
                 }
 
                 composable("whatsnew") {

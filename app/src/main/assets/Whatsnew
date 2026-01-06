@@ -1,3 +1,45 @@
+--- 1.0 ---
+Chciałbym podziękować wszystkim którzy pobrali tą aplikację i chcieli z niej korzystać chociaż przez chwilę,
+nawet jeśli nas było nie wielu. Dzięki tej aplikacji, nauczyłem się wielu rzeczy na temat programowania aplikacji mobilnych.
+Z góry chciałbym też przeprosić za brak wersji na iOS.
+
+Ta aplikacja oficjalnie przestaje być wspierana wraz z tą aktualizacją, jest ostatnią finalną wersją która zostanie wydana.
+Nie oznacza to że przestanie działać z dnia na dzień, ale jeśli coś zostanie zmienione na naszej stronie szkolnej, aplikacja może przestać działać.
+Jako że to się nie stało na przestrzeni ostatnich ~10-15 lat, aplikacja powinna działać dopóki można ją zainstalować.
+
+Gdyby ktoś nie wiedział, aplikacja jest "opensoursowana" na GitHubie, i każdy jeśli ma ochotę może kontynuować
+jej ulepszanie i dalsze rozwijanie.
+
+Jeśli ktoś lubi się bawić w "hackowanie" w ustawieniach jest ukryte menu ".debug" z easter eggiem
+
+Uznaję ją za skończoną, pomimo paru problemów które posiada, zwłaszcza z pracą w tle oraz powiadomieniami.
+Znane mi problemy:
+- Powiadomienia o następnej lekcji nie są wysyłane
+- Powiadomienie o zmianie w planie nie daje wystarczająco dużo informacji na temat co się zmieniło i może wydawać się losowe
+- Praca w tle może się nie wykonać gdy aplikacja jest zamknięta
+- Niepoprawne skalowanie elementów na większych poziomach przybliżenia systemowego
+- Niektóre teksty nie zmienia się dynamicznie wraz z zmianą języka systemowego
+- Usuwanie przystanków z ZDiTM jest widoczne o restarcie i nie jest dynamiczne
+
+- Dodano link do GitHub w przydatnych linkach
+- Usunięto stare linki w przydatnych linkach
+- Usunięto tekst "beta" w ustawieniach
+- Zmiana wyglądu karty usuwania przystanku ZDiTM
+- Tryb online jest włączony domyślnie po zainstalowaniu
+- Aktualizacja modułów
+
+Dziękuję, i do widzenia!
+Adrian Kieliszek
+
+--- 0.54.1 Beta ---
+- Aktualizacja modułów
+- Usunięcie widgetu
+- Złączenie kart Pomoc i Główna w jedną
+- Zmiana wyglądu pasku nawigacji
+- Plan dla wybranej grupy (pierwsza / druga) będzie wyświetlany tylko dla ulubionego planu
+- Dodano możliwość przechodzenia pomiędzy klasami
+- Naprawiono niepełność niektórych planów
+
 --- 0.54 Bata ---
 - Dodano feature automatycznej próby pobierania planu przy starcie aplikacji kiedy jest on uszkodzony lub pusty
 - Naprawiono błędne pokazywane się planu w trybie offline
@@ -11,9 +53,9 @@
 --- 0.53.4.3 Beta ---
 Końcowy etap zakończania prac nad aplikacją
 Planowane naprawy oraz dodatkowe funkcje:
-- Bezpośrednie przechodzenie między planami przez linki
-- Naprawa problemów z niepełnością niektórych planów nauczycieli i sal
-- Naprawa działania widgetu
+- Bezpośrednie przechodzenie między planami przez linki ✅
+- Naprawa problemów z niepełnością niektórych planów nauczycieli i sal ✅
+- Naprawa działania widgetu ✅
 - Naprawa automatycznego pobierania planu gdy jest pusty ✅
 Dziękuję za feedback, tworzenie tej aplikacji przez 4 lata był niesamowitym procesem podczas którego
 sporo nauczyłem się na temat programowania na platformach mobilnych

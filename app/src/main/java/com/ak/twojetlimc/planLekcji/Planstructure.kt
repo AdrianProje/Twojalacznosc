@@ -12,8 +12,11 @@ data class Schedule(
 @Serializable
 data class ScheduleItemDetails(
     val nauczyciel: String,
+    val nauczyciellink: String,
     val przedmiot: String,
-    val sala: String
+    val klasalink: String,
+    val sala: String,
+    val salalink: String
 )
 
 @Serializable

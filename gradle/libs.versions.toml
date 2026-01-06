@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.1"
+agp = "8.13.2"
 commonsLogging = "1.2"
 kotlin = "2.1.10"
 junit = "4.13.2"
@@ -28,6 +28,8 @@ xstream = "1.4.21"
 xmlpull = "1.1.3.4d_b4_min"
 materialIconsExtendedAndroid = "1.7.8"
 coreI18n = "1.0.0"
+re2j = "1.8"
+uiUnit = "1.10.0"
 
 [libraries]
 commons-logging = { module = "commons-logging:commons-logging", version.ref = "commonsLogging" }
@@ -37,8 +39,8 @@ compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version = "1.10.0" }
 compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version = "1.10.0" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.10.0" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.12.1" }
-androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.12.00" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.12.2" }
+androidx-compose-bom = { module = "androidx.compose:compose-bom", version = "2025.12.01" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.17.0" }
 androidx-datastore-core = { module = "androidx.datastore:datastore-core", version = "1.2.0" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.2.0" }
@@ -48,7 +50,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.3.0
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.7.0" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.1" }
 material = { group = "com.google.android.material", name = "material", version = "1.13.0" }
-androidx-activity = { group = "androidx.activity", name = "activity", version = "1.12.1" }
+androidx-activity = { group = "androidx.activity", name = "activity", version = "1.12.2" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.1" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 androidx-gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version = "1.1.0" }
@@ -77,11 +79,13 @@ commons-logging-commons-logging = { group = "commons-logging", name = "commons-l
 groovy = { group = "org.codehaus.groovy", name = "groovy", version = "3.0.25" }
 tomcat-juli = { group = "org.apache.tomcat", name = "tomcat-juli", version.ref = "tomcatJuli" }
 juli = { group = "org.apache.tomcat", name = "juli", version.ref = "juli" }
-jsoup = { group = "org.jsoup", name = "jsoup", version = "1.21.2" }
+jsoup = { group = "org.jsoup", name = "jsoup", version = "1.22.1" }
 xstream = { group = "com.thoughtworks.xstream", name = "xstream", version.ref = "xstream" }
 xmlpull = { group = "xmlpull", name = "xmlpull", version.ref = "xmlpull" }
 androidx-compose-material-icons-extended-android = { group = "androidx.compose.material", name = "material-icons-extended-android", version.ref = "materialIconsExtendedAndroid" }
 androidx-core-i18n = { group = "androidx.core", name = "core-i18n", version.ref = "coreI18n" }
+re2j = { group = "com.google.re2j", name = "re2j", version.ref = "re2j" }
+androidx-compose-ui-unit = { group = "androidx.compose.ui", name = "ui-unit", version.ref = "uiUnit" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
